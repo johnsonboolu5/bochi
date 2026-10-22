@@ -54,7 +54,7 @@ function bochi_config(): array
     $config = [
         'db_path' => $base . '/private/bochi/bochi.sqlite',
         'invite_pepper' => '',
-        'setup_token_hash' => 'ed7bc469d19ded904d279cdfe8d53f9791b17e20dc40e7df47fade494422475c',
+        'setup_token_hash' => '',
     ];
 
     $configFile = getenv('BOCHI_CONFIG');
