@@ -770,7 +770,15 @@ input,textarea,select{ font-family:inherit; }
 }
 
     </style>
-  </head>
+  <style>
+.acct-btn{appearance:none;border:1px solid var(--line,#d2d2d7);background:var(--card,#fff);color:var(--ink,#1d1d1f);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;white-space:nowrap}
+.acct-btn.on{background:#0071e3;border-color:#0071e3;color:#fff}
+.auth-label{display:block;font-size:13px;font-weight:600;color:var(--muted,#6e6e73);margin:12px 0 6px}
+.auth-input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--line,#d2d2d7);border-radius:12px;font:inherit;font-size:16px;background:var(--card,#fff);color:var(--ink,#1d1d1f)}
+.auth-input:focus{outline:2px solid #0071e3;outline-offset:1px;border-color:#0071e3}
+.auth-err{color:#d70015;font-size:14px;min-height:20px;margin:8px 0}
+</style>
+</head>
   <body>
     <div class="wrap">
 
@@ -794,6 +802,7 @@ input,textarea,select{ font-family:inherit; }
           <button class="chip-btn" data-nav="session" onclick="go('session')">Session Plan</button>
           <button class="chip-btn" data-nav="summary" onclick="go('summary')">Summary まとめ</button>
         </div>
+        <button class="acct-btn" id="account-btn" type="button" onclick="accountTap()">Sign In</button>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Toggle dark mode">
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -1351,6 +1360,53 @@ input,textarea,select{ font-family:inherit; }
         </div>
       </section>
 
+      <!-- ================= ACCOUNT ================= -->
+      <section class="view" id="view-auth">
+        <div class="game-head">
+          <button class="back-link" onclick="go('home')">← All modes</button>
+          <h2>Your Bochi Account<span class="jp">アカウント</span></h2>
+        </div>
+        <div id="auth-signedout">
+          <p class="howto">Bochi is a private app for two people, Bolu and Chihiro. Sign in so your journey, lessons, and review progress save to your account and sync to your partner. Accounts are created with a one time invite code.</p>
+          <div class="card" style="padding:20px; margin-bottom:14px">
+            <div class="prompt-label" style="margin-bottom:10px">SIGN IN · ログイン</div>
+            <label class="auth-label" for="auth-li-email">Email</label>
+            <input class="auth-input" id="auth-li-email" type="email" autocomplete="email" placeholder="you@example.com" />
+            <label class="auth-label" for="auth-li-pass">Password</label>
+            <input class="auth-input" id="auth-li-pass" type="password" autocomplete="current-password" placeholder="Your password" />
+            <div class="auth-err" id="auth-li-err"></div>
+            <button class="btn blue" style="width:100%" onclick="authLogin()">Sign In</button>
+          </div>
+          <div class="card" style="padding:20px">
+            <div class="prompt-label" style="margin-bottom:10px">CREATE YOUR ACCOUNT · アカウント作成</div>
+            <label class="auth-label" for="auth-su-invite">Invite code</label>
+            <input class="auth-input" id="auth-su-invite" type="text" autocomplete="off" placeholder="bochi_..." />
+            <label class="auth-label" for="auth-su-email">Email</label>
+            <input class="auth-input" id="auth-su-email" type="email" autocomplete="email" placeholder="you@example.com" />
+            <label class="auth-label" for="auth-su-pass">Choose a password (12+ characters)</label>
+            <input class="auth-input" id="auth-su-pass" type="password" autocomplete="new-password" placeholder="A strong password" />
+            <label class="auth-label" for="auth-su-name">Display name (optional)</label>
+            <input class="auth-input" id="auth-su-name" type="text" autocomplete="name" placeholder="Leave blank to use Bolu or Chihiro-san" />
+            <div class="auth-err" id="auth-su-err"></div>
+            <button class="btn" style="width:100%" onclick="authRegister()">Create Account</button>
+            <p class="howto" style="margin-top:10px">Forgot your password? There is no email reset yet. Ask Bolu, and he can set up a recovery invite after checking it is really you.</p>
+          </div>
+        </div>
+        <div id="auth-signedin" style="display:none">
+          <div class="card" style="padding:20px">
+            <div class="prompt-label" style="margin-bottom:10px">SIGNED IN · ログイン中</div>
+            <div class="player-name" id="auth-who">Signed in</div>
+            <p class="howto" id="auth-course" style="margin-top:6px"></p>
+            <p class="howto" id="auth-partner"></p>
+            <p class="howto">Sync status: <span id="auth-sync">Saved to your account.</span></p>
+            <div class="btn-row" style="margin-top:12px">
+              <button class="btn blue" onclick="go('solo')">Practice Solo</button>
+              <button class="btn ghost" onclick="authLogout()">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= SOLO PRACTICE ================= -->
       <section class="view" id="view-solo">
         <div class="game-head">
@@ -1371,7 +1427,7 @@ input,textarea,select{ font-family:inherit; }
               <span class="p-name">I am Chihiro-san<span>ちひろさん · practicing English</span></span>
             </button>
           </div>
-          <p class="journey-note">Profiles live on this device for this visit, and your solo summary at the end is how your progress travels to your partner: copy it and send it after you practice.</p>
+          <p class="journey-note">Your progress saves to your Bochi account and syncs with your partner automatically. The solo summary below is still yours to copy or download any time.</p>
         </div>
 
         <div id="solo-main" style="display:none">
@@ -1388,7 +1444,7 @@ input,textarea,select{ font-family:inherit; }
             <div class="j-xp" id="solo-xp-line"></div>
             <div class="j-solo" id="solo-today-line">Solo XP earned today: 0</div>
             <div class="btn-row" style="margin-top:12px">
-              <button class="btn ghost small" onclick="changeProfile()">Switch Profile</button>
+              <button class="btn ghost small" onclick="accountTap()">Account</button>
               <button class="btn blue small" onclick="finishSolo()">Finish and See Solo Summary</button>
             </div>
           </div>
@@ -1462,7 +1518,7 @@ input,textarea,select{ font-family:inherit; }
           <div class="btn-row">
             <button class="btn blue" onclick="copySummary()">Copy Summary</button>
             <button class="btn ghost" onclick="downloadSummary()">Download as Text File</button>
-            <button class="btn red" onclick="resetAll()">New Session · Reset Everything</button>
+            <button class="btn red" onclick="resetAll()">New Session · Reset Meeting</button>
           </div>
         </div>
       </section>
@@ -1902,7 +1958,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function addScore(player, pts, anchorEl){
       state.scores[player] += pts;
-      addJourneyXP(player, pts);
+      addJourneyXP(player, pts, { solo: false, source: "shared" });
       $("score-" + player).textContent = state.scores[player];
       reactCharacters(player);
       if(pts >= 10 && anchorEl){
@@ -1990,7 +2046,7 @@ input,textarea,select{ font-family:inherit; }
         b.classList.toggle("active", b.getAttribute("data-nav") === view);
       });
       if(view === "summary"){ renderSummary(); }
-      if(view === "solo"){ renderSolo(); }
+      if(view === "solo"){ enterSolo(); }
       window.scrollTo({top:0, behavior:"smooth"});
     }
 
@@ -2815,7 +2871,7 @@ input,textarea,select{ font-family:inherit; }
     function levelOf(p){ return Math.min(6, Math.floor(state.journey[p].xp / XP_PER_LEVEL) + 1); }
     function xpIntoLevel(p){ return state.journey[p].xp - (levelOf(p) - 1) * XP_PER_LEVEL; }
     function soloName(p){ return p === "bolu" ? "Boru" : "Chihiro-san"; }
-    function addJourneyXP(player, pts){
+    function addJourneyXP(player, pts, opts){
       if(!pts) return;
       var before = levelOf(player);
       state.journey[player].xp += pts;
@@ -2829,6 +2885,7 @@ input,textarea,select{ font-family:inherit; }
         if(card){ var r = card.getBoundingClientRect(); confettiBurst(r.left + r.width / 2, Math.max(70, r.top + 30)); }
         buildPhraseLists();
       }
+      queueXP(player, pts, { solo: !!(opts && opts.solo), source: (opts && opts.source) || "shared", lastUnlock: after > before ? state.lastUnlock[player] : null });
       renderJourney();
     }
     function renderJourney(){
@@ -2961,6 +3018,7 @@ input,textarea,select{ font-family:inherit; }
       if(ex){ ex.streak = 0; ex.misses = (ex.misses || 1) + 1; }
       else { item.streak = 0; item.misses = 1; state.review[p][key] = item; }
       renderReviewCard();
+      scheduleSave();
       if(CURRENT === "session") renderPhases();
     }
     function reviewPoolLabels(p, pool, exclude){
@@ -3035,6 +3093,7 @@ input,textarea,select{ font-family:inherit; }
         fb.textContent = "Not yet. " + item.teach + " It stays in Review.";
         fb.className = "feedback bad";
       }
+      scheduleSave();
       renderReviewCard();
       setTimeout(function(){
         r.i++; r.lock = false;
@@ -3113,10 +3172,7 @@ input,textarea,select{ font-family:inherit; }
       window.scrollTo({ top:0, behavior:"smooth" });
     }
     function changeProfile(){
-      solo.player = null; solo.lesson = null;
-      closeStage();
-      $("solo-pick").style.display = "block";
-      $("solo-main").style.display = "none";
+      toast("Your course is tied to your Bochi account. Use the account button at the top to sign out or switch.");
     }
     function renderSolo(){
       if(!solo.player) return;
@@ -3139,7 +3195,7 @@ input,textarea,select{ font-family:inherit; }
       var p = solo.player; if(!p || !pts) return;
       solo.xpSession += pts;
       state.soloToday[p] += pts;
-      addJourneyXP(p, pts);
+      addJourneyXP(p, pts, { solo: true, source: "solo" });
       renderSoloHead();
     }
     function renderPath(){
@@ -3419,6 +3475,7 @@ input,textarea,select{ font-family:inherit; }
         state.lessons[p][lessonId(sl.ch, sl.idx)] = true;
         if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
       }
+      scheduleSave();
       var rc = reviewChapterCount(p, sl.ch);
       var html = lessonHead() +
         '<div class="big-word" style="text-align:center">' + got + " of " + total + " correct</div>" +
@@ -3668,6 +3725,7 @@ input,textarea,select{ font-family:inherit; }
         }
         renderJourney();
       }
+      scheduleSave();
       var rc2 = reviewChapterCount(p, sl.ch);
       var html = '<div class="prompt-label" style="text-align:center">CHECKPOINT RESULT</div>' +
         '<div class="big-word" style="text-align:center">' + sl.correct + " of " + sl.qs.length + " correct</div>" +
@@ -3827,12 +3885,7 @@ input,textarea,select{ font-family:inherit; }
       state.perPlayer = {bolu:{asked:0,correct:0}, chihiro:{asked:0,correct:0}};
       state.learned = {}; state.phrasesDone = {}; state.storyCount = 0;
       state.forfeit = ""; duelBoost = [];
-      state.journey = {bolu:{xp:0}, chihiro:{xp:0}};
-      state.lessons = {bolu:{}, chihiro:{}};
-      state.checkpoints = {bolu:{}, chihiro:{}};
-      state.unlocks = []; state.lastUnlock = {bolu:"", chihiro:""};
-      state.soloToday = {bolu:0, chihiro:0};
-      state.review = {bolu:{}, chihiro:{}};
+      state.unlocks = [];
       practiceTier = { hiragana:null, duel:null, translate:null, shadow:null, roulette:null };
       solo.xpSession = 0; solo.practiced = []; solo.lesson = null;
       renderJourney();
@@ -3886,6 +3939,180 @@ input,textarea,select{ font-family:inherit; }
     $("story-input").addEventListener("keydown", function(e){ if(e.key === "Enter"){ addStorySentence(); } });
     $("next-date").addEventListener("change", function(){ if(CURRENT === "summary"){ $("summary-text").value = buildSummaryText(); } });
     $("homework").addEventListener("input", function(){ if(CURRENT === "summary"){ $("summary-text").value = buildSummaryText(); } });
+    /* ==================== ACCOUNTS ==================== */
+    var authState = { account: null, partner: null, returnTo: null, versions: { bolu: 0, chihiro: 0 } };
+    var xpOutbox = [];
+    var saveTimer = null;
+
+    function apiCall(action, opts) {
+      opts = opts || {};
+      var init = { method: opts.method || "GET", credentials: "same-origin", headers: { "X-Bochi-Request": "1" } };
+      if (opts.body !== undefined) { init.headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opts.body); }
+      return fetch("api.php?action=" + action, init).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; });
+      });
+    }
+    function newEventId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return "ev-" + Date.now() + "-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    }
+    function setSync(msg) { var el = $("auth-sync"); if (el) el.textContent = msg; }
+    function updateAccountBtn() {
+      var b = $("account-btn"); if (!b) return;
+      if (authState.account) { b.textContent = authState.account.playerKey === "bolu" ? "Boru" : "Chihiro-san"; b.classList.add("on"); }
+      else { b.textContent = "Sign In"; b.classList.remove("on"); }
+    }
+    function accountTap() { renderAuth(); go("auth"); }
+    function renderAuth() {
+      var out = $("auth-signedout"), inn = $("auth-signedin");
+      if (!out || !inn) return;
+      if (authState.account) {
+        out.style.display = "none"; inn.style.display = "block";
+        $("auth-who").textContent = "Signed in as " + authState.account.displayName + " (" + authState.account.email + ")";
+        $("auth-course").textContent = authState.account.playerKey === "bolu" ? "Your course: the Japanese Journey, as Boru." : "Your course: the English Journey, as Chihiro-san.";
+        var pt = $("auth-partner");
+        if (pt) pt.textContent = (authState.partner && authState.partner.registered)
+          ? "Your partner " + authState.partner.displayName + " has an account too, so you can see each other's journey progress."
+          : "Your partner has not created an account yet. Their journey starts when they sign up with their invite code.";
+      } else {
+        out.style.display = "block"; inn.style.display = "none";
+      }
+    }
+    function hydrateProgress(bundle, full) {
+      if (!bundle) return;
+      ["bolu", "chihiro"].forEach(function (p) {
+        var rec = bundle[p]; if (!rec) return;
+        authState.versions[p] = rec.version || 0;
+        state.journey[p].xp = rec.xp || 0;
+        state.soloToday[p] = rec.soloTodayXp || 0;
+        if (full) {
+          state.lessons[p] = rec.lessons || {};
+          state.checkpoints[p] = rec.checkpoints || {};
+          state.review[p] = rec.review || {};
+          state.lastUnlock[p] = rec.lastUnlock || "";
+        }
+      });
+      renderJourney();
+      if (typeof renderTierBars === "function") renderTierBars();
+    }
+    function onAuthed(body) {
+      authState.account = body.account; authState.partner = body.partner;
+      hydrateProgress(body.progressByPlayer, true);
+      updateAccountBtn(); renderAuth();
+      setSync("Saved to your account.");
+      toast("Welcome, " + body.account.displayName + ".");
+      var dest = authState.returnTo || "home"; authState.returnTo = null;
+      go(dest);
+    }
+    function authLogin() {
+      var email = $("auth-li-email").value.trim(), pass = $("auth-li-pass").value;
+      var err = $("auth-li-err"); err.textContent = "";
+      if (!email || !pass) { err.textContent = "Enter your email and password."; return; }
+      apiCall("login", { method: "POST", body: { email: email, password: pass } }).then(function (res) {
+        if (res.status === 200 && res.body.ok) { onAuthed(res.body); }
+        else err.textContent = (res.body.error && res.body.error.message) || "Sign in failed. Try again.";
+      }).catch(function () { err.textContent = "Could not reach Bochi. Check your connection and try again."; });
+    }
+    function authRegister() {
+      var code = $("auth-su-invite").value.trim(), email = $("auth-su-email").value.trim(), pass = $("auth-su-pass").value, name = $("auth-su-name").value.trim();
+      var err = $("auth-su-err"); err.textContent = "";
+      if (!code || !email || !pass) { err.textContent = "Invite code, email, and password are all required."; return; }
+      if (pass.length < 12) { err.textContent = "Use a password of at least 12 characters."; return; }
+      var body = { inviteCode: code, email: email, password: pass };
+      if (name) body.displayName = name;
+      apiCall("register", { method: "POST", body: body }).then(function (res) {
+        if ((res.status === 200 || res.status === 201) && res.body.ok) { onAuthed(res.body); }
+        else err.textContent = (res.body.error && res.body.error.message) || "Could not create the account. Check the invite code and try again.";
+      }).catch(function () { err.textContent = "Could not reach Bochi. Check your connection and try again."; });
+    }
+    function onSignedOut() {
+      authState.account = null; authState.partner = null; xpOutbox = [];
+      updateAccountBtn(); renderAuth();
+    }
+    function authLogout() {
+      apiCall("logout", { method: "POST", body: {} }).catch(function () { return null; }).then(function () {
+        onSignedOut();
+        solo.player = null;
+        go("home");
+        toast("Signed out. Your progress is saved in your account.");
+      });
+    }
+    function requireAuth(returnTo) {
+      if (authState.account) return true;
+      authState.returnTo = returnTo || "home";
+      renderAuth(); go("auth");
+      toast("Sign in so your progress saves to your account.");
+      return false;
+    }
+    function enterSolo() {
+      if (!requireAuth("solo")) return;
+      solo.player = authState.account.playerKey;
+      solo.xpSession = 0; solo.practiced = []; solo.lesson = null;
+      $("solo-pick").style.display = "none";
+      $("solo-main").style.display = "block";
+      $("solo-summary-card").style.display = "none";
+      closeStage();
+      renderSolo();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function queueXP(player, delta, opts) {
+      if (!authState.account || !delta) return;
+      opts = opts || {};
+      while (delta > 100) { queueXP(player, 100, opts); delta -= 100; }
+      xpOutbox.push({ eventId: newEventId(), playerKey: player, delta: delta, solo: !!opts.solo, source: opts.source || "shared", localDate: null, lastUnlock: opts.lastUnlock || null });
+      flushXP();
+    }
+    function flushXP() {
+      if (!authState.account || xpOutbox.length === 0) return Promise.resolve();
+      var ev = xpOutbox[0];
+      return apiCall("progress-xp", { method: "POST", body: ev }).then(function (res) {
+        if (res.status === 200) { xpOutbox.shift(); hydrateProgress(res.body.progressByPlayer, false); setSync("Saved."); return flushXP(); }
+        if (res.status === 401) { onSignedOut(); return; }
+        if (res.status === 422) { xpOutbox.shift(); return flushXP(); }
+        if (res.status === 409 && res.body.error && res.body.error.code === "partner_not_registered") { xpOutbox.shift(); return flushXP(); }
+        setSync("Saving paused, will retry.");
+      }).catch(function () { setSync("Offline, will retry."); });
+    }
+    function sanitizeReview(map) {
+      var out = {}, pools = ["reads", "means", "jpwords", "phrases"];
+      Object.keys(map || {}).forEach(function (k) {
+        var it = map[k]; if (!it || !it.front || !it.answer) return;
+        out[k] = { front: String(it.front), sub: String(it.sub || ""), answer: String(it.answer), pool: pools.indexOf(it.pool) >= 0 ? it.pool : "phrases", teach: String(it.teach || "Review this one."), ch: it.ch ? (parseInt(it.ch, 10) || 0) : 0, streak: it.streak || 0, misses: it.misses || 1 };
+      });
+      return out;
+    }
+    function scheduleSave() {
+      if (!authState.account) return;
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveDetailed, 900);
+    }
+    function saveDetailed() {
+      if (!authState.account) return;
+      var me = authState.account.playerKey;
+      flushXP().then(function () {
+        if (!authState.account) return;
+        var body = { version: authState.versions[me] || 0, progress: { lessons: state.lessons[me], checkpoints: state.checkpoints[me], lastUnlock: state.lastUnlock[me] || "", review: sanitizeReview(state.review[me]) } };
+        apiCall("progress", { method: "PUT", body: body }).then(function (res) {
+          if (res.status === 200) { hydrateProgress(res.body.progressByPlayer, false); setSync("Saved."); }
+          else if (res.status === 409) {
+            apiCall("progress").then(function (r2) { if (r2.status === 200) { hydrateProgress(r2.body.progressByPlayer, true); toast("Progress refreshed from your account."); } });
+          }
+          else if (res.status === 401) { onSignedOut(); }
+        }).catch(function () { setSync("Offline, will retry."); });
+      });
+    }
+    function bochiBoot() {
+      apiCall("me").then(function (res) {
+        if (res.status === 200 && res.body.ok) {
+          authState.account = res.body.account; authState.partner = res.body.partner;
+          updateAccountBtn(); renderAuth();
+          return apiCall("progress").then(function (r2) { if (r2.status === 200) hydrateProgress(r2.body.progressByPlayer, true); });
+        }
+        updateAccountBtn(); renderAuth();
+      }).catch(function () { updateAccountBtn(); });
+      document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") { flushXP(); } });
+    }
+
     buildModes();
     buildFeatured();
     buildPotd();
@@ -3906,6 +4133,7 @@ input,textarea,select{ font-family:inherit; }
     $("shadow-speak").addEventListener("click", function(){ speak(shadowPhrase().t, shadowPlayer() === "bolu" ? "ja-JP" : "en-US"); });
     setTurn("bolu");
     go("home");
+    bochiBoot();
     setInterval(cycleBubbles, 3400);
     /* Calendly fallback: if the official widget script is blocked or slow, show the same calendar in an iframe so the tab is never a blank box. */
     setTimeout(function(){
