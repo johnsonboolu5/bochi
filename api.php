@@ -269,6 +269,15 @@ CREATE TABLE IF NOT EXISTS recordings (
 SQL
     );
     $db->exec('CREATE INDEX IF NOT EXISTS idx_recordings_date ON recordings(session_date, id)');
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT '',
+    updated_by TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL
+)
+SQL
+    );
 }
 
 function bochi_is_https(): bool
@@ -1401,6 +1410,25 @@ function bochi_recordings_delete(PDO $db, array $account, array $body): void
     bochi_json_response(['ok' => true]);
 }
 
+function bochi_settings_get(PDO $db): void
+{
+    $stmt = $db->prepare('SELECT value FROM settings WHERE key = ?');
+    $stmt->execute(['meet_folder_url']);
+    $row = $stmt->fetch();
+    bochi_json_response(['ok' => true, 'meetFolderUrl' => $row ? (string)$row['value'] : '']);
+}
+
+function bochi_settings_set(PDO $db, array $account, array $body): void
+{
+    $url = trim((string)($body['meetFolderUrl'] ?? ''));
+    if ($url !== '' && (strpos($url, 'https://') !== 0 || strlen($url) > 2000)) {
+        bochi_fail(422, 'validation_error', 'Paste a full https link to the Drive folder.');
+    }
+    $stmt = $db->prepare('INSERT INTO settings (key, value, updated_by, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = excluded.updated_at');
+    $stmt->execute(['meet_folder_url', $url, (string)$account['player_key'], bochi_now_iso()]);
+    bochi_json_response(['ok' => true]);
+}
+
 function bochi_recording_file(PDO $db): void
 {
     bochi_require_user($db);
@@ -1486,7 +1514,10 @@ try {
     if ($action === 'recording-delete' && $method !== 'POST') {
         bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
     }
-    if (in_array($action, ['register', 'login', 'logout', 'progress-xp', 'recording-upload', 'recording-delete'], true) || ($action === 'progress' && $method === 'PUT') || ($action === 'recordings' && $method === 'POST')) {
+    if ($action === 'settings' && !in_array($method, ['GET', 'POST'], true)) {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if (in_array($action, ['register', 'login', 'logout', 'progress-xp', 'recording-upload', 'recording-delete'], true) || ($action === 'settings' && $method === 'POST') || ($action === 'progress' && $method === 'PUT') || ($action === 'recordings' && $method === 'POST')) {
         bochi_require_write_guard();
     }
 
@@ -1540,6 +1571,13 @@ try {
         case 'recording-delete':
             $account = bochi_require_user($db);
             bochi_recordings_delete($db, $account, bochi_request_body());
+            break;
+        case 'settings':
+            $account = bochi_require_user($db);
+            if ($method === 'GET') {
+                bochi_settings_get($db);
+            }
+            bochi_settings_set($db, $account, bochi_request_body());
             break;
         default:
             bochi_fail(404, 'endpoint_not_found', 'That API endpoint does not exist.');
