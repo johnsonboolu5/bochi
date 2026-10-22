@@ -15,7 +15,7 @@ const BOCHI_PLAYER_TIMEZONES = [
     'chihiro' => 'Asia/Tokyo',
 ];
 const BOCHI_PLAYER_NAMES = [
-    'bolu' => 'Bolu',
+    'bolu' => 'Boru-san',
     'chihiro' => 'Chihiro-san',
 ];
 const BOCHI_SESSION_TTL = 2592000; // 30 days.
