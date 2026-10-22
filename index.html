@@ -1381,6 +1381,22 @@ input,textarea,select{ font-family:inherit; }
           </div>
         </div>
         
+        <div class="card" style="margin-top:16px">
+          <div class="kicker">RECORDING · ろくが</div>
+          <h3 style="margin:10px 0 8px; font-size:clamp(22px,3.8vw,30px); font-weight:800; letter-spacing:-.02em; line-height:1.15">Record your calls with Loom (free)</h3>
+          <p style="margin:0 0 6px; font-size:16px; line-height:1.65; color:var(--ink-soft); max-width:680px">Google Meet's own recording is a paid feature, so BoChi pairs with Loom instead. Loom's Notetaker joins your Meet call, records the whole session, and saves it to your Loom library. The free plan records meetings of any length and holds up to 25 videos, plenty for your weekly sessions.</p>
+          <div class="cal-points">
+            <div class="cal-point"><span class="cp-num">1</span><p><b>Create a free Loom account.</b> Bolu does this once, with the same Google account that holds the calendar.</p></div>
+            <div class="cal-point"><span class="cp-num">2</span><p><b>Connect your Google Calendar in Loom</b> and turn on meeting recording for meetings with a video link. Your Calendly sessions qualify automatically, because each booking carries its Meet link.</p></div>
+            <div class="cal-point"><span class="cp-num">3</span><p><b>Admit the Loom Notetaker when it asks to join.</b> It announces itself in the Meet chat, so Chihiro always knows the call is being recorded.</p></div>
+            <div class="cal-point"><span class="cp-num">4</span><p><b>After the call, add the recording to BoChi.</b> Copy its link from your Loom library and add it in Recordings: it lands in that day's meeting space, where both of you can watch it.</p></div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <a class="btn blue" href="https://www.loom.com/signup" target="_blank" rel="noopener" style="text-decoration:none">Create a Free Loom Account</a>
+            <a class="btn ghost" href="https://www.loom.com/home" target="_blank" rel="noopener" style="text-decoration:none">Open My Loom Library</a>
+          </div>
+        </div>
+        
         <div class="card">
           <div class="kicker">BOOKING · よやく</div>
           <h3 style="margin:10px 0 8px; font-size:clamp(26px,4.6vw,36px); font-weight:800; letter-spacing:-.02em; line-height:1.12">Book a Bochi Session</h3>
@@ -1564,7 +1580,7 @@ input,textarea,select{ font-family:inherit; }
           <button class="back-link" onclick="go('home')">← Today</button>
           <h2>Recordings<span class="jp">ろくが</span></h2>
         </div>
-        <p class="howto">Your shared library. After a call, save the recording here and both of you can watch it any time. If Google Meet recorded your session, it lands in the host's Google Drive: add it with a Drive link. Shorter clips can be uploaded directly. Session summaries can be saved here too, so the words stay with the video.</p>
+        <p class="howto">Your shared library. After a call, save the recording here and both of you can watch it any time. If Loom recorded your session, add its link below and it lives in that day's meeting space. A Meet recording saved to Google Drive works the same way. Shorter clips can be uploaded directly, and session summaries can be saved here too, so the words stay with the video.</p>
         <div id="rec-folder"></div>
         <div class="card">
           <div class="kicker">ADD TO THE LIBRARY · ついか</div>
@@ -1580,7 +1596,7 @@ input,textarea,select{ font-family:inherit; }
             <label class="auth-label" for="rec-kind">Type</label>
             <select class="auth-input" id="rec-kind" onchange="recKindChange()">
               <option value="upload">Upload a video or audio file</option>
-              <option value="link">Add a Google Drive or video link</option>
+              <option value="link">Add a Loom, Drive, or video link</option>
             </select>
           </div>
           <div class="auth-field" id="rec-file-wrap">
@@ -1590,8 +1606,8 @@ input,textarea,select{ font-family:inherit; }
           </div>
           <div class="auth-field" id="rec-url-wrap" style="display:none">
             <label class="auth-label" for="rec-url">Link</label>
-            <input class="auth-input" id="rec-url" type="url" placeholder="https://drive.google.com/..." />
-            <p class="howto" style="margin:8px 0 0">In Google Drive, set the file to “Anyone with the link can view” so you can both open it, or keep it restricted to your two accounts.</p>
+            <input class="auth-input" id="rec-url" type="url" placeholder="https://www.loom.com/share/..." />
+            <p class="howto" style="margin:8px 0 0">Paste a Loom recording link, or a Google Drive link. For Drive, set the file to “Anyone with the link can view” so you can both open it, or keep it restricted to your two accounts.</p>
           </div>
           <div class="auth-field">
             <label class="auth-label" for="rec-note">Note (optional)</label>
@@ -4329,7 +4345,7 @@ input,textarea,select{ font-family:inherit; }
           recState.maxUpload = res.body.maxUploadBytes || 0;
           recState.loaded = true;
           var lim = $("rec-limit");
-          if (lim && recState.maxUpload > 0 && recState.maxUpload < 536870912) lim.textContent = "This server accepts uploads up to about " + recFmtSize(recState.maxUpload) + " per file. For a full meeting recording, a Drive link works best.";
+          if (lim && recState.maxUpload > 0 && recState.maxUpload < 536870912) lim.textContent = "This server accepts uploads up to about " + recFmtSize(recState.maxUpload) + " per file. For a full meeting recording, a Loom or Drive link works best.";
           renderRecordings();
         }
       }).catch(function () {});
@@ -4349,7 +4365,11 @@ input,textarea,select{ font-family:inherit; }
         '<p style="margin:0 0 12px; color:var(--ink-soft)">When a call is recorded in Google Meet, Google saves it automatically to the host\'s Drive in a folder called Meet Recordings. Set that folder\'s shared link here once, share the folder with both of your Google accounts, and every meeting space below can jump straight to it.</p>' +
         '<div class="row">' + open + '<button class="btn ghost" onclick="recFolderToggle()">' + (url ? "Change Folder Link" : "Set Folder Link") + '</button></div>' +
         '<div id="rec-folder-form" style="display:none; margin-top:12px"><input class="auth-input" id="rec-folder-url" type="url" placeholder="https://drive.google.com/drive/folders/..." value="' + recEsc(url) + '" />' +
-        '<div class="row" style="margin-top:10px"><button class="btn blue small" onclick="recFolderSave()">Save Folder Link</button></div></div></div>';
+        '<div class="row" style="margin-top:10px"><button class="btn blue small" onclick="recFolderSave()">Save Folder Link</button></div></div></div>' +
+        '<div class="card" style="margin-top:14px"><div class="kicker">LOOM · RECORD WITH LOOM</div>' +
+        '<h3 style="margin:8px 0 6px; font-size:20px; font-weight:800">Your Loom recordings</h3>' +
+        '<p style="margin:0 0 12px; color:var(--ink-soft)">Sessions recorded by the Loom Notetaker land in your Loom library. Open it, copy a recording link, and add it with the form below: choose the session date and it appears in that day\'s meeting space for both of you. A free Loom account holds up to 25 videos, so clear out old sessions now and then.</p>' +
+        '<div class="row"><a class="btn blue" href="https://www.loom.com/home" target="_blank" rel="noopener">Open Loom Library</a><button class="btn ghost" onclick="go(\'calendar\')">Loom Setup Steps</button></div></div>';
     }
     function recFolderToggle() {
       var f = $("rec-folder-form"); if (f) f.style.display = f.style.display === "none" ? "block" : "none";
@@ -4381,8 +4401,8 @@ input,textarea,select{ font-family:inherit; }
       box.innerHTML = order.map(function (day) {
         var items = groups[day];
         var head = '<div class="section-title" style="margin-top:26px"><h2 style="font-size:22px">' + recEsc(recFmtDate(day)) + '</h2><span class="note">Bolu and Chihiro-san · ' + items.length + (items.length === 1 ? " item" : " items") + "</span></div>";
-        var folderBtn = recState.folderUrl ? '<div class="card" style="padding:14px 16px"><div class="row" style="justify-content:space-between"><span style="font-weight:700">This day\'s Meet recording</span><a class="btn ghost small" href="' + recEsc(recState.folderUrl) + '" target="_blank" rel="noopener">Open in Drive</a></div></div>' : "";
-        return head + folderBtn + items.map(function (r) { return recCard(r); }).join("");
+        var dayActions = '<div class="card" style="padding:14px 16px"><div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap"><span style="font-weight:700">This day\'s recording</span><span class="row" style="gap:8px"><button class="btn blue small" onclick="recAddLoom(\'' + day + '\')">Add Loom Recording</button>' + (recState.folderUrl ? '<a class="btn ghost small" href="' + recEsc(recState.folderUrl) + '" target="_blank" rel="noopener">Open in Drive</a>' : "") + '</span></div></div>';
+        return head + dayActions + items.map(function (r) { return recCard(r); }).join("");
       }).join("");
     }
     function recCard(r) {
@@ -4406,6 +4426,14 @@ input,textarea,select{ font-family:inherit; }
       var el = $("rec-msg"); if (!el) return;
       el.textContent = msg || "";
       el.style.color = ok ? "var(--path-green)" : "#d70015";
+    }
+    function recAddLoom(day) {
+      var kind = $("rec-kind"); if (kind) { kind.value = "link"; recKindChange(); }
+      var d = $("rec-date"); if (d && day) d.value = day;
+      var t = $("rec-title"); if (t && !t.value.trim()) t.value = "Bochi Session";
+      recMsg("Paste the Loom link for " + recFmtDate(day) + ", then tap Add to Library.", true);
+      var el = $("rec-title"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(function () { var u = $("rec-url"); if (u) u.focus(); }, 350);
     }
     function recAdd() {
       var kind = $("rec-kind").value;
