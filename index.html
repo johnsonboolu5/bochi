@@ -828,7 +828,7 @@ input,textarea,select{ font-family:inherit; }
             <text x="40" y="45" font-size="15" font-weight="800" fill="#fff" font-family="-apple-system, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif">あ</text>
           </svg>
           <div>
-            <div class="logo-name">BOCHI<span class="jp">ぼち</span></div>
+            <div class="logo-name">BoChi<span class="jp">ぼち</span></div>
             <div class="logo-sub">BOLU × CHIHIRO · LANGUAGE EXCHANGE</div>
           </div>
         </div>
@@ -846,7 +846,7 @@ input,textarea,select{ font-family:inherit; }
         </button>
       </header>
       <aside class="sidebar" aria-label="Sidebar navigation">
-        <div class="side-logo">BOCHI <span class="jp">ぼち</span></div>
+        <div class="side-logo">BoChi <span class="jp">ぼち</span></div>
         <button class="side-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="side-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="side-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
@@ -1664,7 +1664,7 @@ input,textarea,select{ font-family:inherit; }
       </section>
       </main>
 
-      <p class="foot">BOCHI ぼち · Bolu (Bo) + Chihiro (chi)<br />Made for two friends learning each other's language, one game at a time.</p>
+      <p class="foot">BoChi ぼち · Bolu (Bo) + Chihiro (chi)<br />Made for two friends learning each other's language, one game at a time.</p>
     </div>
     <nav class="tabbar" aria-label="Main navigation">
       <button class="tab" data-nav="home" onclick="go('home')">
@@ -3881,7 +3881,7 @@ input,textarea,select{ font-family:inherit; }
       var lv = levelOf(p);
       var doneCh = [1,2,3,4,5,6].filter(function(ch){ return chapterComplete(p, ch); }).length;
       var lines = [];
-      lines.push("BOCHI SOLO PRACTICE · ひとりれんしゅう");
+      lines.push("BoChi SOLO PRACTICE · ひとりれんしゅう");
       lines.push((p === "bolu" ? "Boru (Bolu)" : "Chihiro-san") + " practiced " + (p === "bolu" ? "Japanese" : "English") + " solo.");
       lines.push("Sets practiced: " + (solo.practiced.length ? solo.practiced.join(" / ") : "warm up only"));
       lines.push("Solo XP earned this visit: " + solo.xpSession + " · today: " + state.soloToday[p]);
@@ -3926,7 +3926,7 @@ input,textarea,select{ font-family:inherit; }
       var phrases = Object.keys(state.phrasesDone).map(function(k){ return state.phrasesDone[k]; });
       var acc = state.asked ? Math.round(state.correct / state.asked * 100) : 0;
       var lines = [];
-      lines.push("BOCHI SESSION SUMMARY · ぼち");
+      lines.push("BoChi SESSION SUMMARY · ぼち");
       var b = state.scores.bolu, c = state.scores.chihiro;
       lines.push("Score: Bolu " + b + " · Chihiro " + c + (b === c ? " (tie game)" : (b > c ? " · Bolu wins" : " · Chihiro wins")));
       lines.push("Journey: Bolu is Level " + levelOf("bolu") + " · " + LEVELS[levelOf("bolu")-1].name + " (" + state.journey.bolu.xp + " XP) · Chihiro is Level " + levelOf("chihiro") + " · " + LEVELS[levelOf("chihiro")-1].name + " (" + state.journey.chihiro.xp + " XP)");
