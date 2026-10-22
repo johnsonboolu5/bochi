@@ -852,6 +852,7 @@ input,textarea,select{ font-family:inherit; }
         <button class="side-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="side-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
         <button class="side-item" data-nav="calendar" onclick="go('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+        <button class="side-item" data-nav="recordings" onclick="go('recordings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg><span>Recordings</span></button>
         <button class="side-item" data-nav="session" onclick="go('session')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 6.5h11M8.5 12h11M8.5 17.5h11"/><circle cx="4.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.1" fill="currentColor" stroke="none"/></svg><span>Session Plan</span></button>
         <button class="side-item" data-nav="summary" onclick="go('summary')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke-linejoin="round"/></svg><span>Summary</span></button>
         <div class="side-foot">Bochi is Bolu and Chihiro's private language exchange. Learn a little every day, play when you meet.</div>
@@ -1061,6 +1062,7 @@ input,textarea,select{ font-family:inherit; }
         <div class="progress-track"><div class="progress-fill" id="phase-progress"></div></div>
         <div id="phase-list"></div>
         <div class="btn-row">
+          <button class="btn blue" onclick="meetInstant()">Join the Call on Meet</button>
           <button class="btn gold" id="phase-finish-btn" onclick="finishSession()" disabled>Finish and See Summary</button>
           <button class="btn ghost" onclick="resetSession()">Restart Session</button>
         </div>
@@ -1369,6 +1371,17 @@ input,textarea,select{ font-family:inherit; }
           <h2>Calendar<span class="jp">カレンダー</span></h2>
         </div>
         <div class="card">
+          <div class="kicker">VIDEO CALL · ビデオつうわ</div>
+          <h3 style="margin:10px 0 8px; font-size:clamp(24px,4.2vw,32px); font-weight:800; letter-spacing:-.02em; line-height:1.15">Meet on Google Meet</h3>
+          <p style="margin:0 0 14px; font-size:16px; line-height:1.65; color:var(--ink-soft); max-width:680px">Every booked session below includes its own Google Meet link in the Calendly confirmation, ready at your time. In a hurry? Start an instant Meet now and share the link with each other. When the call ends, save the recording in your shared library.</p>
+          <div class="row">
+            <button class="btn blue" onclick="meetBook()">Book a Session</button>
+            <button class="btn ghost" onclick="meetInstant()">Start an Instant Meet</button>
+            <button class="btn ghost" onclick="go('recordings')">Open Recordings</button>
+          </div>
+        </div>
+        
+        <div class="card">
           <div class="kicker">BOOKING · よやく</div>
           <h3 style="margin:10px 0 8px; font-size:clamp(26px,4.6vw,36px); font-weight:800; letter-spacing:-.02em; line-height:1.12">Book a Bochi Session</h3>
           <p style="margin:0; font-size:16px; line-height:1.65; color:var(--ink-soft); max-width:680px">Choose a time below and lock in your next call together. It only takes a minute, and the calendar handles the time zone math for both of you.</p>
@@ -1546,6 +1559,54 @@ input,textarea,select{ font-family:inherit; }
       </section>
 
       <!-- ================= SUMMARY ================= -->
+      <section class="view" id="view-recordings">
+        <div class="game-head">
+          <button class="back-link" onclick="go('home')">← Today</button>
+          <h2>Recordings<span class="jp">ろくが</span></h2>
+        </div>
+        <p class="howto">Your shared library. After a call, save the recording here and both of you can watch it any time. If Google Meet recorded your session, it lands in the host's Google Drive: add it with a Drive link. Shorter clips can be uploaded directly. Session summaries can be saved here too, so the words stay with the video.</p>
+        <div class="card">
+          <div class="kicker">ADD TO THE LIBRARY · ついか</div>
+          <div class="auth-field">
+            <label class="auth-label" for="rec-title">Title</label>
+            <input class="auth-input" id="rec-title" type="text" maxlength="160" placeholder="Bochi Session" />
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="rec-date">Session date</label>
+            <input class="auth-input" id="rec-date" type="date" />
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="rec-kind">Type</label>
+            <select class="auth-input" id="rec-kind" onchange="recKindChange()">
+              <option value="upload">Upload a video or audio file</option>
+              <option value="link">Add a Google Drive or video link</option>
+            </select>
+          </div>
+          <div class="auth-field" id="rec-file-wrap">
+            <label class="auth-label" for="rec-file">Recording file</label>
+            <input class="auth-input" id="rec-file" type="file" accept="video/mp4,video/webm,video/quicktime,audio/mpeg,audio/mp4,audio/wav,audio/ogg" />
+            <p class="howto" id="rec-limit" style="margin:8px 0 0"></p>
+          </div>
+          <div class="auth-field" id="rec-url-wrap" style="display:none">
+            <label class="auth-label" for="rec-url">Link</label>
+            <input class="auth-input" id="rec-url" type="url" placeholder="https://drive.google.com/..." />
+            <p class="howto" style="margin:8px 0 0">In Google Drive, set the file to “Anyone with the link can view” so you can both open it, or keep it restricted to your two accounts.</p>
+          </div>
+          <div class="auth-field">
+            <label class="auth-label" for="rec-note">Note (optional)</label>
+            <input class="auth-input" id="rec-note" type="text" maxlength="2000" placeholder="What did you cover?" />
+          </div>
+          <div id="rec-progress" style="display:none; margin:10px 0"><div class="progress-track"><div class="progress-fill" id="rec-progress-fill" style="width:0%"></div></div></div>
+          <p class="auth-msg" id="rec-msg" role="status"></p>
+          <button class="btn blue" id="rec-add-btn" onclick="recAdd()">Add to Library</button>
+        </div>
+        <div class="section-title">
+          <h2>Library <span class="jp">ライブラリ</span></h2>
+          <span class="note">Visible to both accounts</span>
+        </div>
+        <div id="rec-list"></div>
+      </section>
+
       <section class="view" id="view-summary">
         <div class="game-head">
           <button class="back-link" onclick="go('home')">← All modes</button>
@@ -1595,6 +1656,7 @@ input,textarea,select{ font-family:inherit; }
           <div class="btn-row">
             <button class="btn blue" onclick="copySummary()">Copy Summary</button>
             <button class="btn ghost" onclick="downloadSummary()">Download as Text File</button>
+            <button class="btn ghost" onclick="saveSummaryToRecordings()">Save to Recordings</button>
             <button class="btn red" onclick="resetAll()">New Session · Reset Meeting</button>
           </div>
         </div>
@@ -4227,5 +4289,132 @@ input,textarea,select{ font-family:inherit; }
     }, 4500);
     </script>
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
-  </body>
+  <script>
+    /* ==================== RECORDINGS + MEET ==================== */
+    var recState = { items: [], maxUpload: 0, loaded: false };
+    function recEsc(t) { return String(t == null ? "" : t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function recFmtSize(n) {
+      if (n == null) return "";
+      if (n < 1048576) return Math.max(1, Math.round(n / 1024)) + " KB";
+      if (n < 1073741824) return (n / 1048576).toFixed(1) + " MB";
+      return (n / 1073741824).toFixed(2) + " GB";
+    }
+    var recOrigGo = window.go;
+    function enterRecordings() {
+      if (!requireAuth("recordings")) return;
+      recOrigGo("recordings");
+      loadRecordings();
+    }
+    window.go = function (view) {
+      if (view === "recordings") { enterRecordings(); return; }
+      return recOrigGo(view);
+    };
+    function meetBook() {
+      go("calendar");
+      setTimeout(function () { var el = document.querySelector(".calendly-inline-widget"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 420);
+    }
+    function meetInstant() { window.open("https://meet.google.com/new", "_blank", "noopener"); }
+    function recKindChange() {
+      var k = $("rec-kind").value;
+      $("rec-file-wrap").style.display = k === "upload" ? "block" : "none";
+      $("rec-url-wrap").style.display = k === "link" ? "block" : "none";
+    }
+    function loadRecordings() {
+      if (!authState.account) return;
+      apiCall("recordings").then(function (res) {
+        if (res.status === 200) {
+          recState.items = res.body.recordings || [];
+          recState.maxUpload = res.body.maxUploadBytes || 0;
+          recState.loaded = true;
+          var lim = $("rec-limit");
+          if (lim && recState.maxUpload > 0 && recState.maxUpload < 536870912) lim.textContent = "This server accepts uploads up to about " + recFmtSize(recState.maxUpload) + " per file. For a full meeting recording, a Drive link works best.";
+          renderRecordings();
+        }
+      }).catch(function () {});
+    }
+    function renderRecordings() {
+      var box = $("rec-list"); if (!box) return;
+      if (!recState.items.length) {
+        box.innerHTML = '<div class="card"><h3 style="margin:4px 0 6px">Nothing here yet</h3><p style="margin:0; color:var(--ink-soft)">After your next call, add the recording above and it will be waiting for both of you here.</p></div>';
+        return;
+      }
+      box.innerHTML = recState.items.map(function (r) {
+        var meta = [r.sessionDate || (r.createdAt || "").slice(0, 10), "Added by " + r.ownerName, r.fileSize ? recFmtSize(r.fileSize) : ""].filter(Boolean).join(" · ");
+        var media = "";
+        if (r.kind === "upload" && r.fileUrl) {
+          if ((r.mime || "").indexOf("audio") === 0) media = '<audio controls preload="metadata" src="' + r.fileUrl + '" style="width:100%"></audio>';
+          else media = '<video controls preload="metadata" playsinline src="' + r.fileUrl + '" style="width:100%; border-radius:14px; background:#000"></video>';
+        } else if (r.kind === "link" && r.externalUrl) {
+          media = '<a class="btn ghost" href="' + recEsc(r.externalUrl) + '" target="_blank" rel="noopener">Open Recording</a>';
+        }
+        var note = "";
+        if (r.kind === "summary" && r.note) note = '<pre style="white-space:pre-wrap; font:inherit; font-size:14.5px; line-height:1.6; margin:10px 0 0; color:var(--ink-soft)">' + recEsc(r.note) + "</pre>";
+        else if (r.note) note = '<p style="margin:10px 0 0; color:var(--ink-soft)">' + recEsc(r.note) + "</p>";
+        return '<div class="card"><div class="kicker">' + (r.kind === "summary" ? "SESSION SUMMARY" : r.kind === "link" ? "RECORDING LINK" : "RECORDING") + "</div>" +
+          '<h3 style="margin:8px 0 4px; font-size:20px; font-weight:800">' + recEsc(r.title) + "</h3>" +
+          '<p style="margin:0 0 12px; color:var(--muted); font-size:13.5px">' + recEsc(meta) + "</p>" + media + note +
+          '<div class="row" style="margin-top:12px"><button class="btn ghost small" onclick="recDelete(' + r.id + ')">Remove from Library</button></div></div>';
+      }).join("");
+    }
+    function recMsg(msg, ok) {
+      var el = $("rec-msg"); if (!el) return;
+      el.textContent = msg || "";
+      el.style.color = ok ? "var(--path-green)" : "#d70015";
+    }
+    function recAdd() {
+      var kind = $("rec-kind").value;
+      var title = $("rec-title").value.trim() || "Bochi Session";
+      var date = $("rec-date").value || null;
+      var note = $("rec-note").value.trim();
+      if (kind === "link") {
+        var url = $("rec-url").value.trim();
+        if (url.indexOf("https://") !== 0) { recMsg("Paste a full https link first."); return; }
+        apiCall("recordings", { method: "POST", body: { kind: "link", title: title, sessionDate: date, externalUrl: url, note: note } }).then(function (res) {
+          if (res.status === 201) { recMsg("Added. Both of you can open it from this library.", true); $("rec-url").value = ""; $("rec-note").value = ""; loadRecordings(); }
+          else recMsg((res.body.error && res.body.error.message) || "Could not add that link.");
+        });
+        return;
+      }
+      var file = $("rec-file").files && $("rec-file").files[0];
+      if (!file) { recMsg("Choose a recording file first."); return; }
+      var fd = new FormData();
+      fd.append("file", file); fd.append("title", title);
+      if (date) fd.append("sessionDate", date);
+      if (note) fd.append("note", note);
+      var bar = $("rec-progress"), fill = $("rec-progress-fill"), btn = $("rec-add-btn");
+      bar.style.display = "block"; btn.disabled = true; recMsg("Uploading, keep this page open.");
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "api.php?action=recording-upload");
+      xhr.setRequestHeader("X-Bochi-Request", "1");
+      xhr.withCredentials = true;
+      xhr.upload.onprogress = function (e) { if (e.lengthComputable) fill.style.width = Math.round(e.loaded / e.total * 100) + "%"; };
+      xhr.onload = function () {
+        bar.style.display = "none"; btn.disabled = false; fill.style.width = "0%";
+        if (xhr.status === 201) { recMsg("Uploaded. Both of you can watch it from this library.", true); $("rec-file").value = ""; $("rec-note").value = ""; loadRecordings(); }
+        else { var m = "The upload failed."; try { var j = JSON.parse(xhr.responseText); if (j.error && j.error.message) m = j.error.message; } catch (e) {} recMsg(m); }
+      };
+      xhr.onerror = function () { bar.style.display = "none"; btn.disabled = false; recMsg("The upload did not complete. Check the connection and try again."); };
+      xhr.send(fd);
+    }
+    function recDelete(id) {
+      if (!window.confirm("Remove this from the shared library? This cannot be undone.")) return;
+      apiCall("recording-delete", { method: "POST", body: { id: id } }).then(function (res) {
+        if (res.status === 200) { loadRecordings(); toast("Removed from the library."); }
+        else toast("Could not remove that. Try again.");
+      });
+    }
+    function saveSummaryToRecordings() {
+      if (!requireAuth("recordings")) return;
+      var text = "";
+      try { text = buildSummaryText(); } catch (e) {}
+      if (!text) { toast("Finish a session first, then save its summary."); return; }
+      var today = new Date();
+      var iso = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+      apiCall("recordings", { method: "POST", body: { kind: "summary", title: "Session Summary · " + iso, sessionDate: iso, note: text } }).then(function (res) {
+        if (res.status === 201) { toast("Summary saved to Recordings, where you both can read it."); recState.loaded = false; }
+        else toast("Could not save the summary. Try again.");
+      });
+    }
+</script>
+</body>
 </html>

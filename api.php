@@ -252,6 +252,23 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 SQL
     );
     $db->exec('CREATE INDEX IF NOT EXISTS idx_login_attempts_pair ON login_attempts(email, ip_hash, attempted_at)');
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS recordings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_player TEXT NOT NULL CHECK (owner_player IN ('bolu', 'chihiro')),
+    title TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('upload', 'link', 'summary')),
+    session_date TEXT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    external_url TEXT NULL,
+    stored_name TEXT NULL,
+    file_size INTEGER NULL,
+    mime TEXT NULL,
+    created_at TEXT NOT NULL
+)
+SQL
+    );
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_recordings_date ON recordings(session_date, id)');
 }
 
 function bochi_is_https(): bool
@@ -1236,6 +1253,206 @@ if (PHP_SAPI === 'cli') {
     exit;
 }
 
+
+function bochi_recordings_dir(): string
+{
+    $config = bochi_config();
+    $dir = dirname((string)$config['db_path']) . '/recordings';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0700, true);
+    }
+    return $dir;
+}
+
+function bochi_recording_public(array $row): array
+{
+    return [
+        'id' => (int)$row['id'],
+        'owner' => (string)$row['owner_player'],
+        'ownerName' => BOCHI_PLAYER_NAMES[$row['owner_player']] ?? $row['owner_player'],
+        'title' => (string)$row['title'],
+        'kind' => (string)$row['kind'],
+        'sessionDate' => $row['session_date'],
+        'note' => (string)($row['note'] ?? ''),
+        'externalUrl' => $row['external_url'],
+        'fileSize' => $row['file_size'] !== null ? (int)$row['file_size'] : null,
+        'mime' => $row['mime'],
+        'fileUrl' => $row['stored_name'] ? 'api.php?action=recording-file&id=' . (int)$row['id'] : null,
+        'createdAt' => (string)$row['created_at'],
+    ];
+}
+
+function bochi_recordings_list(PDO $db, array $account): void
+{
+    bochi_require_user($db);
+    $stmt = $db->query('SELECT * FROM recordings ORDER BY COALESCE(session_date, substr(created_at, 1, 10)) DESC, id DESC');
+    $rows = array_map('bochi_recording_public', $stmt->fetchAll());
+    $maxUpload = (int)min(
+        bochi_parse_ini_bytes((string)ini_get('upload_max_filesize')),
+        bochi_parse_ini_bytes((string)ini_get('post_max_size'))
+    );
+    bochi_json_response(['ok' => true, 'recordings' => $rows, 'maxUploadBytes' => $maxUpload]);
+}
+
+function bochi_parse_ini_bytes(string $value): int
+{
+    $value = trim($value);
+    if ($value === '' || $value === '-1') {
+        return PHP_INT_MAX;
+    }
+    $unit = strtoupper(substr($value, -1));
+    $num = (float)$value;
+    if ($unit === 'G') { $num *= 1073741824; }
+    elseif ($unit === 'M') { $num *= 1048576; }
+    elseif ($unit === 'K') { $num *= 1024; }
+    return (int)$num;
+}
+
+function bochi_recordings_create(PDO $db, array $account, array $body): void
+{
+    $kind = (string)($body['kind'] ?? '');
+    if (!in_array($kind, ['link', 'summary'], true)) {
+        bochi_fail(422, 'validation_error', 'Only link and summary entries are created this way.');
+    }
+    $title = trim((string)($body['title'] ?? ''));
+    if ($title === '' || strlen($title) > 160) {
+        bochi_fail(422, 'validation_error', 'Give the entry a title of up to 160 characters.');
+    }
+    $sessionDate = isset($body['sessionDate']) && is_string($body['sessionDate']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $body['sessionDate']) ? $body['sessionDate'] : null;
+    $note = trim((string)($body['note'] ?? ''));
+    if (strlen($note) > 20000) {
+        bochi_fail(422, 'validation_error', 'That note is too long.');
+    }
+    $url = null;
+    if ($kind === 'link') {
+        $url = trim((string)($body['externalUrl'] ?? ''));
+        if (strpos($url, 'https://') !== 0 || strlen($url) > 2000) {
+            bochi_fail(422, 'validation_error', 'Paste a full https link, for example a Google Drive share link.');
+        }
+    }
+    if ($kind === 'summary' && $note === '') {
+        bochi_fail(422, 'validation_error', 'The summary text is empty.');
+    }
+    $stmt = $db->prepare('INSERT INTO recordings (owner_player, title, kind, session_date, note, external_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$account['player_key'], $title, $kind, $sessionDate, $note, $url, bochi_now_iso()]);
+    bochi_json_response(['ok' => true, 'id' => (int)$db->lastInsertId()], 201);
+}
+
+function bochi_recordings_upload(PDO $db, array $account): void
+{
+    if (empty($_FILES['file']) || !is_array($_FILES['file'])) {
+        bochi_fail(422, 'validation_error', 'Choose a recording file to upload.');
+    }
+    $file = $_FILES['file'];
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        $tooBig = in_array($file['error'] ?? 0, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true);
+        bochi_fail($tooBig ? 413 : 422, 'upload_failed', $tooBig
+            ? 'That file is larger than this server accepts in one upload. For a full meeting recording, add a Google Drive link instead.'
+            : 'The upload did not complete. Try again.');
+    }
+    $allowed = [
+        'video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/quicktime' => 'mov',
+        'audio/mpeg' => 'mp3', 'audio/mp4' => 'm4a', 'audio/wav' => 'wav', 'audio/x-wav' => 'wav', 'audio/ogg' => 'ogg',
+    ];
+    $mime = (string)($file['type'] ?? '');
+    if (!isset($allowed[$mime])) {
+        bochi_fail(422, 'validation_error', 'Upload a video (MP4, WebM, MOV) or audio (MP3, M4A, WAV, OGG) file.');
+    }
+    if ((int)$file['size'] > 536870912) {
+        bochi_fail(413, 'upload_failed', 'That file is over 512 MB. For a full meeting recording, add a Google Drive link instead.');
+    }
+    $title = trim((string)($_POST['title'] ?? ''));
+    if ($title === '' || strlen($title) > 160) {
+        $title = 'Bochi session recording';
+    }
+    $sessionDate = isset($_POST['sessionDate']) && is_string($_POST['sessionDate']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['sessionDate']) ? $_POST['sessionDate'] : null;
+    $note = trim((string)($_POST['note'] ?? ''));
+    if (strlen($note) > 2000) { $note = substr($note, 0, 2000); }
+
+    $stored = bin2hex(random_bytes(16)) . '.' . $allowed[$mime];
+    $dest = bochi_recordings_dir() . '/' . $stored;
+    if (!@move_uploaded_file((string)$file['tmp_name'], $dest)) {
+        bochi_fail(500, 'upload_failed', 'The file could not be saved. Try again.');
+    }
+    @chmod($dest, 0600);
+    try {
+        $stmt = $db->prepare('INSERT INTO recordings (owner_player, title, kind, session_date, note, stored_name, file_size, mime, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$account['player_key'], $title, 'upload', $sessionDate, $note, $stored, (int)$file['size'], $mime, bochi_now_iso()]);
+    } catch (Throwable $e) {
+        @unlink($dest);
+        throw $e;
+    }
+    bochi_json_response(['ok' => true, 'id' => (int)$db->lastInsertId()], 201);
+}
+
+function bochi_recordings_delete(PDO $db, array $account, array $body): void
+{
+    $id = (int)($body['id'] ?? 0);
+    $stmt = $db->prepare('SELECT stored_name FROM recordings WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        bochi_fail(404, 'not_found', 'That recording no longer exists.');
+    }
+    $db->prepare('DELETE FROM recordings WHERE id = ?')->execute([$id]);
+    if (!empty($row['stored_name'])) {
+        @unlink(bochi_recordings_dir() . '/' . $row['stored_name']);
+    }
+    bochi_json_response(['ok' => true]);
+}
+
+function bochi_recording_file(PDO $db): void
+{
+    bochi_require_user($db);
+    $id = (int)($_GET['id'] ?? 0);
+    $stmt = $db->prepare('SELECT stored_name, mime, title FROM recordings WHERE id = ? AND stored_name IS NOT NULL');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        bochi_fail(404, 'not_found', 'That recording file no longer exists.');
+    }
+    $path = bochi_recordings_dir() . '/' . $row['stored_name'];
+    if (!is_file($path)) {
+        bochi_fail(404, 'not_found', 'That recording file no longer exists.');
+    }
+    $size = filesize($path);
+    $start = 0;
+    $end = $size - 1;
+    $status = 200;
+    if (!empty($_SERVER['HTTP_RANGE']) && preg_match('/bytes=(\d*)-(\d*)/', (string)$_SERVER['HTTP_RANGE'], $m)) {
+        if ($m[1] !== '') { $start = (int)$m[1]; }
+        if ($m[2] !== '') { $end = (int)$m[2]; }
+        if ($start > $end || $start >= $size) {
+            http_response_code(416);
+            header('Content-Range: bytes */' . $size);
+            exit;
+        }
+        $end = min($end, $size - 1);
+        $status = 206;
+    }
+    http_response_code($status);
+    header('Content-Type: ' . $row['mime']);
+    header('Accept-Ranges: bytes');
+    header('Content-Length: ' . ($end - $start + 1));
+    if ($status === 206) {
+        header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+    }
+    header('Content-Disposition: inline; filename="' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string)$row['title']) . '"');
+    header('Cache-Control: private, no-store');
+    $fh = fopen($path, 'rb');
+    fseek($fh, $start);
+    $remaining = $end - $start + 1;
+    while ($remaining > 0 && !feof($fh)) {
+        $chunk = fread($fh, min(1048576, $remaining));
+        if ($chunk === false) { break; }
+        echo $chunk;
+        $remaining -= strlen($chunk);
+        flush();
+    }
+    fclose($fh);
+    exit;
+}
+
 try {
     $db = bochi_db();
     $action = (string)($_GET['action'] ?? '');
@@ -1257,7 +1474,19 @@ try {
     if ($action === 'me' && $method !== 'GET') {
         bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
     }
-    if (in_array($action, ['register', 'login', 'logout', 'progress-xp'], true) || ($action === 'progress' && $method === 'PUT')) {
+    if ($action === 'recordings' && !in_array($method, ['GET', 'POST'], true)) {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'recording-upload' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'recording-file' && $method !== 'GET') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'recording-delete' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if (in_array($action, ['register', 'login', 'logout', 'progress-xp', 'recording-upload', 'recording-delete'], true) || ($action === 'progress' && $method === 'PUT') || ($action === 'recordings' && $method === 'POST')) {
         bochi_require_write_guard();
     }
 
@@ -1293,6 +1522,24 @@ try {
         case 'progress-xp':
             $account = bochi_require_user($db);
             bochi_add_xp_event($db, $account, bochi_request_body());
+            break;
+        case 'recordings':
+            $account = bochi_require_user($db);
+            if ($method === 'GET') {
+                bochi_recordings_list($db, $account);
+            }
+            bochi_recordings_create($db, $account, bochi_request_body());
+            break;
+        case 'recording-upload':
+            $account = bochi_require_user($db);
+            bochi_recordings_upload($db, $account);
+            break;
+        case 'recording-file':
+            bochi_recording_file($db);
+            break;
+        case 'recording-delete':
+            $account = bochi_require_user($db);
+            bochi_recordings_delete($db, $account, bochi_request_body());
             break;
         default:
             bochi_fail(404, 'endpoint_not_found', 'That API endpoint does not exist.');
