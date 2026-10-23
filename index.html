@@ -815,6 +815,38 @@ input,textarea,select{ font-family:inherit; }
   .view{padding-top:10px}
 }
 </style>
+<style>
+/* ---------- scripts: flip cards + mastery ---------- */
+.spct{ color:var(--blue); }
+.scount{ font-size:14px; font-weight:600; }
+.sfilters{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 4px; }
+.sfilter{ appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:999px; padding:7px 14px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; }
+.sfilter.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+.sgroup{ margin-top:18px; }
+.sgroup-name{ font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.sgrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr)); gap:10px; }
+.scard{ perspective:700px; height:142px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.scard-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .45s var(--ease, ease); }
+.scard.flipped .scard-inner{ transform:rotateY(180deg); }
+.sface{ position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:16px; border:1px solid var(--line); background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 8px; text-align:center; overflow:hidden; }
+.sfront .schar{ font-size:40px; font-weight:700; line-height:1.1; color:var(--ink); }
+.sfront .shint{ margin-top:8px; font-size:10.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.sdone{ position:absolute; top:7px; right:7px; width:20px; height:20px; border-radius:50%; background:var(--path-green, #2e7d32); color:#fff; font-size:12px; font-weight:800; display:none; place-items:center; line-height:1; }
+.scard.known .sfront{ border-color:var(--path-green, #2e7d32); background:var(--ai-soft); }
+.scard.known .sdone{ display:grid; }
+.sback{ transform:rotateY(180deg); justify-content:flex-start; gap:3px; }
+.sread{ font-size:17px; font-weight:800; color:var(--blue); }
+.smean{ font-size:12.5px; font-weight:700; color:var(--ink); }
+.smnem{ margin:4px 0 8px; font-size:11.5px; line-height:1.45; color:var(--ink-soft); }
+.smark{ appearance:none; margin-top:auto; border:1px solid var(--line); background:var(--surface2); color:var(--ink); border-radius:999px; padding:6px 12px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.scard.known .smark{ background:var(--path-green, #2e7d32); border-color:var(--path-green, #2e7d32); color:#fff; }
+.script-sum{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.script-sum .ssum{ border:1px solid var(--line); border-radius:16px; padding:14px; background:var(--surface); text-align:left; cursor:pointer; font:inherit; width:100%; }
+.script-sum .ssum .sp{ font-size:26px; font-weight:800; color:var(--blue); }
+.script-sum .ssum .sl{ font-size:13.5px; font-weight:700; color:var(--ink); margin-top:2px; }
+.script-sum .ssum .sc{ font-size:12px; color:var(--muted); font-weight:600; }
+@media (max-width:720px){ .sgrid{ grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); } .scard{ height:136px; } .sfront .schar{ font-size:34px; } }
+</style>
 </head>
   <body>
     <div class="wrap">
@@ -849,6 +881,7 @@ input,textarea,select{ font-family:inherit; }
         <div class="side-logo">BoChi <span class="jp">ぼち</span></div>
         <button class="side-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="side-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
+        <button class="side-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
         <button class="side-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="side-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
         <button class="side-item" data-nav="calendar" onclick="go('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
@@ -1520,6 +1553,17 @@ input,textarea,select{ font-family:inherit; }
           <h2>Learn<span class="jp">まなぶ</span></h2>
         </div>
         <p class="howto">Train on your own time, between meetings. First, pick who you are. Solo practice earns XP on your own journey and never touches the versus scoreboard. Your journey is a path of chapters: finish lessons in order, pass each chapter checkpoint, and the next chapter opens, alongside your XP levels.</p>
+        <div class="card" style="margin-bottom:16px">
+          <div class="kicker">WRITING SYSTEMS · もじ</div>
+          <h3 style="margin:8px 0 6px; font-size:21px; font-weight:800">Hiragana, Katakana, Kanji</h3>
+          <p style="margin:0 0 12px; color:var(--ink-soft)">Practice every character as a flip card: the back of each card has its reading and a memory hook. Mark off the ones you have memorized and watch your percentages grow.</p>
+          <div class="script-sum" style="margin-bottom:14px">
+            <div><div class="sp" data-spct="hira" style="font-size:24px; font-weight:800; color:var(--blue)">0%</div><div style="font-size:13.5px; font-weight:700">Hiragana</div><div data-scount="hira" style="font-size:12px; color:var(--muted); font-weight:600"></div></div>
+            <div><div class="sp" data-spct="kata" style="font-size:24px; font-weight:800; color:var(--blue)">0%</div><div style="font-size:13.5px; font-weight:700">Katakana</div><div data-scount="kata" style="font-size:12px; color:var(--muted); font-weight:600"></div></div>
+            <div><div class="sp" data-spct="kanji" style="font-size:24px; font-weight:800; color:var(--blue)">0%</div><div style="font-size:13.5px; font-weight:700">Kanji</div><div data-scount="kanji" style="font-size:12px; color:var(--muted); font-weight:600"></div></div>
+          </div>
+          <button class="btn blue" onclick="go('scripts')">Open Writing Systems</button>
+        </div>
 
         <div id="solo-pick">
           <div class="prompt-label" style="margin-bottom:10px">WHO IS PRACTICING? · だれが れんしゅうしますか</div>
@@ -1572,6 +1616,26 @@ input,textarea,select{ font-family:inherit; }
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ================= SCRIPTS ================= -->
+      <section class="view" id="view-scripts">
+        <div class="game-head">
+          <button class="back-link" onclick="go('solo')">← Learn</button>
+          <h2>Writing Systems<span class="jp">もじ</span></h2>
+        </div>
+        <p class="howto">Japanese runs on three scripts. <b>Hiragana</b> carries the native words and grammar, <b>Katakana</b> carries foreign words and names, and <b>Kanji</b> carries meaning. Tap any card to flip it over: the back shows the reading and a memory hook to hold it with. Mark the characters you have memorized and your percentages keep score.</p>
+        <div class="card" style="margin-bottom:16px">
+          <div class="kicker">YOUR PROGRESS · すすみぐあい</div>
+          <div class="script-sum" style="margin-top:12px">
+            <button class="ssum" onclick="document.getElementById('script-sec-hira').scrollIntoView({behavior:'smooth'})"><span class="sp" data-spct="hira">0%</span><div class="sl">Hiragana ひらがな</div><div class="sc" data-scount="hira"></div></button>
+            <button class="ssum" onclick="document.getElementById('script-sec-kata').scrollIntoView({behavior:'smooth'})"><span class="sp" data-spct="kata">0%</span><div class="sl">Katakana カタカナ</div><div class="sc" data-scount="kata"></div></button>
+            <button class="ssum" onclick="document.getElementById('script-sec-kanji').scrollIntoView({behavior:'smooth'})"><span class="sp" data-spct="kanji">0%</span><div class="sl">Kanji かんじ</div><div class="sc" data-scount="kanji"></div></button>
+          </div>
+          <p style="margin:12px 0 0; color:var(--muted); font-size:13.5px; font-weight:600">Overall: <span data-spct="all">0%</span> · <span data-scount="all"></span></p>
+          <p id="scripts-auth-note" style="margin:8px 0 0; color:var(--ink-soft); font-size:14px"></p>
+        </div>
+        <div id="scripts-sections"></div>
       </section>
 
       <!-- ================= SUMMARY ================= -->
@@ -2041,7 +2105,8 @@ input,textarea,select{ font-family:inherit; }
       unlocks:[],
       lastUnlock:{bolu:"", chihiro:""},
       soloToday:{bolu:0, chihiro:0},
-      review:{bolu:{}, chihiro:{}}
+      review:{bolu:{}, chihiro:{}},
+      scripts:{bolu:{hira:{}, kata:{}, kanji:{}}, chihiro:{hira:{}, kata:{}, kanji:{}}}
     };
     var $ = function(id){ return document.getElementById(id); };
     var SPEAK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>';
@@ -2203,6 +2268,8 @@ input,textarea,select{ font-family:inherit; }
       });
       if(view === "summary"){ renderSummary(); }
       if(view === "solo"){ enterSolo(); }
+      if(view === "scripts"){ renderScripts(); }
+      if(typeof refreshScriptProgress === "function"){ refreshScriptProgress(); }
       window.scrollTo({top:0, behavior:"smooth"});
     }
 
@@ -4146,6 +4213,7 @@ input,textarea,select{ font-family:inherit; }
           state.checkpoints[p] = rec.checkpoints || {};
           state.review[p] = rec.review || {};
           state.lastUnlock[p] = rec.lastUnlock || "";
+          if (rec.scripts) { var sm = { hira: {}, kata: {}, kanji: {} }; ["hira", "kata", "kanji"].forEach(function (k) { (rec.scripts[k] || []).forEach(function (ch) { sm[k][ch] = true; }); }); state.scripts[p] = sm; }
         }
       });
       renderJourney();
@@ -4247,7 +4315,7 @@ input,textarea,select{ font-family:inherit; }
       var me = authState.account.playerKey;
       flushXP().then(function () {
         if (!authState.account) return;
-        var body = { version: authState.versions[me] || 0, progress: { lessons: state.lessons[me], checkpoints: state.checkpoints[me], lastUnlock: state.lastUnlock[me] || "", review: sanitizeReview(state.review[me]) } };
+        var body = { version: authState.versions[me] || 0, progress: { lessons: state.lessons[me], checkpoints: state.checkpoints[me], lastUnlock: state.lastUnlock[me] || "", review: sanitizeReview(state.review[me]), scripts: { hira: Object.keys(state.scripts[me].hira || {}), kata: Object.keys(state.scripts[me].kata || {}), kanji: Object.keys(state.scripts[me].kanji || {}) } } };
         apiCall("progress", { method: "PUT", body: body }).then(function (res) {
           if (res.status === 200) { hydrateProgress(res.body.progressByPlayer, false); setSync("Saved."); }
           else if (res.status === 409) {
@@ -4488,6 +4556,412 @@ input,textarea,select{ font-family:inherit; }
         if (res.status === 201) { toast("Summary saved to Recordings, where you both can read it."); recState.loaded = false; }
         else toast("Could not save the summary. Try again.");
       });
+    }
+/* ==================== SCRIPTS: DATA ==================== */
+    var KANA_BASIC_HIRA = [
+      ["あ","a","An apple: the round fruit and its stem hide in the curves."],
+      ["い","i","Two eels hanging side by side."],
+      ["う","u","A boxer's punch landing with an 'oo'."],
+      ["え","e","An energetic ninja sprinting past."],
+      ["お","o","A golf ball on a tee, about to fly: oh!"],
+      ["か","ka","A kite slashing through the wind: ka!"],
+      ["き","ki","An old key: see the loop and the teeth."],
+      ["く","ku","A cuckoo's beak pointing out: ku."],
+      ["け","ke","A wooden keg standing upright."],
+      ["こ","ko","Two calm corners of a koi pond."],
+      ["さ","sa","A salsa dancer caught mid-twirl."],
+      ["し","shi","A fishing hook dropped into the sea."],
+      ["す","su","A swing making a big loop: su."],
+      ["せ","se","A sensei standing straight with one steady eye."],
+      ["そ","so","A zigzag sewing stitch: so it up."],
+      ["た","ta","Ta: a folded taco hides in the lines."],
+      ["ち","chi","A cheerleader with pom-poms up: chi-a!"],
+      ["つ","tsu","A tsunami wave curling over."],
+      ["て","te","A hand (te in Japanese) reaching out flat."],
+      ["と","to","A toe peeking out of a shoe."],
+      ["な","na","A knot tied tight in a rope."],
+      ["に","ni","A needle and its thread: ni-dle."],
+      ["ぬ","nu","Noodles tangled around chopsticks."],
+      ["ね","ne","A net wrapped around a pole."],
+      ["の","no","One round swirl: the shape of a 'No' sign spinning."],
+      ["は","ha","Ha! A laughing mouth opened wide."],
+      ["ひ","hi","The heel of a foot in profile."],
+      ["ふ","fu","Mount Fuji wearing its cap of snow."],
+      ["へ","he","A hill ahead: head up the hill."],
+      ["ほ","ho","A garden hoe standing tall."],
+      ["ま","ma","A mama knot: two loops tied with care."],
+      ["み","mi","Mi is a note on the scale: musical swirls."],
+      ["む","mu","A cow's face staring at you: mu, moo."],
+      ["め","me","An eye (me) with a swirl inside it."],
+      ["も","mo","A hook catching more and more fish: mo-re."],
+      ["や","ya","A yak's curved horn."],
+      ["ゆ","yu","A unique fish swimming by."],
+      ["よ","yo","A yoga pose: balanced, still, folded."],
+      ["ら","ra","A rabbit sitting up, ears high."],
+      ["り","ri","Tall reeds growing by the river."],
+      ["る","ru","A route that ends in a loop."],
+      ["れ","re","A retriever kneeling like a good dog: re!"],
+      ["ろ","ro","A road with no loop: compare る, which loops."],
+      ["わ","wa","A swan gliding on the water."],
+      ["を","wo","A wolf howling 'wo' at the moon, tail curled."],
+      ["ん","n","One sound standing all alone: n. It never starts a word."]
+    ];
+    var KANA_BASIC_KATA = [
+      ["ア","a","An axe leaning: chopped into one clean angle."],
+      ["イ","i","An easel holding up a picture."],
+      ["ウ","u","A roof over a house: u is up above."],
+      ["エ","e","Elevator doors: straight lines stacked down."],
+      ["オ","o","An opera singer, arms raised: o!"],
+      ["カ","ka","A karate chop: pure force, one stroke less than か."],
+      ["キ","ki","A key drawn with ruler-straight lines."],
+      ["ク","ku","A cook's hat tipped to one side."],
+      ["ケ","ke","A keg rebuilt from sharp angles."],
+      ["コ","ko","A corner: two strokes, one ko-rner."],
+      ["サ","sa","A saddle with three straps."],
+      ["シ","shi","A shield tilted up, like a smile: shi."],
+      ["ス","su","A super slide swooping down."],
+      ["セ","se","A set of straight steps."],
+      ["ソ","so","One firm sofa corner: so."],
+      ["タ","ta","A taco shell drawn in sharp lines."],
+      ["チ","chi","A cheer flag waving: chi-a!"],
+      ["ツ","tsu","A tsunami in three sharp drops."],
+      ["テ","te","A telephone pole standing tall."],
+      ["ト","to","A totem pole: one long line, one arm."],
+      ["ナ","na","A narwhal's cross: na."],
+      ["ニ","ni","Two needles in a row: ni means two."],
+      ["ヌ","nu","A boot with noodles spilling out."],
+      ["ネ","ne","A necklace hanging on a stand."],
+      ["ノ","no","A nose in profile: one long stroke."],
+      ["ハ","ha","A hat tipped to the side: ha."],
+      ["ヒ","hi","A heel cut in sharp profile: hi-l."],
+      ["フ","fu","The cliff edge of Mount Fuji."],
+      ["ヘ","he","The same hill as へ: head up."],
+      ["ホ","ho","A holy cross standing on a base."],
+      ["マ","ma","A flag folded into a sharp triangle: ma."],
+      ["ミ","mi","Three missiles lined up: mi."],
+      ["ム","mu","A cow's nose drawn in angles: mu."],
+      ["メ","me","An eye crossed out with an X: me."],
+      ["モ","mo","Straight rails running on: mo-re lines."],
+      ["ヤ","ya","A yak drawn in straight strokes."],
+      ["ユ","yu","A unique flag flying from its pole."],
+      ["ヨ","yo","A yogurt cup seen from the side: yo."],
+      ["ラ","ra","A rapper's cap worn backwards: ra."],
+      ["リ","ri","Two straight reeds: ri."],
+      ["ル","ru","Two roots digging down: ru-ts."],
+      ["レ","re","A red carpet sweeping down: re."],
+      ["ロ","ro","A robot's square mouth: ro."],
+      ["ワ","wa","A wine glass in profile: wa."],
+      ["ヲ","wo","A wolf's fang in one angle: wo."],
+      ["ン","n","One dash standing alone: n, the solo sound."]
+    ];
+    var KANA_VOICED = [
+      ["が","ga","か","ka"],["ぎ","gi","き","ki"],["ぐ","gu","く","ku"],["げ","ge","け","ke"],["ご","go","こ","ko"],
+      ["ざ","za","さ","sa"],["じ","ji","し","shi"],["ず","zu","す","su"],["ぜ","ze","せ","se"],["ぞ","zo","そ","so"],
+      ["だ","da","た","ta"],["ぢ","ji","ち","chi"],["づ","zu","つ","tsu"],["で","de","て","te"],["ど","do","と","to"],
+      ["ば","ba","は","ha"],["び","bi","ひ","hi"],["ぶ","bu","ふ","fu"],["べ","be","へ","he"],["ぼ","bo","ほ","ho"],
+      ["ぱ","pa","は","ha","p"],["ぴ","pi","ひ","hi","p"],["ぷ","pu","ふ","fu","p"],["ぺ","pe","へ","he","p"],["ぽ","po","ほ","ho","p"]
+    ];
+    var KANA_VOICED_KATA = [
+      ["ガ","ga","カ","ka"],["ギ","gi","キ","ki"],["グ","gu","ク","ku"],["ゲ","ge","ケ","ke"],["ゴ","go","コ","ko"],
+      ["ザ","za","サ","sa"],["ジ","ji","シ","shi"],["ズ","zu","ス","su"],["ゼ","ze","セ","se"],["ゾ","zo","ソ","so"],
+      ["ダ","da","タ","ta"],["ヂ","ji","チ","chi"],["ヅ","zu","ツ","tsu"],["デ","de","テ","te"],["ド","do","ト","to"],
+      ["バ","ba","ハ","ha"],["ビ","bi","ヒ","hi"],["ブ","bu","フ","fu"],["ベ","be","へ","he"],["ボ","bo","ホ","ho"],
+      ["パ","pa","ハ","ha","p"],["ピ","pi","ヒ","hi","p"],["プ","pu","フ","fu","p"],["ペ","pe","へ","he","p"],["ポ","po","ホ","ho","p"]
+    ];
+    var KANA_COMBO_HIRA = [
+      ["きゃ","kya","き (ki)","small ゃ (ya)"],["きゅ","kyu","き (ki)","small ゅ (yu)"],["きょ","kyo","き (ki)","small ょ (yo)"],
+      ["しゃ","sha","し (shi)","small ゃ (ya)"],["しゅ","shu","し (shi)","small ゅ (yu)"],["しょ","sho","し (shi)","small ょ (yo)"],
+      ["ちゃ","cha","ち (chi)","small ゃ (ya)"],["ちゅ","chu","ち (chi)","small ゅ (yu)"],["ちょ","cho","ち (chi)","small ょ (yo)"],
+      ["にゃ","nya","に (ni)","small ゃ (ya)"],["にゅ","nyu","に (ni)","small ゅ (yu)"],["にょ","nyo","に (ni)","small ょ (yo)"],
+      ["ひゃ","hya","ひ (hi)","small ゃ (ya)"],["ひゅ","hyu","ひ (hi)","small ゅ (yu)"],["ひょ","hyo","ひ (hi)","small ょ (yo)"],
+      ["みゃ","mya","み (mi)","small ゃ (ya)"],["みゅ","myu","み (mi)","small ゅ (yu)"],["みょ","myo","み (mi)","small ょ (yo)"],
+      ["りゃ","rya","り (ri)","small ゃ (ya)"],["りゅ","ryu","り (ri)","small ゅ (yu)"],["りょ","ryo","り (ri)","small ょ (yo)"],
+      ["ぎゃ","gya","ぎ (gi)","small ゃ (ya)"],["ぎゅ","gyu","ぎ (gi)","small ゅ (yu)"],["ぎょ","gyo","ぎ (gi)","small ょ (yo)"],
+      ["じゃ","ja","じ (ji)","small ゃ (ya)"],["じゅ","ju","じ (ji)","small ゅ (yu)"],["じょ","jo","じ (ji)","small ょ (yo)"],
+      ["ぢゃ","ja","ぢ (ji)","small ゃ (ya)"],["ぢゅ","ju","ぢ (ji)","small ゅ (yu)"],["ぢょ","jo","ぢ (ji)","small ょ (yo)"],
+      ["びゃ","bya","び (bi)","small ゃ (ya)"],["びゅ","byu","び (bi)","small ゅ (yu)"],["びょ","byo","び (bi)","small ょ (yo)"],
+      ["ぴゃ","pya","ぴ (pi)","small ゃ (ya)"],["ぴゅ","pyu","ぴ (pi)","small ゅ (yu)"],["ぴょ","pyo","ぴ (pi)","small ょ (yo)"]
+    ];
+    var KANA_COMBO_KATA = [
+      ["キャ","kya","キ (ki)","small ャ (ya)"],["キュ","kyu","キ (ki)","small ュ (yu)"],["キョ","kyo","キ (ki)","small ョ (yo)"],
+      ["シャ","sha","シ (shi)","small ャ (ya)"],["シュ","shu","シ (shi)","small ュ (yu)"],["ショ","sho","シ (shi)","small ョ (yo)"],
+      ["チャ","cha","チ (chi)","small ャ (ya)"],["チュ","chu","チ (chi)","small ュ (yu)"],["チョ","cho","チ (chi)","small ョ (yo)"],
+      ["ニャ","nya","ニ (ni)","small ャ (ya)"],["ニュ","nyu","ニ (ni)","small ュ (yu)"],["ニョ","nyo","ニ (ni)","small ョ (yo)"],
+      ["ヒャ","hya","ヒ (hi)","small ャ (ya)"],["ヒュ","hyu","ヒ (hi)","small ュ (yu)"],["ヒョ","hyo","ヒ (hi)","small ョ (yo)"],
+      ["ミャ","mya","ミ (mi)","small ャ (ya)"],["ミュ","myu","ミ (mi)","small ュ (yu)"],["ミョ","myo","ミ (mi)","small ョ (yo)"],
+      ["リャ","rya","リ (ri)","small ャ (ya)"],["リュ","ryu","リ (ri)","small ュ (yu)"],["リョ","ryo","リ (ri)","small ョ (yo)"],
+      ["ギャ","gya","ギ (gi)","small ャ (ya)"],["ギュ","gyu","ギ (gi)","small ュ (yu)"],["ギョ","gyo","ギ (gi)","small ョ (yo)"],
+      ["ジャ","ja","ジ (ji)","small ャ (ya)"],["ジュ","ju","ジ (ji)","small ュ (yu)"],["ジョ","jo","ジ (ji)","small ョ (yo)"],
+      ["ヂャ","ja","ヂ (ji)","small ャ (ya)"],["ヂュ","ju","ヂ (ji)","small ュ (yu)"],["ヂョ","jo","ヂ (ji)","small ョ (yo)"],
+      ["ビャ","bya","ビ (bi)","small ャ (ya)"],["ビュ","byu","ビ (bi)","small ュ (yu)"],["ビョ","byo","ビ (bi)","small ョ (yo)"],
+      ["ピャ","pya","ピ (pi)","small ャ (ya)"],["ピュ","pyu","ピ (pi)","small ュ (yu)"],["ピョ","pyo","ピ (pi)","small ョ (yo)"]
+    ];
+    var KANJI_GROUPS = [
+      { name: "Numbers and Money", items: [
+        ["一","ichi","one","One single line: one."],
+        ["二","ni","two","Two lines stacked: two."],
+        ["三","san","three","Three lines: count them, three."],
+        ["四","yon","four","A little window with four corners."],
+        ["五","go","five","A zigzag crossing itself: five turns."],
+        ["六","roku","six","A hat over a pair of legs."],
+        ["七","nana","seven","A spoon tipped sideways: lucky seven."],
+        ["八","hachi","eight","Two slopes spreading apart, opening wide."],
+        ["九","kyū","nine","A slide that curves at the bottom."],
+        ["十","jū","ten","A cross where all directions meet."],
+        ["百","hyaku","hundred","One line over a full box: a hundred counted out."],
+        ["千","sen","thousand","Ten with a long slash: ten hundreds."],
+        ["万","man","ten thousand","A flag planted firm for the big number."],
+        ["半","han","half","Cut straight down the middle: half."],
+        ["分","fun","minute, part","Split by a small blade into parts: minutes are parts of an hour."],
+        ["円","en","yen, circle","The round window of a coin: yen."]
+      ]},
+      { name: "Time and Nature", items: [
+        ["日","nichi","day, sun","The sun shining inside a frame."],
+        ["月","tsuki","moon, month","A crescent moon walking through the month."],
+        ["火","hi","fire","Flames leaping with sparks on both sides."],
+        ["水","mizu","water","A stream splashing strokes like spray."],
+        ["木","ki","tree","A trunk: branches up, roots down."],
+        ["金","kin","gold, money","Treasure buried under a king's roof."],
+        ["土","tsuchi","earth, soil","A sprout rising from the ground line."],
+        ["年","toshi","year","Harvest marks stacked by passing time."],
+        ["時","ji","time, hour","The sun beside a temple: temple bells mark time."],
+        ["週","shū","week","Walking the full cycle: one week."],
+        ["間","kan","between, interval","Sunlight seen between two gate doors."],
+        ["毎","mai","every","A mother under the roof, there every day."],
+        ["何","nan","what","A person carrying a box, asking: what is it?"]
+      ]},
+      { name: "People and Family", items: [
+        ["人","hito","person","Two legs walking: a person."],
+        ["男","otoko","man","A rice field plus power: the man in the field."],
+        ["女","onna","woman","Graceful crossed strokes, a kimono fold."],
+        ["子","ko","child","A little one wrapped up, arms out."],
+        ["父","chichi","father","Strong hands holding tools high."],
+        ["母","haha","mother","A warm frame holding two caring dots."],
+        ["兄","ani","older brother","A mouth over legs: big brother speaks first."],
+        ["姉","ane","older sister","A woman by the market stalls: she runs the errands."],
+        ["弟","otōto","younger brother","A little bow with a ribbon: his toy."],
+        ["妹","imōto","younger sister","A woman not yet grown: the little sister."],
+        ["友","tomo","friend","Two hands reaching for each other."],
+        ["先","sen","ahead, before","Legs stepping out in front: ahead."],
+        ["生","sei","life, birth","A green sprout rising from the soil: new life."]
+      ]},
+      { name: "School and Words", items: [
+        ["学","gaku","learning","A child under a roof, hands up: learning."],
+        ["校","kō","school","A tree beside a crossing: the school tree."],
+        ["語","go","language","A mouth and words lined up: language."],
+        ["本","hon","book, origin","A tree marked at its root: origin, and a book's spine."],
+        ["字","ji","character, letter","A child under a roof studying: a written character."],
+        ["文","bun","writing, sentence","Strokes laid out under a lid: writing."],
+        ["新","shin","new","An axe and a fresh tree: a new beginning."]
+      ]},
+      { name: "Places", items: [
+        ["山","yama","mountain","Three peaks rising together."],
+        ["川","kawa","river","Three lines flowing downward."],
+        ["田","ta","rice field","A box split into four wet plots."],
+        ["天","ten","sky, heaven","One great line above a person: the sky."],
+        ["雨","ame","rain","Drops falling behind a window."],
+        ["電","den","electricity","Rain over a field with a lightning tail."],
+        ["気","ki","spirit, air","Steam rising and curling: energy in the air."],
+        ["車","kuruma","car, vehicle","A wheel and axle from the side: a cart, a car."],
+        ["駅","eki","station","A horse resting by a post: where travelers stop."],
+        ["店","mise","shop","A roof with a sign out front: open shop."],
+        ["社","sha","company, shrine","An altar on the earth: shrine, then company."]
+      ]},
+      { name: "Actions", items: [
+        ["行","iku","to go","Crossroads with steps on both sides."],
+        ["来","kuru","to come","Fruit dropping from a tree, coming down to you."],
+        ["帰","kaeru","to return home","A broom sweeping back toward home."],
+        ["見","miru","to see","An eye on legs, walking to look."],
+        ["聞","kiku","to hear, listen","An ear pressed to a gate."],
+        ["読","yomu","to read","Words spoken aloud from the page."],
+        ["書","kaku","to write","A brush drawing over a lined page."],
+        ["食","taberu","to eat","A lid lifted off a good meal."],
+        ["飲","nomu","to drink","A mouth open wide beside the food sign."],
+        ["買","kau","to buy","A net full of shells, the old money."],
+        ["話","hanasu","to speak","Words rolling off a tongue."],
+        ["出","deru","to go out","A mountain rising out of a box."],
+        ["入","hairu","to enter","A slope sliding inward."],
+        ["立","tatsu","to stand","A figure standing tall on a line."],
+        ["休","yasumu","to rest","A person leaning against a tree."],
+        ["思","omou","to think","A head above a heart: mind and feeling."],
+        ["知","shiru","to know","An arrow flying straight to the mark of truth."],
+        ["作","tsukuru","to make","A person with a measuring stick, building."],
+        ["会","au","to meet","People gathered under one roof."]
+      ]},
+      { name: "Describing", items: [
+        ["大","ōkii","big","A person stretching arms as wide as they go."],
+        ["小","chiisai","small","One line with two tiny drops: small."],
+        ["中","naka","middle, inside","An arrow straight through the center."],
+        ["長","nagai","long","Hair flowing down long over a robe."],
+        ["高","takai","tall, expensive","A tall tower with little windows."],
+        ["安","yasui","cheap, peaceful","A woman safe under a roof: at peace."],
+        ["古","furui","old","Ten mouths of stories handed down: old."],
+        ["多","ōi","many","Two evenings stacked up: many nights."],
+        ["少","sukunai","few, a little","Something small with a piece missing: just a few."],
+        ["早","hayai","early","The sun already up: early morning."],
+        ["元","gen","origin, beginning","Two legs under the starting line: the origin."],
+        ["力","chikara","power","A bent arm flexing hard."],
+        ["今","ima","now","A lid closing on this very moment."],
+        ["前","mae","before, front","Horns and a blade facing forward."],
+        ["後","ato","after, behind","Footsteps trailing a thread behind."],
+        ["左","hidari","left","A steady hand with a carpenter's square."],
+        ["右","migi","right","The right hand rises to the mouth to eat."],
+        ["上","ue","up, top","A long line with its mark above."],
+        ["下","shita","down, bottom","A long line with its mark below."],
+        ["東","higashi","east","The sun rising behind a tree."],
+        ["西","nishi","west","The sun settling down into its nest."],
+        ["南","minami","south","The warm gate of the sunny south."],
+        ["北","kita","north","Two figures back to back against the cold."]
+      ]}
+    ];
+
+    /* ==================== SCRIPTS: PRACTICE CARDS + MASTERY ==================== */
+    var SCRIPT_DEFS = [
+      { key: "hira", label: "Hiragana", jp: "ひらがな", groups: [
+        { name: "The Basics", items: KANA_BASIC_HIRA.map(function (x) { return { ch: x[0], read: x[1], mnem: x[2] }; }) },
+        { name: "Voiced and P Sounds", items: KANA_VOICED.map(function (x) { return { ch: x[0], read: x[1], mnem: (x[4] === "p" ? "Start with " + x[2] + " (" + x[3] + ") and add the small circle, the handakuten. The sound pops: " + x[1] + "." : "Start with " + x[2] + " (" + x[3] + ") and add the two small marks, the dakuten. The marks switch the sound on, voiced: " + x[1] + ".") }; }) },
+        { name: "Combinations", items: KANA_COMBO_HIRA.map(function (x) { return { ch: x[0], read: x[1], mnem: x[2] + " plus a " + x[3] + ", squeezed into a single beat: " + x[1] + ". Small kana are written small and said quick." }; }) }
+      ]},
+      { key: "kata", label: "Katakana", jp: "カタカナ", groups: [
+        { name: "The Basics", items: KANA_BASIC_KATA.map(function (x) { return { ch: x[0], read: x[1], mnem: x[2] }; }) },
+        { name: "Voiced and P Sounds", items: KANA_VOICED_KATA.map(function (x) { return { ch: x[0], read: x[1], mnem: (x[4] === "p" ? "Start with " + x[2] + " (" + x[3] + ") and add the small circle, the handakuten. The sound pops: " + x[1] + "." : "Start with " + x[2] + " (" + x[3] + ") and add the two small marks, the dakuten. The marks switch the sound on, voiced: " + x[1] + ".") }; }) },
+        { name: "Combinations", items: KANA_COMBO_KATA.map(function (x) { return { ch: x[0], read: x[1], mnem: x[2] + " plus a " + x[3] + ", squeezed into a single beat: " + x[1] + ". Small kana are written small and said quick." }; }) }
+      ]},
+      { key: "kanji", label: "Kanji", jp: "かんじ", groups: KANJI_GROUPS.map(function (g) {
+        return { name: g.name, items: g.items.map(function (x) { return { ch: x[0], read: x[1], mean: x[2], mnem: x[3] }; }) };
+      })}
+    ];
+    var scriptFilter = { hira: "all", kata: "all", kanji: "all" };
+    var guestScripts = { hira: {}, kata: {}, kanji: {} };
+    try {
+      var gs = JSON.parse(localStorage.getItem("bochi-scripts-guest") || "null");
+      if (gs && typeof gs === "object") ["hira", "kata", "kanji"].forEach(function (k) { if (gs[k] && typeof gs[k] === "object") guestScripts[k] = gs[k]; });
+    } catch (e) {}
+    function scriptsTarget() {
+      if (authState.account) {
+        var me = authState.account.playerKey;
+        if (!state.scripts[me]) state.scripts[me] = { hira: {}, kata: {}, kanji: {} };
+        return state.scripts[me];
+      }
+      return guestScripts;
+    }
+    function scriptTotals(def) {
+      var total = 0;
+      def.groups.forEach(function (g) { total += g.items.length; });
+      return total;
+    }
+    function scriptKnownCount(key) {
+      var map = scriptsTarget()[key] || {};
+      var n = 0;
+      for (var ch in map) if (map[ch]) n++;
+      return n;
+    }
+    function scriptPct(key) {
+      var def = null;
+      SCRIPT_DEFS.forEach(function (d) { if (d.key === key) def = d; });
+      var total = def ? scriptTotals(def) : 0;
+      return total ? Math.round(scriptKnownCount(key) / total * 100) : 0;
+    }
+    var scriptsSaveTimer = null;
+    function persistScripts() {
+      if (authState.account) {
+        if (scriptsSaveTimer) clearTimeout(scriptsSaveTimer);
+        scriptsSaveTimer = setTimeout(function () { saveDetailed(); }, 500);
+      } else {
+        try { localStorage.setItem("bochi-scripts-guest", JSON.stringify(guestScripts)); } catch (e) {}
+      }
+    }
+    function toggleScriptChar(key, ch, btn) {
+      var map = scriptsTarget();
+      if (!map[key]) map[key] = {};
+      if (map[key][ch]) delete map[key][ch]; else map[key][ch] = true;
+      persistScripts();
+      var card = btn ? btn.closest(".scard") : null;
+      if (card) card.classList.toggle("known", !!map[key][ch]);
+      if (btn) btn.textContent = map[key][ch] ? "✓ Memorized" : "Mark as memorized";
+      refreshScriptProgress();
+    }
+    function flipCard(el, ev) {
+      if (ev && ev.target && ev.target.closest && ev.target.closest(".smark")) return;
+      el.classList.toggle("flipped");
+    }
+    function setScriptFilter(key, f, btn) {
+      scriptFilter[key] = f;
+      var wrap = $("script-sec-" + key);
+      if (wrap) {
+        wrap.querySelectorAll(".sfilter").forEach(function (b) { b.classList.toggle("on", b === btn); });
+        wrap.querySelectorAll(".scard").forEach(function (c) {
+          var known = c.classList.contains("known");
+          c.style.display = (f === "all" || (f === "known" && known) || (f === "learning" && !known)) ? "" : "none";
+        });
+      }
+    }
+    function markAllScripts(key, on) {
+      if (!on && !window.confirm("Clear every memorized mark in this script?")) return;
+      var def = null;
+      SCRIPT_DEFS.forEach(function (d) { if (d.key === key) def = d; });
+      if (!def) return;
+      var map = scriptsTarget();
+      map[key] = {};
+      if (on) def.groups.forEach(function (g) { g.items.forEach(function (it) { map[key][it.ch] = true; }); });
+      persistScripts();
+      renderScripts();
+      toast(on ? def.label + " marked as memorized." : def.label + " marks cleared.");
+    }
+    function refreshScriptProgress() {
+      var allK = 0, allT = 0, pcts = {};
+      SCRIPT_DEFS.forEach(function (def) {
+        var known = scriptKnownCount(def.key), total = scriptTotals(def), pct = total ? Math.round(known / total * 100) : 0;
+        allK += known; allT += total;
+        pcts[def.key] = { pct: pct, text: known + " of " + total + " memorized", short: known + "/" + total };
+      });
+      pcts.all = { pct: allT ? Math.round(allK / allT * 100) : 0, text: allK + " of " + allT + " characters", short: allK + "/" + allT };
+      document.querySelectorAll("[data-spct]").forEach(function (el) { var d = pcts[el.getAttribute("data-spct")]; if (d) el.textContent = d.pct + "%"; });
+      document.querySelectorAll("[data-scount]").forEach(function (el) { var d = pcts[el.getAttribute("data-scount")]; if (d) el.textContent = d.text; });
+      document.querySelectorAll("[data-sbar]").forEach(function (el) { var d = pcts[el.getAttribute("data-sbar")]; if (d) el.style.width = d.pct + "%"; });
+    }
+    function scriptCardHTML(key, it) {
+      var known = !!(scriptsTarget()[key] && scriptsTarget()[key][it.ch]);
+      var backTop = '<div class="sread">' + esc(it.read) + "</div>" + (it.mean ? '<div class="smean">' + esc(it.mean) + "</div>" : "");
+      return '<div class="scard' + (known ? " known" : "") + '" onclick="flipCard(this, event)">' +
+        '<div class="scard-inner">' +
+          '<div class="sface sfront"><span class="sdone" aria-hidden="true">✓</span><span class="schar">' + esc(it.ch) + '</span><span class="shint">tap to flip</span></div>' +
+          '<div class="sface sback">' + backTop + '<p class="smnem">' + esc(it.mnem) + '</p>' +
+          '<button class="smark" onclick="toggleScriptChar(\'' + key + '\', \'' + it.ch + '\', this)">' + (known ? "✓ Memorized" : "Mark as memorized") + "</button></div>" +
+        "</div></div>";
+    }
+    function renderScripts() {
+      var box = $("scripts-sections");
+      if (!box) return;
+      var note = $("scripts-auth-note");
+      if (note) {
+        if (authState.account) {
+          note.innerHTML = "Signed in as " + esc(authState.account.displayName) + ". Your marks save to your account and sync to your other devices.";
+        } else {
+          note.innerHTML = "You are marking as a guest on this device. <b>Sign in</b> and your marks save to your account instead.";
+        }
+      }
+      box.innerHTML = SCRIPT_DEFS.map(function (def) {
+        var groups = def.groups.map(function (g) {
+          return '<div class="sgroup"><div class="sgroup-name">' + esc(g.name) + ' · ' + g.items.length + '</div><div class="sgrid">' +
+            g.items.map(function (it) { return scriptCardHTML(def.key, it); }).join("") + "</div></div>";
+        }).join("");
+        return '<div class="card script-sec" id="script-sec-' + def.key + '">' +
+          '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap">' +
+            '<div><div class="kicker">' + esc(def.label.toUpperCase()) + " · " + esc(def.jp) + '</div>' +
+            '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + esc(def.label) + ' <span class="spct" data-spct="' + def.key + '">0%</span></h3>' +
+            '<p class="scount" data-scount="' + def.key + '" style="margin:0; color:var(--muted)"></p></div>' +
+            '<div class="row" style="gap:8px"><button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', true)">Mark all</button>' +
+            '<button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', false)">Clear</button></div>' +
+          "</div>" +
+          '<div class="progress-track" style="margin:12px 0 4px"><div class="progress-fill" data-sbar="' + def.key + '" style="width:0%"></div></div>' +
+          '<div class="sfilters">' +
+            '<button class="sfilter on" onclick="setScriptFilter(\'' + def.key + '\', \'all\', this)">All</button>' +
+            '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'learning\', this)">Still learning</button>' +
+            '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'known\', this)">Memorized</button>' +
+          "</div>" + groups + "</div>";
+      }).join("");
+      refreshScriptProgress();
     }
 </script>
 </body>

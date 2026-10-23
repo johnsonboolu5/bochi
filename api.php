@@ -201,6 +201,10 @@ CREATE TABLE IF NOT EXISTS sessions (
 )
 SQL
     );
+    $cols = $db->query('PRAGMA table_info(progress)')->fetchAll();
+    $hasScripts = false;
+    foreach ($cols as $col) { if (($col['name'] ?? '') === 'scripts_json') { $hasScripts = true; break; } }
+    if (!$hasScripts) { $db->exec("ALTER TABLE progress ADD COLUMN scripts_json TEXT NOT NULL DEFAULT '{}'"); }
     $db->exec('CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)');
     $db->exec(<<<'SQL'
@@ -211,6 +215,7 @@ CREATE TABLE IF NOT EXISTS progress (
     checkpoints_json TEXT NOT NULL DEFAULT '{}',
     last_unlock TEXT NOT NULL DEFAULT '',
     review_json TEXT NOT NULL DEFAULT '{}',
+    scripts_json TEXT NOT NULL DEFAULT '{}',
     version INTEGER NOT NULL DEFAULT 0 CHECK (version >= 0),
     updated_at TEXT NOT NULL
 )
@@ -525,6 +530,62 @@ function bochi_decode_map($json): array
     return is_array($decoded) ? $decoded : [];
 }
 
+function bochi_decode_scripts($json): array
+{
+    $out = ['hira' => [], 'kata' => [], 'kanji' => []];
+    if (!is_string($json) || trim($json) === '') {
+        return $out;
+    }
+    $decoded = json_decode($json, true);
+    if (!is_array($decoded)) {
+        return $out;
+    }
+    foreach (['hira', 'kata', 'kanji'] as $key) {
+        if (isset($decoded[$key]) && is_array($decoded[$key])) {
+            $vals = [];
+            foreach ($decoded[$key] as $v) {
+                if (is_string($v) && $v !== '') { $vals[] = $v; }
+            }
+            sort($vals, SORT_STRING);
+            $out[$key] = $vals;
+        }
+    }
+    return $out;
+}
+
+function bochi_normalize_scripts($value): array
+{
+    if ($value === null) {
+        return ['hira' => [], 'kata' => [], 'kanji' => []];
+    }
+    if (!is_array($value)) {
+        bochi_fail(422, 'invalid_scripts', 'The scripts field is invalid.');
+    }
+    $caps = ['hira' => 130, 'kata' => 130, 'kanji' => 160];
+    $out = ['hira' => [], 'kata' => [], 'kanji' => []];
+    foreach ($value as $key => $list) {
+        if (!isset($caps[$key]) || !is_array($list)) {
+            bochi_fail(422, 'invalid_scripts', 'The scripts field is invalid.');
+        }
+        if (count($list) > $caps[$key]) {
+            bochi_fail(422, 'invalid_scripts', 'Too many memorized characters in one script.');
+        }
+        $seen = [];
+        foreach ($list as $ch) {
+            if (!is_string($ch) || preg_match('/^[\p{L}\p{M}]{1,3}$/u', $ch) !== 1) {
+                bochi_fail(422, 'invalid_scripts', 'A memorized character is invalid.');
+            }
+            if (isset($seen[$ch])) {
+                bochi_fail(422, 'invalid_scripts', 'Duplicate memorized character.');
+            }
+            $seen[$ch] = true;
+            $out[$key][] = $ch;
+        }
+        sort($out[$key], SORT_STRING);
+    }
+    return $out;
+}
+
 function bochi_encode_map(array $map): string
 {
     if ($map === []) {
@@ -564,6 +625,7 @@ function bochi_canonical_progress(PDO $db, array $user): array
     $soloXp = is_array($daily) ? (int)$daily['xp'] : 0;
 
     $lessons = bochi_decode_map($row['lessons_json']);
+    $scripts = bochi_decode_scripts($row['scripts_json'] ?? '{}');
     $checkpoints = bochi_decode_map($row['checkpoints_json']);
     $review = bochi_decode_map($row['review_json']);
     $reviewObjects = [];
@@ -578,6 +640,7 @@ function bochi_canonical_progress(PDO $db, array $user): array
         'checkpoints' => (object)$checkpoints,
         'lastUnlock' => (string)$row['last_unlock'],
         'review' => (object)$reviewObjects,
+        'scripts' => $scripts,
         'soloTodayXp' => $soloXp,
         'soloDate' => $today,
         'version' => (int)$row['version'],
@@ -600,6 +663,7 @@ function bochi_empty_progress(string $playerKey): array
         'checkpoints' => new stdClass(),
         'lastUnlock' => '',
         'review' => new stdClass(),
+        'scripts' => ['hira' => [], 'kata' => [], 'kanji' => []],
         'soloTodayXp' => 0,
         'soloDate' => $today,
         'version' => 0,
@@ -1025,6 +1089,8 @@ function bochi_update_detailed_progress(PDO $db, array $account, array $body): v
     }, 6);
     $review = bochi_normalize_review($progress['review'] ?? null);
     $lastUnlock = bochi_optional_string($progress['lastUnlock'] ?? '', 'last_unlock', 500) ?? '';
+    $hasScripts = array_key_exists('scripts', $progress);
+    $scripts = $hasScripts ? bochi_normalize_scripts($progress['scripts']) : null;
 
     $userId = (int)$account['id'];
     $db->exec('BEGIN IMMEDIATE');
@@ -1041,15 +1107,28 @@ function bochi_update_detailed_progress(PDO $db, array $account, array $body): v
                 'progressByPlayer' => bochi_progress_bundle($db, $account),
             ], 409);
         }
-        $stmt = $db->prepare('UPDATE progress SET lessons_json = ?, checkpoints_json = ?, last_unlock = ?, review_json = ?, version = version + 1, updated_at = ? WHERE user_id = ?');
-        $stmt->execute([
-            bochi_encode_map($lessons),
-            bochi_encode_map($checkpoints),
-            $lastUnlock,
-            bochi_encode_map($review),
-            bochi_now_iso(),
-            $userId,
-        ]);
+        if ($hasScripts) {
+            $stmt = $db->prepare('UPDATE progress SET lessons_json = ?, checkpoints_json = ?, last_unlock = ?, review_json = ?, scripts_json = ?, version = version + 1, updated_at = ? WHERE user_id = ?');
+            $stmt->execute([
+                bochi_encode_map($lessons),
+                bochi_encode_map($checkpoints),
+                $lastUnlock,
+                bochi_encode_map($review),
+                bochi_encode_map($scripts),
+                bochi_now_iso(),
+                $userId,
+            ]);
+        } else {
+            $stmt = $db->prepare('UPDATE progress SET lessons_json = ?, checkpoints_json = ?, last_unlock = ?, review_json = ?, version = version + 1, updated_at = ? WHERE user_id = ?');
+            $stmt->execute([
+                bochi_encode_map($lessons),
+                bochi_encode_map($checkpoints),
+                $lastUnlock,
+                bochi_encode_map($review),
+                bochi_now_iso(),
+                $userId,
+            ]);
+        }
         $db->exec('COMMIT');
     } catch (Throwable $e) {
         try {
