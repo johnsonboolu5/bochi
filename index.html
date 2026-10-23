@@ -847,6 +847,28 @@ input,textarea,select{ font-family:inherit; }
 .script-sum .ssum .sc{ font-size:12px; color:var(--muted); font-weight:600; }
 @media (max-width:720px){ .sgrid{ grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); } .scard{ height:136px; } .sfront .schar{ font-size:34px; } }
 </style>
+<style>
+/* ---------- scripts: full page card stage + script pages ---------- */
+.card-stage{ position:fixed; inset:0; z-index:120; background:var(--bg); overflow-y:auto; padding:16px 16px 44px; display:flex; flex-direction:column; align-items:center; }
+.card-stage[hidden]{ display:none; }
+.stage-top{ width:100%; max-width:560px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.stage-pos{ font-size:13px; font-weight:700; color:var(--muted); letter-spacing:.04em; }
+.stage-kicker{ margin-top:16px; font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-align:center; }
+.stage-card{ width:100%; max-width:430px; height:min(58vh, 540px); min-height:340px; margin-top:10px; perspective:1300px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.stage-card .scard-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .5s var(--ease, ease); }
+.stage-card.flipped .scard-inner{ transform:rotateY(180deg); }
+.stage-face{ border-radius:26px; padding:30px 26px; box-shadow:0 18px 44px rgba(0,0,0,.14); }
+.stage-face .schar{ font-size:clamp(96px, 24vw, 148px); }
+.stage-face .sread{ font-size:32px; }
+.stage-face .smean{ font-size:17px; }
+.stage-face .smnem{ font-size:16.5px; line-height:1.6; margin-top:10px; }
+.stage-card .sdone{ width:30px; height:30px; font-size:17px; top:14px; right:14px; }
+.stage-card.known .sfront{ border-color:var(--path-green, #2e7d32); background:var(--ai-soft); }
+.stage-card.known .sdone{ display:grid; }
+.stage-controls{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:22px; max-width:560px; }
+.stage-note{ margin-top:12px; font-size:13px; color:var(--muted); font-weight:600; text-align:center; }
+.openpage-btn{ margin-left:auto; }
+</style>
 </head>
   <body>
     <div class="wrap">
@@ -1638,6 +1660,34 @@ input,textarea,select{ font-family:inherit; }
         <div id="scripts-sections"></div>
       </section>
 
+      <!-- ================= SCRIPT PAGES ================= -->
+      <section class="view" id="view-hira">
+        <div class="game-head">
+          <button class="back-link" onclick="go('scripts')">← Writing Systems</button>
+          <h2>Hiragana<span class="jp">ひらがな</span></h2>
+        </div>
+        <p class="howto">The full Hiragana collection. Tap any card and it opens as one big card, like holding the real thing: flip it for the reading and the memory hook, then mark it once you know it. Your percentage sits at the top.</p>
+        <div id="page-hira"></div>
+      </section>
+
+      <section class="view" id="view-kata">
+        <div class="game-head">
+          <button class="back-link" onclick="go('scripts')">← Writing Systems</button>
+          <h2>Katakana<span class="jp">カタカナ</span></h2>
+        </div>
+        <p class="howto">The full Katakana collection, the script for foreign words, names, and emphasis. Tap any card to open it full page, flip it for the reading and the memory hook, and mark the ones you have memorized.</p>
+        <div id="page-kata"></div>
+      </section>
+
+      <section class="view" id="view-kanji">
+        <div class="game-head">
+          <button class="back-link" onclick="go('scripts')">← Writing Systems</button>
+          <h2>Kanji<span class="jp">かんじ</span></h2>
+        </div>
+        <p class="howto">The Kanji collection, grouped by theme. Tap any card to open it full page: the back gives the reading, the meaning, and a memory hook built from the character's parts.</p>
+        <div id="page-kanji"></div>
+      </section>
+
       <!-- ================= SUMMARY ================= -->
       <section class="view" id="view-recordings">
         <div class="game-head">
@@ -1772,6 +1822,26 @@ input,textarea,select{ font-family:inherit; }
         <span>Summary</span>
       </button>
     </nav>
+    <div class="card-stage" id="card-stage" hidden>
+      <div class="stage-top">
+        <button class="back-link" onclick="closeCardStage()">← Back to cards</button>
+        <span class="stage-pos" id="stage-pos"></span>
+      </div>
+      <div class="stage-kicker" id="stage-kicker"></div>
+      <div class="stage-card" id="stage-card" onclick="stageFlip()">
+        <div class="scard-inner">
+          <div class="sface sfront stage-face"><span class="sdone" aria-hidden="true">✓</span><span class="schar" id="stage-char"></span><span class="shint">tap card to flip</span></div>
+          <div class="sface sback stage-face"><div class="sread" id="stage-read"></div><div class="smean" id="stage-mean"></div><p class="smnem" id="stage-mnem"></p><span class="shint" style="margin-top:auto">tap card to flip back</span></div>
+        </div>
+      </div>
+      <div class="stage-controls">
+        <button class="btn ghost" onclick="stageNav(-1)">← Prev</button>
+        <button class="btn ghost" id="stage-mark" onclick="stageToggleMark()">Mark as memorized</button>
+        <button class="btn blue" onclick="stageFlip()">Flip card</button>
+        <button class="btn ghost" onclick="stageNav(1)">Next →</button>
+      </div>
+      <p class="stage-note">Arrow keys move between cards. Space flips. Esc closes.</p>
+    </div>
     <div class="toast" id="toast" role="status"></div>
 
     <script>
@@ -2269,6 +2339,7 @@ input,textarea,select{ font-family:inherit; }
       if(view === "summary"){ renderSummary(); }
       if(view === "solo"){ enterSolo(); }
       if(view === "scripts"){ renderScripts(); }
+      if(view === "hira" || view === "kata" || view === "kanji"){ renderScriptPage(view); document.querySelectorAll(".side-item").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-nav") === "scripts"); }); }
       if(typeof refreshScriptProgress === "function"){ refreshScriptProgress(); }
       window.scrollTo({top:0, behavior:"smooth"});
     }
@@ -4881,13 +4952,83 @@ input,textarea,select{ font-family:inherit; }
       if (btn) btn.textContent = map[key][ch] ? "✓ Memorized" : "Mark as memorized";
       refreshScriptProgress();
     }
+    var SCRIPT_FLAT = {};
+    SCRIPT_DEFS.forEach(function (def) {
+      var arr = [];
+      def.groups.forEach(function (g) { g.items.forEach(function (it) { arr.push({ ch: it.ch, read: it.read, mean: it.mean, mnem: it.mnem, group: g.name }); }); });
+      SCRIPT_FLAT[def.key] = arr;
+    });
+    function scriptDef(key) { var d = null; SCRIPT_DEFS.forEach(function (x) { if (x.key === key) d = x; }); return d; }
+    function renderScriptPage(key) {
+      var box = $("page-" + key);
+      if (!box) return;
+      var def = scriptDef(key);
+      if (!def) return;
+      box.innerHTML = '<div class="card script-sec" id="script-page-sec-' + key + '">' + scriptSectionHTML(def, false) + "</div>";
+      refreshScriptProgress();
+    }
+    function renderAllScriptPages() { ["hira", "kata", "kanji"].forEach(function (k) { renderScriptPage(k); }); }
+    var stageState = { key: "hira", idx: 0, flipped: false };
+    function openCardStage(key, idx) {
+      stageState = { key: key, idx: idx, flipped: false };
+      var st = $("card-stage");
+      if (!st) return;
+      st.hidden = false;
+      document.body.style.overflow = "hidden";
+      stageRender();
+    }
+    function closeCardStage() {
+      var st = $("card-stage");
+      if (st) st.hidden = true;
+      document.body.style.overflow = "";
+    }
+    function stageRender() {
+      var def = scriptDef(stageState.key);
+      var list = SCRIPT_FLAT[stageState.key] || [];
+      if (!def || !list.length) return;
+      if (stageState.idx < 0) stageState.idx = list.length - 1;
+      if (stageState.idx >= list.length) stageState.idx = 0;
+      var it = list[stageState.idx];
+      var known = !!(scriptsTarget()[stageState.key] && scriptsTarget()[stageState.key][it.ch]);
+      $("stage-kicker").textContent = def.label + " · " + it.group;
+      $("stage-pos").textContent = (stageState.idx + 1) + " of " + list.length;
+      $("stage-char").textContent = it.ch;
+      $("stage-read").textContent = it.read;
+      var meanEl = $("stage-mean");
+      meanEl.textContent = it.mean || "";
+      meanEl.style.display = it.mean ? "" : "none";
+      $("stage-mnem").textContent = it.mnem;
+      var card = $("stage-card");
+      card.classList.toggle("flipped", stageState.flipped);
+      card.classList.toggle("known", known);
+      $("stage-mark").textContent = known ? "✓ Memorized" : "Mark as memorized";
+    }
+    function stageFlip() { stageState.flipped = !stageState.flipped; var c = $("stage-card"); if (c) c.classList.toggle("flipped", stageState.flipped); }
+    function stageNav(d) { stageState.idx += d; stageState.flipped = false; stageRender(); }
+    function stageToggleMark() {
+      var list = SCRIPT_FLAT[stageState.key] || [];
+      var it = list[stageState.idx];
+      if (!it) return;
+      toggleScriptChar(stageState.key, it.ch, null);
+      renderScripts();
+      renderScriptPage(stageState.key);
+      stageRender();
+    }
+    document.addEventListener("keydown", function (ev) {
+      var st = $("card-stage");
+      if (!st || st.hidden) return;
+      if (ev.key === "Escape") closeCardStage();
+      else if (ev.key === "ArrowRight") stageNav(1);
+      else if (ev.key === "ArrowLeft") stageNav(-1);
+      else if (ev.key === " " || ev.key === "Enter") { ev.preventDefault(); stageFlip(); }
+    });
     function flipCard(el, ev) {
       if (ev && ev.target && ev.target.closest && ev.target.closest(".smark")) return;
       el.classList.toggle("flipped");
     }
     function setScriptFilter(key, f, btn) {
       scriptFilter[key] = f;
-      var wrap = $("script-sec-" + key);
+      var wrap = btn ? btn.closest(".script-sec") : $("script-sec-" + key);
       if (wrap) {
         wrap.querySelectorAll(".sfilter").forEach(function (b) { b.classList.toggle("on", b === btn); });
         wrap.querySelectorAll(".scard").forEach(function (c) {
@@ -4906,6 +5047,7 @@ input,textarea,select{ font-family:inherit; }
       if (on) def.groups.forEach(function (g) { g.items.forEach(function (it) { map[key][it.ch] = true; }); });
       persistScripts();
       renderScripts();
+      renderAllScriptPages();
       toast(on ? def.label + " marked as memorized." : def.label + " marks cleared.");
     }
     function refreshScriptProgress() {
@@ -4920,15 +5062,33 @@ input,textarea,select{ font-family:inherit; }
       document.querySelectorAll("[data-scount]").forEach(function (el) { var d = pcts[el.getAttribute("data-scount")]; if (d) el.textContent = d.text; });
       document.querySelectorAll("[data-sbar]").forEach(function (el) { var d = pcts[el.getAttribute("data-sbar")]; if (d) el.style.width = d.pct + "%"; });
     }
-    function scriptCardHTML(key, it) {
+    function scriptCardHTML(key, it, idx) {
       var known = !!(scriptsTarget()[key] && scriptsTarget()[key][it.ch]);
-      var backTop = '<div class="sread">' + esc(it.read) + "</div>" + (it.mean ? '<div class="smean">' + esc(it.mean) + "</div>" : "");
-      return '<div class="scard' + (known ? " known" : "") + '" onclick="flipCard(this, event)">' +
+      return '<div class="scard' + (known ? " known" : "") + '" onclick="openCardStage(\'' + key + '\', ' + idx + ')">' +
         '<div class="scard-inner">' +
-          '<div class="sface sfront"><span class="sdone" aria-hidden="true">✓</span><span class="schar">' + esc(it.ch) + '</span><span class="shint">tap to flip</span></div>' +
-          '<div class="sface sback">' + backTop + '<p class="smnem">' + esc(it.mnem) + '</p>' +
-          '<button class="smark" onclick="toggleScriptChar(\'' + key + '\', \'' + it.ch + '\', this)">' + (known ? "✓ Memorized" : "Mark as memorized") + "</button></div>" +
+          '<div class="sface sfront"><span class="sdone" aria-hidden="true">✓</span><span class="schar">' + esc(it.ch) + '</span><span class="shint">tap to open</span></div>' +
         "</div></div>";
+    }
+    function scriptSectionHTML(def, showOpen) {
+      var idx = 0;
+      var groups = def.groups.map(function (g) {
+        var cards = g.items.map(function (it) { var h = scriptCardHTML(def.key, it, idx); idx++; return h; }).join("");
+        return '<div class="sgroup"><div class="sgroup-name">' + esc(g.name) + ' · ' + g.items.length + '</div><div class="sgrid">' + cards + "</div></div>";
+      }).join("");
+      return '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap">' +
+          '<div><div class="kicker">' + esc(def.label.toUpperCase()) + " · " + esc(def.jp) + '</div>' +
+          '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + esc(def.label) + ' <span class="spct" data-spct="' + def.key + '">0%</span></h3>' +
+          '<p class="scount" data-scount="' + def.key + '" style="margin:0; color:var(--muted)"></p></div>' +
+          '<div class="row" style="gap:8px"><button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', true)">Mark all</button>' +
+          '<button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', false)">Clear</button>' +
+          (showOpen ? '<button class="btn blue small openpage-btn" onclick="go(\'' + def.key + '\')">Open ' + esc(def.label) + ' page</button>' : "") +
+          "</div></div>" +
+        '<div class="progress-track" style="margin:12px 0 4px"><div class="progress-fill" data-sbar="' + def.key + '" style="width:0%"></div></div>' +
+        '<div class="sfilters">' +
+          '<button class="sfilter on" onclick="setScriptFilter(\'' + def.key + '\', \'all\', this)">All</button>' +
+          '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'learning\', this)">Still learning</button>' +
+          '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'known\', this)">Memorized</button>' +
+        "</div>" + groups;
     }
     function renderScripts() {
       var box = $("scripts-sections");
@@ -4941,26 +5101,7 @@ input,textarea,select{ font-family:inherit; }
           note.innerHTML = "You are marking as a guest on this device. <b>Sign in</b> and your marks save to your account instead.";
         }
       }
-      box.innerHTML = SCRIPT_DEFS.map(function (def) {
-        var groups = def.groups.map(function (g) {
-          return '<div class="sgroup"><div class="sgroup-name">' + esc(g.name) + ' · ' + g.items.length + '</div><div class="sgrid">' +
-            g.items.map(function (it) { return scriptCardHTML(def.key, it); }).join("") + "</div></div>";
-        }).join("");
-        return '<div class="card script-sec" id="script-sec-' + def.key + '">' +
-          '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap">' +
-            '<div><div class="kicker">' + esc(def.label.toUpperCase()) + " · " + esc(def.jp) + '</div>' +
-            '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + esc(def.label) + ' <span class="spct" data-spct="' + def.key + '">0%</span></h3>' +
-            '<p class="scount" data-scount="' + def.key + '" style="margin:0; color:var(--muted)"></p></div>' +
-            '<div class="row" style="gap:8px"><button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', true)">Mark all</button>' +
-            '<button class="btn ghost small" onclick="markAllScripts(\'' + def.key + '\', false)">Clear</button></div>' +
-          "</div>" +
-          '<div class="progress-track" style="margin:12px 0 4px"><div class="progress-fill" data-sbar="' + def.key + '" style="width:0%"></div></div>' +
-          '<div class="sfilters">' +
-            '<button class="sfilter on" onclick="setScriptFilter(\'' + def.key + '\', \'all\', this)">All</button>' +
-            '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'learning\', this)">Still learning</button>' +
-            '<button class="sfilter" onclick="setScriptFilter(\'' + def.key + '\', \'known\', this)">Memorized</button>' +
-          "</div>" + groups + "</div>";
-      }).join("");
+      box.innerHTML = SCRIPT_DEFS.map(function (def) { return '<div class="card script-sec" id="script-sec-' + def.key + '">' + scriptSectionHTML(def, true) + "</div>"; }).join("");
       refreshScriptProgress();
     }
 </script>
