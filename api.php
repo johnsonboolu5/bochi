@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS progress (
     review_json TEXT NOT NULL DEFAULT '{}',
     scripts_json TEXT NOT NULL DEFAULT '{}',
     practice_json TEXT NOT NULL DEFAULT '{}',
+    stats_json TEXT NOT NULL DEFAULT '{}',
     version INTEGER NOT NULL DEFAULT 0 CHECK (version >= 0),
     updated_at TEXT NOT NULL
 )
@@ -223,6 +224,47 @@ SQL
     foreach ($cols as $col) { $colNames[] = (string)($col['name'] ?? ''); }
     if (!in_array('scripts_json', $colNames, true)) { $db->exec("ALTER TABLE progress ADD COLUMN scripts_json TEXT NOT NULL DEFAULT '{}'"); }
     if (!in_array('practice_json', $colNames, true)) { $db->exec("ALTER TABLE progress ADD COLUMN practice_json TEXT NOT NULL DEFAULT '{}'"); }
+    if (!in_array('stats_json', $colNames, true)) { $db->exec("ALTER TABLE progress ADD COLUMN stats_json TEXT NOT NULL DEFAULT '{}'"); }
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS meetings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    starts_at TEXT NOT NULL,
+    duration_min INTEGER NOT NULL DEFAULT 45,
+    status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'held', 'cancelled')),
+    created_by TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+)
+SQL
+    );
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_sessions_starts ON meetings(starts_at)');
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS push_subs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    created_at TEXT NOT NULL
+)
+SQL
+    );
+    $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS reminder_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    lead_days INTEGER NOT NULL,
+    channels TEXT NOT NULL DEFAULT '',
+    sent_at TEXT NOT NULL,
+    UNIQUE (session_id, user_id, lead_days)
+)
+SQL
+    );
+    $ucols = $db->query('PRAGMA table_info(users)')->fetchAll();
+    $uNames = [];
+    foreach ($ucols as $col) { $uNames[] = (string)($col['name'] ?? ''); }
+    if (!in_array('notify_leads', $uNames, true)) { $db->exec("ALTER TABLE users ADD COLUMN notify_leads TEXT NOT NULL DEFAULT '[1]'"); }
+    if (!in_array('notify_email', $uNames, true)) { $db->exec("ALTER TABLE users ADD COLUMN notify_email INTEGER NOT NULL DEFAULT 1"); }
     $db->exec(<<<'SQL'
 CREATE TABLE IF NOT EXISTS solo_daily (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -643,6 +685,112 @@ function bochi_normalize_practice($value): array
     return $out;
 }
 
+function bochi_empty_stats(): array
+{
+    return ['ans' => 0, 'cor' => 0, 'ch' => [], 'src' => []];
+}
+
+function bochi_stats_pair($value): array
+{
+    if (!is_array($value)) {
+        return ['a' => 0, 'c' => 0];
+    }
+    return [
+        'a' => max(0, min(10000000, (int)($value['a'] ?? 0))),
+        'c' => max(0, min(10000000, (int)($value['c'] ?? 0))),
+    ];
+}
+
+function bochi_decode_stats($json): array
+{
+    $out = bochi_empty_stats();
+    if (!is_string($json) || trim($json) === '') {
+        return $out;
+    }
+    $decoded = json_decode($json, true);
+    if (!is_array($decoded)) {
+        return $out;
+    }
+    $out['ans'] = max(0, min(10000000, (int)($decoded['ans'] ?? 0)));
+    $out['cor'] = max(0, min(10000000, (int)($decoded['cor'] ?? 0)));
+    if (isset($decoded['ch']) && is_array($decoded['ch'])) {
+        foreach ($decoded['ch'] as $k => $v) {
+            $k = (string)$k;
+            if (preg_match('/^[1-6]$/', $k) === 1) {
+                $out['ch'][$k] = bochi_stats_pair($v);
+            }
+        }
+    }
+    if (isset($decoded['src']) && is_array($decoded['src'])) {
+        foreach (['lesson', 'review', 'game'] as $k) {
+            if (isset($decoded['src'][$k])) {
+                $out['src'][$k] = bochi_stats_pair($decoded['src'][$k]);
+            }
+        }
+    }
+    return $out;
+}
+
+function bochi_normalize_stats($value): array
+{
+    if ($value === null) {
+        return bochi_empty_stats();
+    }
+    if (!is_array($value)) {
+        bochi_fail(422, 'invalid_stats', 'The stats field is invalid.');
+    }
+    foreach (['ans', 'cor'] as $k) {
+        if (isset($value[$k]) && !is_numeric($value[$k])) {
+            bochi_fail(422, 'invalid_stats', 'A stats value is invalid.');
+        }
+    }
+    $out = bochi_empty_stats();
+    $out['ans'] = max(0, min(10000000, (int)($value['ans'] ?? 0)));
+    $out['cor'] = max(0, min(10000000, (int)($value['cor'] ?? 0)));
+    if (isset($value['ch'])) {
+        if (!is_array($value['ch'])) {
+            bochi_fail(422, 'invalid_stats', 'The stats chapters are invalid.');
+        }
+        foreach ($value['ch'] as $k => $v) {
+            $k = (string)$k;
+            if (preg_match('/^[1-6]$/', $k) !== 1 || !is_array($v)) {
+                bochi_fail(422, 'invalid_stats', 'A stats chapter is invalid.');
+            }
+            $out['ch'][$k] = bochi_stats_pair($v);
+        }
+    }
+    if (isset($value['src'])) {
+        if (!is_array($value['src'])) {
+            bochi_fail(422, 'invalid_stats', 'The stats sources are invalid.');
+        }
+        foreach ($value['src'] as $k => $v) {
+            if (!in_array($k, ['lesson', 'review', 'game'], true) || !is_array($v)) {
+                bochi_fail(422, 'invalid_stats', 'A stats source is invalid.');
+            }
+            $out['src'][$k] = bochi_stats_pair($v);
+        }
+    }
+    return $out;
+}
+
+function bochi_stats_object(array $stats): stdClass
+{
+    $ch = [];
+    foreach ($stats['ch'] as $k => $v) {
+        $ch[$k] = (object)$v;
+    }
+    $srcMap = [];
+    foreach ($stats['src'] as $k => $v) {
+        $srcMap[$k] = (object)$v;
+    }
+    $obj = new stdClass();
+    $obj->ans = (int)$stats['ans'];
+    $obj->cor = (int)$stats['cor'];
+    $obj->ch = (object)$ch;
+    $obj->src = (object)$srcMap;
+    return $obj;
+}
+
 function bochi_encode_map(array $map): string
 {
     if ($map === []) {
@@ -684,6 +832,7 @@ function bochi_canonical_progress(PDO $db, array $user): array
     $lessons = bochi_decode_map($row['lessons_json']);
     $scripts = bochi_decode_scripts($row['scripts_json'] ?? '{}');
     $practice = bochi_decode_practice($row['practice_json'] ?? '{}');
+    $stats = bochi_decode_stats($row['stats_json'] ?? '{}');
     $checkpoints = bochi_decode_map($row['checkpoints_json']);
     $review = bochi_decode_map($row['review_json']);
     $reviewObjects = [];
@@ -700,6 +849,7 @@ function bochi_canonical_progress(PDO $db, array $user): array
         'review' => (object)$reviewObjects,
         'scripts' => $scripts,
         'practice' => (object)$practice,
+        'stats' => bochi_stats_object($stats),
         'soloTodayXp' => $soloXp,
         'soloDate' => $today,
         'version' => (int)$row['version'],
@@ -724,6 +874,7 @@ function bochi_empty_progress(string $playerKey): array
         'review' => new stdClass(),
         'scripts' => ['hira' => [], 'kata' => [], 'kanji' => []],
         'practice' => new stdClass(),
+        'stats' => bochi_stats_object(bochi_empty_stats()),
         'soloTodayXp' => 0,
         'soloDate' => $today,
         'version' => 0,
@@ -1153,6 +1304,8 @@ function bochi_update_detailed_progress(PDO $db, array $account, array $body): v
     $scripts = $hasScripts ? bochi_normalize_scripts($progress['scripts']) : null;
     $hasPractice = array_key_exists('practice', $progress);
     $practice = $hasPractice ? bochi_normalize_practice($progress['practice']) : null;
+    $hasStats = array_key_exists('stats', $progress);
+    $stats = $hasStats ? bochi_normalize_stats($progress['stats']) : null;
 
     $userId = (int)$account['id'];
     $db->exec('BEGIN IMMEDIATE');
@@ -1183,6 +1336,10 @@ function bochi_update_detailed_progress(PDO $db, array $account, array $body): v
         if ($hasPractice) {
             $set .= ', practice_json = ?';
             $params[] = bochi_encode_map($practice);
+        }
+        if ($hasStats) {
+            $set .= ', stats_json = ?';
+            $params[] = json_encode($stats);
         }
         $set .= ', version = version + 1, updated_at = ?';
         $params[] = bochi_now_iso();
@@ -1402,6 +1559,291 @@ if (PHP_SAPI === 'cli') {
 }
 
 
+function bochi_private_file(string $name): string
+{
+    $config = bochi_config();
+    return dirname((string)$config['db_path']) . '/' . $name;
+}
+
+function bochi_b64url_encode(string $bin): string
+{
+    return rtrim(strtr(base64_encode($bin), '+/', '-_'), '=');
+}
+
+function bochi_b64url_decode(string $s): string
+{
+    $pad = strlen($s) % 4;
+    if ($pad) { $s .= str_repeat('=', 4 - $pad); }
+    $out = base64_decode(strtr($s, '-_', '+/'), true);
+    return $out === false ? '' : $out;
+}
+
+function bochi_vapid(): array
+{
+    $path = bochi_private_file('vapid.json');
+    if (is_file($path)) {
+        $data = json_decode((string)@file_get_contents($path), true);
+        if (is_array($data) && !empty($data['public']) && !empty($data['private_pem'])) {
+            return $data;
+        }
+    }
+    $key = openssl_pkey_new(['curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC]);
+    if ($key === false) { bochi_fail(500, 'vapid_failed', 'Could not create notification keys.'); }
+    $details = openssl_pkey_get_details($key);
+    openssl_pkey_export($key, $pem);
+    $pub = "\x04" . str_pad((string)$details['ec']['x'], 32, "\x00", STR_PAD_LEFT) . str_pad((string)$details['ec']['y'], 32, "\x00", STR_PAD_LEFT);
+    $data = ['public' => bochi_b64url_encode($pub), 'private_pem' => $pem];
+    @file_put_contents($path, json_encode($data));
+    @chmod($path, 0600);
+    return $data;
+}
+
+function bochi_cron_token(): string
+{
+    $path = bochi_private_file('cron-token.txt');
+    if (is_file($path)) {
+        $t = trim((string)@file_get_contents($path));
+        if ($t !== '') { return $t; }
+    }
+    $t = bin2hex(random_bytes(24));
+    @file_put_contents($path, $t);
+    @chmod($path, 0600);
+    return $t;
+}
+
+function bochi_session_row(array $row): array
+{
+    return [
+        'id' => (int)$row['id'],
+        'starts_at' => (string)$row['starts_at'],
+        'duration_min' => (int)$row['duration_min'],
+        'status' => (string)$row['status'],
+        'created_by' => (string)$row['created_by'],
+    ];
+}
+
+function bochi_sessions_list(PDO $db): void
+{
+    $rows = $db->query('SELECT * FROM meetings ORDER BY starts_at ASC')->fetchAll();
+    bochi_json_response(['ok' => true, 'sessions' => array_map('bochi_session_row', $rows ?: [])]);
+}
+
+function bochi_sessions_create(PDO $db, array $account, array $body): void
+{
+    $starts = (string)($body['starts_at'] ?? '');
+    $ts = strtotime($starts);
+    if ($ts === false) { bochi_fail(422, 'invalid_session', 'A valid session date and time is required.'); }
+    $dur = max(15, min(240, (int)($body['duration_min'] ?? 45)));
+    $iso = gmdate('Y-m-d\TH:i:s\Z', $ts);
+    $stmt = $db->prepare('INSERT INTO meetings (starts_at, duration_min, status, created_by, created_at) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([$iso, $dur, 'scheduled', (string)$account['player_key'], bochi_now_iso()]);
+    bochi_json_response(['ok' => true, 'id' => (int)$db->lastInsertId()], 201);
+}
+
+function bochi_sessions_update(PDO $db, array $body): void
+{
+    $id = (int)($body['id'] ?? 0);
+    if ($id <= 0) { bochi_fail(422, 'invalid_session', 'A session id is required.'); }
+    $status = (string)($body['status'] ?? '');
+    if (!in_array($status, ['scheduled', 'held', 'cancelled'], true)) { bochi_fail(422, 'invalid_session', 'A valid status is required.'); }
+    $db->prepare('UPDATE meetings SET status = ? WHERE id = ?')->execute([$status, $id]);
+    bochi_json_response(['ok' => true]);
+}
+
+function bochi_sessions_delete(PDO $db, array $body): void
+{
+    $id = (int)($body['id'] ?? 0);
+    if ($id <= 0) { bochi_fail(422, 'invalid_session', 'A session id is required.'); }
+    $db->prepare('DELETE FROM meetings WHERE id = ?')->execute([$id]);
+    $db->prepare('DELETE FROM reminder_log WHERE session_id = ?')->execute([$id]);
+    bochi_json_response(['ok' => true]);
+}
+
+function bochi_notify_prefs(PDO $db, array $account): array
+{
+    $leads = json_decode((string)($account['notify_leads'] ?? '[1]'), true);
+    if (!is_array($leads)) { $leads = [1]; }
+    $leads = array_values(array_filter(array_map('intval', $leads), function ($v) { return in_array($v, [0, 1, 7], true); }));
+    $cnt = 0;
+    try { $stmt = $db->prepare('SELECT COUNT(*) FROM push_subs WHERE user_id = ?'); $stmt->execute([(int)$account['id']]); $cnt = (int)$stmt->fetchColumn(); } catch (Throwable $e) {}
+    return ['leads' => $leads, 'email' => (int)($account['notify_email'] ?? 1) === 1, 'pushCount' => $cnt];
+}
+
+function bochi_notify_prefs_get(PDO $db, array $account): void
+{
+    bochi_json_response(['ok' => true, 'prefs' => bochi_notify_prefs($db, $account)]);
+}
+
+function bochi_notify_prefs_set(PDO $db, array $account, array $body): void
+{
+    $leads = $body['leads'] ?? null;
+    if (!is_array($leads)) { bochi_fail(422, 'invalid_prefs', 'Reminder times are invalid.'); }
+    $clean = [];
+    foreach ($leads as $v) { $v = (int)$v; if (in_array($v, [0, 1, 7], true) && !in_array($v, $clean, true)) { $clean[] = $v; } }
+    sort($clean);
+    $email = !empty($body['email']) ? 1 : 0;
+    $db->prepare('UPDATE users SET notify_leads = ?, notify_email = ? WHERE id = ?')->execute([json_encode($clean), $email, (int)$account['id']]);
+    $account['notify_leads'] = json_encode($clean);
+    $account['notify_email'] = $email;
+    bochi_json_response(['ok' => true, 'prefs' => bochi_notify_prefs($db, $account)]);
+}
+
+function bochi_push_subscribe(PDO $db, array $account, array $body): void
+{
+    $endpoint = (string)($body['endpoint'] ?? '');
+    $p256dh = (string)($body['keys']['p256dh'] ?? '');
+    $auth = (string)($body['keys']['auth'] ?? '');
+    if (strpos($endpoint, 'https://') !== 0 || $p256dh === '' || $auth === '') { bochi_fail(422, 'invalid_subscription', 'That notification subscription is invalid.'); }
+    $stmt = $db->prepare('INSERT INTO push_subs (user_id, endpoint, p256dh, auth, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth');
+    $stmt->execute([(int)$account['id'], $endpoint, $p256dh, $auth, bochi_now_iso()]);
+    bochi_json_response(['ok' => true], 201);
+}
+
+function bochi_push_unsubscribe(PDO $db, array $account, array $body): void
+{
+    $endpoint = (string)($body['endpoint'] ?? '');
+    $db->prepare('DELETE FROM push_subs WHERE endpoint = ? AND user_id = ?')->execute([$endpoint, (int)$account['id']]);
+    bochi_json_response(['ok' => true]);
+}
+
+function bochi_der_to_raw_sig(string $der): string
+{
+    $off = 0;
+    if (ord($der[$off]) !== 0x30) { return str_repeat("\x00", 64); }
+    $off++;
+    $len = ord($der[$off++]);
+    if ($len & 0x80) { $n = $len & 0x7f; $off += $n; }
+    $readInt = function () use ($der, &$off) {
+        $off++; // 0x02
+        $l = ord($der[$off++]);
+        $v = substr($der, $off, $l);
+        $off += $l;
+        $v = ltrim($v, "\x00");
+        return str_pad($v, 32, "\x00", STR_PAD_LEFT);
+    };
+    return $readInt() . $readInt();
+}
+
+function bochi_vapid_jwt(string $endpoint, array $vapid): string
+{
+    $aud = (string)parse_url($endpoint, PHP_URL_SCHEME) . '://' . (string)parse_url($endpoint, PHP_URL_HOST);
+    $head = bochi_b64url_encode(json_encode(['typ' => 'JWT', 'alg' => 'ES256']));
+    $payload = bochi_b64url_encode(json_encode(['aud' => $aud, 'exp' => time() + 43200, 'sub' => 'mailto:Info@bolu.tech']));
+    $signing = $head . '.' . $payload;
+    $key = openssl_pkey_get_private((string)$vapid['private_pem']);
+    openssl_sign($signing, $sig, $key, OPENSSL_ALGO_SHA256);
+    return $signing . '.' . bochi_b64url_encode(bochi_der_to_raw_sig($sig));
+}
+
+function bochi_ec_public_resource(string $rawPub)
+{
+    $der = hex2bin('3059301306072a8648ce3d020106082a8648ce3d030107034200') . $rawPub;
+    $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END PUBLIC KEY-----\n";
+    return openssl_pkey_get_public($pem);
+}
+
+function bochi_webpush_send(array $sub, string $payloadJson, array $vapid): int
+{
+    $uaPublic = bochi_b64url_decode((string)$sub['p256dh']);
+    $authSecret = bochi_b64url_decode((string)$sub['auth']);
+    if (strlen($uaPublic) !== 65 || strlen($authSecret) < 16) { return 400; }
+    $asKey = openssl_pkey_new(['curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC]);
+    if ($asKey === false) { return 500; }
+    $details = openssl_pkey_get_details($asKey);
+    $asPublic = "\x04" . str_pad((string)$details['ec']['x'], 32, "\x00", STR_PAD_LEFT) . str_pad((string)$details['ec']['y'], 32, "\x00", STR_PAD_LEFT);
+    $uaRes = bochi_ec_public_resource($uaPublic);
+    if ($uaRes === false) { return 400; }
+    $secret = openssl_pkey_derive($uaRes, $asKey, 32);
+    if ($secret === false) { return 500; }
+    $salt = random_bytes(16);
+    // RFC 8291 key schedule: ECDH secret with the auth secret as extract salt,
+    $ikm = hash_hkdf('sha256', $secret, 32, "WebPush: info\x00" . $uaPublic . $asPublic, $authSecret);
+    $cek = hash_hkdf('sha256', $ikm, 16, "Content-Encoding: aes128gcm\x00", $salt);
+    $nonce = hash_hkdf('sha256', $ikm, 12, "Content-Encoding: nonce\x00", $salt);
+    $plain = $payloadJson . "\x02";
+    $tag = '';
+    $cipher = openssl_encrypt($plain, 'aes-128-gcm', $cek, OPENSSL_RAW_DATA, $nonce, $tag, '', 16);
+    if ($cipher === false) { return 500; }
+    $body = $salt . pack('N', 4096) . chr(65) . $asPublic . $cipher . $tag;
+    $jwt = bochi_vapid_jwt((string)$sub['endpoint'], $vapid);
+    $headers = [
+        'Content-Type: application/octet-stream',
+        'Content-Encoding: aes128gcm',
+        'Content-Length: ' . strlen($body),
+        'TTL: 86400',
+        'Urgency: high',
+        'Authorization: vapid t=' . $jwt . ', k=' . $vapid['public'],
+    ];
+    if (function_exists('curl_init')) {
+        $ch = curl_init((string)$sub['endpoint']);
+        curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body, CURLOPT_HTTPHEADER => $headers, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20]);
+        curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        return $code;
+    }
+    $ctx = stream_context_create(['http' => ['method' => 'POST', 'header' => implode("\r\n", $headers), 'content' => $body, 'timeout' => 20, 'ignore_errors' => true]]);
+    @file_get_contents((string)$sub['endpoint'], false, $ctx);
+    foreach (($http_response_header ?? []) as $h) { if (preg_match('/^HTTP\/\S+ (\d+)/', $h, $m)) { return (int)$m[1]; } }
+    return 0;
+}
+
+function bochi_reminders_run(PDO $db, array $body): void
+{
+    $key = (string)($body['key'] ?? '');
+    if (!hash_equals(bochi_cron_token(), $key)) { bochi_fail(403, 'cron_forbidden', 'Bad reminder key.'); }
+    $vapid = bochi_vapid();
+    $now = time();
+    $sent = 0;
+    $users = $db->query('SELECT * FROM users WHERE disabled_at IS NULL')->fetchAll() ?: [];
+    $sessions = $db->query("SELECT * FROM meetings WHERE status = 'scheduled' ORDER BY starts_at ASC")->fetchAll() ?: [];
+    foreach ($sessions as $sess) {
+        $start = strtotime((string)$sess['starts_at']);
+        if ($start === false || $start <= $now) { continue; }
+        foreach ($users as $user) {
+            $prefs = bochi_notify_prefs($db, $user);
+            $tz = new DateTimeZone((string)($user['timezone'] ?? 'UTC'));
+            foreach ($prefs['leads'] as $lead) {
+                if ($lead === 0) {
+                    $local = (new DateTimeImmutable('@' . $start))->setTimezone($tz)->setTime(9, 0);
+                    $sendAt = $local->getTimestamp();
+                } else {
+                    $sendAt = $start - $lead * 86400;
+                }
+                if ($now < $sendAt || $now >= $start) { continue; }
+                $check = $db->prepare('SELECT COUNT(*) FROM reminder_log WHERE session_id = ? AND user_id = ? AND lead_days = ?');
+                $check->execute([(int)$sess['id'], (int)$user['id'], $lead]);
+                if ((int)$check->fetchColumn() > 0) { continue; }
+                $when = (new DateTimeImmutable('@' . $start))->setTimezone($tz)->format('l, M j \a\t g:i A');
+                $partnerName = ((string)$user['player_key'] === 'bolu') ? 'Chihiro' : 'Boru-san';
+                $leadText = $lead === 7 ? 'in one week' : ($lead === 1 ? 'tomorrow' : 'today');
+                $title = 'BoChi session ' . $leadText;
+                $text = 'Your language session with ' . $partnerName . ' is ' . $leadText . ', ' . $when . ' (' . (int)$sess['duration_min'] . ' min). Google Meet link is in your Calendly confirmation.';
+                $channels = [];
+                $subs = $db->prepare('SELECT * FROM push_subs WHERE user_id = ?');
+                $subs->execute([(int)$user['id']]);
+                $pushOk = false;
+                foreach ($subs->fetchAll() ?: [] as $sub) {
+                    $code = bochi_webpush_send($sub, json_encode(['title' => $title, 'body' => $text, 'url' => '/']), $vapid);
+                    if ($code >= 200 && $code < 300) { $pushOk = true; }
+                    if ($code === 404 || $code === 410) { $db->prepare('DELETE FROM push_subs WHERE id = ?')->execute([(int)$sub['id']]); }
+                }
+                if ($pushOk) { $channels[] = 'push'; }
+                if ($prefs['email'] && !$pushOk) {
+                    $okMail = @mail((string)$user['email'], $title, $text . "\n\nOpen BoChi: https://bochi.bolu.tech/", 'From: BoChi <info@bolu.tech>');
+                    if ($okMail) { $channels[] = 'email'; }
+                }
+                if ($channels) {
+                    $db->prepare('INSERT OR IGNORE INTO reminder_log (session_id, user_id, lead_days, channels, sent_at) VALUES (?, ?, ?, ?, ?)')
+                        ->execute([(int)$sess['id'], (int)$user['id'], $lead, implode(',', $channels), bochi_now_iso()]);
+                    $sent++;
+                }
+            }
+        }
+    }
+    bochi_json_response(['ok' => true, 'sent' => $sent]);
+}
+
 function bochi_recordings_dir(): string
 {
     $config = bochi_config();
@@ -1620,6 +2062,7 @@ function bochi_recording_file(PDO $db): void
     exit;
 }
 
+if (!defined('BOCHI_LIBRARY')) {
 try {
     $db = bochi_db();
     $action = (string)($_GET['action'] ?? '');
@@ -1653,10 +2096,37 @@ try {
     if ($action === 'recording-delete' && $method !== 'POST') {
         bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
     }
+    if ($action === 'sessions' && !in_array($method, ['GET', 'POST'], true)) {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'session-update' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'session-delete' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'notify-prefs' && !in_array($method, ['GET', 'POST'], true)) {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'push-config' && $method !== 'GET') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'push-subscribe' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'push-unsubscribe' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'reminders-token' && $method !== 'GET') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
+    if ($action === 'reminders-run' && $method !== 'POST') {
+        bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
+    }
     if ($action === 'settings' && !in_array($method, ['GET', 'POST'], true)) {
         bochi_fail(405, 'method_not_allowed', 'Method not allowed.');
     }
-    if (in_array($action, ['register', 'login', 'logout', 'progress-xp', 'recording-upload', 'recording-delete'], true) || ($action === 'settings' && $method === 'POST') || ($action === 'progress' && $method === 'PUT') || ($action === 'recordings' && $method === 'POST')) {
+    if (in_array($action, ['register', 'login', 'logout', 'progress-xp', 'recording-upload', 'recording-delete', 'session-update', 'session-delete', 'push-subscribe', 'push-unsubscribe', 'reminders-run'], true) || ($action === 'settings' && $method === 'POST') || ($action === 'progress' && $method === 'PUT') || ($action === 'recordings' && $method === 'POST') || ($action === 'sessions' && $method === 'POST') || ($action === 'notify-prefs' && $method === 'POST')) {
         bochi_require_write_guard();
     }
 
@@ -1711,6 +2181,49 @@ try {
             $account = bochi_require_user($db);
             bochi_recordings_delete($db, $account, bochi_request_body());
             break;
+        case 'sessions':
+            $account = bochi_require_user($db);
+            if ($method === 'GET') {
+                bochi_sessions_list($db);
+            }
+            bochi_sessions_create($db, $account, bochi_request_body());
+            break;
+        case 'session-update':
+            $account = bochi_require_user($db);
+            bochi_sessions_update($db, bochi_request_body());
+            break;
+        case 'session-delete':
+            $account = bochi_require_user($db);
+            bochi_sessions_delete($db, bochi_request_body());
+            break;
+        case 'notify-prefs':
+            $account = bochi_require_user($db);
+            if ($method === 'GET') {
+                bochi_notify_prefs_get($db, $account);
+            }
+            bochi_notify_prefs_set($db, $account, bochi_request_body());
+            break;
+        case 'push-config':
+            $account = bochi_require_user($db);
+            $vapid = bochi_vapid();
+            bochi_json_response(['ok' => true, 'publicKey' => $vapid['public']]);
+            break;
+        case 'push-subscribe':
+            $account = bochi_require_user($db);
+            bochi_push_subscribe($db, $account, bochi_request_body());
+            break;
+        case 'push-unsubscribe':
+            $account = bochi_require_user($db);
+            bochi_push_unsubscribe($db, $account, bochi_request_body());
+            break;
+        case 'reminders-token':
+            $account = bochi_require_user($db);
+            if ((string)$account['player_key'] !== 'bolu') { bochi_fail(403, 'forbidden', 'Owner only.'); }
+            bochi_json_response(['ok' => true, 'token' => bochi_cron_token()]);
+            break;
+        case 'reminders-run':
+            bochi_reminders_run($db, bochi_request_body());
+            break;
         case 'settings':
             $account = bochi_require_user($db);
             if ($method === 'GET') {
@@ -1732,4 +2245,5 @@ try {
             'message' => 'Something went wrong. Try again later.',
         ],
     ], 500);
+}
 }
