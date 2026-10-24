@@ -6288,7 +6288,7 @@ input,textarea,select{ font-family:inherit; }
     <div class="g-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#6A5AE0"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#6A5AE0" stroke-width="2.2"/></svg></div>
     <h3>Members only</h3>
     <p id="gate-copy">This part of BoChi is for members.</p>
-    <p class="g-seats">BoChi has two seats: Boru-san and Chihiro-san.</p>
+    <p class="g-seats">BoChi has two seats, and both of them are taken.</p>
     <div class="g-btns">
       <button class="btn blue" onclick="gateSignIn()">Sign in</button>
       <button class="btn ghost" onclick="gateClose()">Keep browsing</button>
@@ -6297,10 +6297,31 @@ input,textarea,select{ font-family:inherit; }
 </div>
 <script>
   function isGuest(){ return true; } /* MOCK: everyone is a guest here */
+  /* Guest name scrub: the partner's name never appears to visitors */
+  function scrubPartnerName(root){
+    var walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, { acceptNode: function(n){
+      if (!n.nodeValue || !/chihiro/i.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      var t = n.parentElement && n.parentElement.tagName; if (t === "SCRIPT" || t === "STYLE") return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    var nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(n){
+      n.nodeValue = n.nodeValue
+        .replace(/Boru-san × Chihiro · Language Exchange/i, "A Private Language Exchange")
+        .replace(/Chihiro-san/gi, "your partner")
+        .replace(/Chihiro's/gi, "your partner's")
+        .replace(/Chihiro/gi, "your partner");
+    });
+  }
+  var _goOrig = go;
+  go = function(v){ _goOrig(v); setTimeout(function(){ scrubPartnerName(); }, 60); };
+  window.addEventListener("load", function(){ setTimeout(function(){ scrubPartnerName(); }, 700); setTimeout(function(){ scrubPartnerName(); }, 1600); });
+
   var GATE_THINGS = {
     video: "Watching videos is for members. You can browse the whole library, titles, levels, and all, but playback needs a seat.",
     cards: "Practicing the writing cards is for members. You can look through every script, but flipping, drawing, and tracking mastery needs a seat.",
     game: "The games are for members. You can see what is here, but playing needs a seat.",
+    study: "The daily study session is for members. It is built from your own path, your review queue, and your weakest script, so there is nothing generic to show here.",
     booking: "Booking a session is for members. The calendar is here to look at, but reserving a time needs a seat."
   };
   function gateSheet(kind){
@@ -6327,6 +6348,9 @@ input,textarea,select{ font-family:inherit; }
       /* featured player cover */
       var f = document.getElementById("watch-frame");
       if (f && f.parentElement){ f.parentElement.style.position = "relative"; f.parentElement.appendChild(memberCover("Members watch here", "The full video library is browsable. Playback is for the two seats.", "video")); }
+      /* daily session card lock */
+      var dc = document.querySelector(".daily-card");
+      if (dc && !dc.querySelector(".member-cover")){ dc.style.position = "relative"; dc.appendChild(memberCover("Members study here", "The daily session is planned for each member from their own path. Sign in with your seat to see yours.", "study")); }
       /* calendly cover */
       var cal = document.querySelector(".calendly-inline-widget");
       if (cal && cal.parentElement){ cal.parentElement.style.position = "relative"; var cov = memberCover("Members book here", "Session booking opens after sign-in.", "booking"); cal.parentElement.appendChild(cov); }
