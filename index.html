@@ -1115,7 +1115,7 @@ input,textarea,select{ font-family:inherit; }
         <div class="ph-grid">
           <button class="ph-tile" onclick="go('solo')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg></span><h4>Learn</h4><p>A guided path from zero: 6 chapters of lessons and checkpoints.</p><div class="stat" id="ph-stat-learn">Start Chapter 1</div></button>
           <button class="ph-tile pk" onclick="go('scripts')"><span class="ic"><span class="glyph">も</span></span><h4>Scripts</h4><p>Hiragana, katakana and kanji flip cards with memory hooks.</p><div class="stat"><span data-spct="all">0%</span> memorized · 316 cards</div></button>
-          <button class="ph-tile" onclick="go('solo')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span><h4>Practice</h4><p>Solo drills and trainers that unlock as you level up.</p><div class="stat" id="ph-stat-practice">Solo XP today: 0</div></button>
+          <button class="ph-tile" onclick="go('solo')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span><h4>Practice</h4><p>Solo drills and trainers that unlock as you level up.</p><div class="stat" id="ph-stat-practice">Solo Learning Points today: 0</div></button>
           <button class="ph-tile pk" onclick="go('watch')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg></span><h4>Watch</h4><p>Video lessons and easy Japanese news, refreshed weekly.</p><div class="stat">Videos + News of the Week</div></button>
           <button class="ph-tile" onclick="go('calendar')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><h4>Meetings</h4><p>Book a live session, join the call, and keep every recording and summary in one library.</p><div class="stat">Book · Join · Recordings</div></button>
           <button class="ph-tile pk" onclick="go('play')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg></span><h4>Play</h4><p>Nine games for session time: duels, quizzes, story chains and more.</p><div class="stat">9 game modes</div></button>
@@ -1123,7 +1123,7 @@ input,textarea,select{ font-family:inherit; }
         <div class="ph-seclabel">Your Progress</div>
         <div class="ph-stats">
           <div class="ph-stat"><div class="n" id="ph-p-level">Lv 1</div><div class="l">Level</div></div>
-          <div class="ph-stat"><div class="n" id="ph-p-xp">0</div><div class="l">XP</div></div>
+          <div class="ph-stat"><div class="n" id="ph-p-xp">0</div><div class="l">LEARNING POINTS</div></div>
           <div class="ph-stat"><div class="n"><span data-spct="all">0%</span></div><div class="l">Scripts</div></div>
           <div class="ph-stat"><div class="n" id="ph-p-lessons">0</div><div class="l">Lessons Done</div></div>
           <div class="ph-stat"><div class="n" id="ph-p-streak">0</div><div class="l">Day Streak</div></div>
@@ -1717,7 +1717,7 @@ input,textarea,select{ font-family:inherit; }
           <button class="back-link" onclick="go('home')">← All modes</button>
           <h2>Learn<span class="jp">まなぶ</span></h2>
         </div>
-        <p class="howto">Train on your own time, between meetings. First, pick who you are. Solo practice earns XP on your own journey and never touches the versus scoreboard. Your journey is a path of chapters: finish lessons in order, pass each chapter checkpoint, and the next chapter opens, alongside your XP levels.</p>
+        <p class="howto">Train on your own time, between meetings. First, pick who you are. Solo practice earns Learning Points on your own journey and never touches the versus scoreboard. Your journey is a path of chapters: finish lessons in order, pass each chapter checkpoint, and the next chapter opens, alongside your levels.</p>
         <div class="card" style="margin-bottom:16px">
           <div class="kicker">WRITING SYSTEMS · もじ</div>
           <h3 style="margin:8px 0 6px; font-size:21px; font-weight:800">Hiragana, Katakana, Kanji</h3>
@@ -1757,7 +1757,7 @@ input,textarea,select{ font-family:inherit; }
             </div>
             <div class="xp-track"><div class="xp-fill" id="solo-bar"></div></div>
             <div class="j-xp" id="solo-xp-line"></div>
-            <div class="j-solo" id="solo-today-line">Solo XP earned today: 0</div>
+            <div class="j-solo" id="solo-today-line">Solo Learning Points earned today: 0</div>
             <div class="btn-row" style="margin-top:12px">
               <button class="btn ghost small" onclick="accountTap()">Account</button>
               <button class="btn blue small" onclick="finishSolo()">Finish and See Solo Summary</button>
@@ -2309,7 +2309,7 @@ input,textarea,select{ font-family:inherit; }
        icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>'},
       {id:"phrases",color:"red",title:"Phrase Exchange",jp:"フレーズこうかん",desc:"Real phrases and idioms to teach each other, with listen buttons and out loud practice.",tags:[["Both players",""],["With audio",""]],
        icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4c-1.4 0-2.8-.3-4-.9L3 20l1.1-4.3A8.4 8.4 0 1 1 21 11.5z"/></svg>'},
-      {id:"solo",color:"blue",title:"Practice Solo",jp:"ひとりれんしゅう",desc:"Your chapter path, on your own time. Pick a profile, walk the lessons, pass checkpoints, and earn journey XP.",tags:[["Solo practice",""],["Chapters 1 to 6",""]],
+      {id:"solo",color:"blue",title:"Practice Solo",jp:"ひとりれんしゅう",desc:"Your chapter path, on your own time. Pick a profile, walk the lessons, pass checkpoints, and earn journey Learning Points.",tags:[["Solo practice",""],["Chapters 1 to 6",""]],
        icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.4 4.2-5 7.5-5s6.1 1.6 7.5 5"/></svg>'}
     ];
     var PHASES = [
@@ -3472,7 +3472,7 @@ input,textarea,select{ font-family:inherit; }
         var th = $("j-theme-" + p); if(th) th.textContent = p === "bolu" ? L.jpTheme : L.enTheme;
         var bar = $("j-bar-" + p); if(bar) bar.style.width = (lv >= 6 ? 100 : into) + "%";
         var xp = $("j-xp-" + p);
-        if(xp) xp.textContent = lv >= 6 ? state.journey[p].xp + " XP · top level reached" : into + " / " + XP_PER_LEVEL + " XP to Level " + (lv + 1) + " · " + state.journey[p].xp + " XP total";
+        if(xp) xp.textContent = lv >= 6 ? state.journey[p].xp + " Learning Points · top level reached" : into + " / " + XP_PER_LEVEL + " Learning Points to Level " + (lv + 1) + " · " + state.journey[p].xp + " Learning Points total";
         var path = $("j-path-" + p);
         if(path){
           path.innerHTML = "";
@@ -3489,7 +3489,7 @@ input,textarea,select{ font-family:inherit; }
             ? "<b>Latest unlock:</b> " + esc(state.lastUnlock[p])
             : (lv >= 6 ? "Every level unlocked. Confident exchange!" : "<b>Next unlock:</b> Level " + (lv + 1) + " · " + LEVELS[lv].name + ". " + (UNLOCK_TEXT[p][lv + 1] || ""));
         }
-        var sj = $("j-solo-" + p); if(sj) sj.textContent = "Solo XP today: " + state.soloToday[p];
+        var sj = $("j-solo-" + p); if(sj) sj.textContent = "Solo Learning Points today: " + state.soloToday[p];
       });
       renderPathLines();
       renderTierBars();
@@ -3564,7 +3564,7 @@ input,textarea,select{ font-family:inherit; }
       var ls = $("ph-stat-learn");
       if(ls) ls.textContent = "Chapter " + curCh + " of 6 · " + totDone + " lessons done";
       var ps = $("ph-stat-practice");
-      if(ps) ps.textContent = "Solo XP today: " + state.soloToday[p] + (rev ? " · " + rev + " to review" : "");
+      if(ps) ps.textContent = "Solo Learning Points today: " + state.soloToday[p] + (rev ? " · " + rev + " to review" : "");
       var pl = $("ph-p-level"); if(pl) pl.textContent = "Lv " + levelOf(p);
       var px = $("ph-p-xp"); if(px) px.textContent = state.journey[p].xp;
       var pd = $("ph-p-lessons"); if(pd) pd.textContent = totDone;
@@ -3592,7 +3592,7 @@ input,textarea,select{ font-family:inherit; }
           btns += '<button class="tier-btn' + (n === eff ? " on" : "") + '" onclick="setGameTier(\'' + game + '\',' + n + ')">L' + n + "</button>";
         }
         var note;
-        if(practiceTier[game] && eff > base) note = "Practice mode: playing above the journey level. Points still count as XP.";
+        if(practiceTier[game] && eff > base) note = "Practice mode: playing above the journey level. Points still count as Learning Points.";
         else if(practiceTier[game] && eff < base) note = "Practice mode: revisiting an earlier level.";
         else note = "Content matches " + (game === "hiragana" ? "Boru-san's" : "the table") + " journey level. Pick a higher level to practice ahead.";
         el.innerHTML = '<span class="tier-label">' + GAME_TIER_LABEL[game] + " L" + base + " · Practice level</span>" + btns + '<span class="tier-note">' + note + "</span>";
@@ -3735,9 +3735,9 @@ input,textarea,select{ font-family:inherit; }
         if(item.streak >= 2){
           delete state.review[p][item.front + "|" + item.answer];
           r.cleared++;
-          fb.textContent = "Cleared! +5 XP · " + item.teach;
+          fb.textContent = "Cleared! +5 Learning Points · " + item.teach;
         } else {
-          fb.textContent = "Right! +5 XP · One more correct in a row and it clears. " + item.teach;
+          fb.textContent = "Right! +5 Learning Points · One more correct in a row and it clears. " + item.teach;
         }
         fb.className = "feedback good";
       } else {
@@ -3840,8 +3840,8 @@ input,textarea,select{ font-family:inherit; }
       $("solo-track").textContent = (p === "bolu" ? "Japanese Journey" : "English Journey") + " · Level " + lv + " · " + LEVELS[lv - 1].name;
       $("solo-badge").textContent = "LEVEL " + lv;
       $("solo-bar").style.width = (lv >= 6 ? 100 : xpIntoLevel(p)) + "%";
-      $("solo-xp-line").textContent = lv >= 6 ? state.journey[p].xp + " XP · top level" : xpIntoLevel(p) + " / " + XP_PER_LEVEL + " XP to Level " + (lv + 1);
-      $("solo-today-line").textContent = "Solo XP earned today: " + state.soloToday[p] + " · this visit: " + solo.xpSession;
+      $("solo-xp-line").textContent = lv >= 6 ? state.journey[p].xp + " Learning Points · top level" : xpIntoLevel(p) + " / " + XP_PER_LEVEL + " Learning Points to Level " + (lv + 1);
+      $("solo-today-line").textContent = "Solo Learning Points earned today: " + state.soloToday[p] + " · this visit: " + solo.xpSession;
     }
     function awardSoloXP(pts){
       var p = solo.player; if(!p || !pts) return;
@@ -3906,7 +3906,7 @@ input,textarea,select{ font-family:inherit; }
           var allDone = cnt.done === cnt.total;
           var cp = document.createElement("button");
           cp.className = "checkpoint-card" + (cpDone ? " passed" : (unlocked && allDone ? "" : " locked"));
-          cp.innerHTML = '<span class="cp-ico">' + FLAG_SVG + '</span><span><h3>Checkpoint</h3><p>Test your skills before you move to the next chapter. Six questions from this chapter, four or more correct passes, and passing earns +30 XP.</p></span>' +
+          cp.innerHTML = '<span class="cp-ico">' + FLAG_SVG + '</span><span><h3>Checkpoint</h3><p>Test your skills before you move to the next chapter. Six questions from this chapter, four or more correct passes, and passing earns +30 Learning Points.</p></span>' +
             '<span class="cp-state">' + (cpDone ? "Passed ✓" : (unlocked && allDone ? "Start" : "Locked")) + "</span>";
           cp.addEventListener("click", function(){
             if(cpDone){ toast("Checkpoint already passed. Practice any lesson to keep sharp."); return; }
@@ -4111,7 +4111,7 @@ input,textarea,select{ font-family:inherit; }
       if(ok){
         sl.correct++;
         awardSoloXP(10);
-        fb.textContent = "Correct! +10 XP · " + why;
+        fb.textContent = "Correct! +10 Learning Points · " + why;
         fb.className = "feedback good";
       } else {
         fb.textContent = "Not quite. " + why + " It is waiting for you in Review.";
@@ -4139,7 +4139,7 @@ input,textarea,select{ font-family:inherit; }
       var rc = reviewChapterCount(p, sl.ch);
       var html = lessonHead() +
         '<div class="big-word" style="text-align:center">' + got + " of " + total + " correct</div>" +
-        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete. The node on your path is checked, and the XP is on your journey." : "Good practice, and the XP still counts. Score 60% or more to check this node, then try again when you are ready.") +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete. The node on your path is checked, and the Learning Points are on your journey." : "Good practice, and the Learning Points still count. Score 60% or more to check this node, then try again when you are ready.") +
         (rc ? " " + rc + " thing" + (rc === 1 ? "" : "s") + " from this chapter " + (rc === 1 ? "is" : "are") + " waiting in Review on this page." : "") + "</p>" +
         '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="quitLesson()">Back to Path</button>' +
         (pass ? "" : '<button class="btn ghost" onclick="retryLesson()">Try Again</button>') + "</div>";
@@ -4173,7 +4173,7 @@ input,textarea,select{ font-family:inherit; }
         return;
       }
       var html = lessonHead() +
-        '<p class="howto" style="margin-top:8px">Listen, repeat out loud, and tap any underlined word in a phrase to look it up. Mark each phrase as said for +5 XP, then take the quiz to check the lesson.</p><div class="phrase-list">';
+        '<p class="howto" style="margin-top:8px">Listen, repeat out loud, and tap any underlined word in a phrase to look it up. Mark each phrase as said for +5 Learning Points, then take the quiz to check the lesson.</p><div class="phrase-list">';
       les.items.forEach(function(it, i){
         var said = !!sl.said[sl.ch + ":" + sl.idx + ":" + i];
         html += '<div class="phrase-item' + (said ? " done" : "") + '">' +
@@ -4292,7 +4292,7 @@ input,textarea,select{ font-family:inherit; }
       if(ok){
         sl.correct++;
         awardSoloXP(10);
-        fb.textContent = "Correct! +10 XP · " + item.big + " = " + item.mean;
+        fb.textContent = "Correct! +10 Learning Points · " + item.big + " = " + item.mean;
         fb.className = "feedback good";
       } else {
         fb.textContent = "Not quite. The phrase goes: " + item.big + (item.read ? " (" + item.read + ")" : "") + " = " + item.mean + " It is waiting for you in Review.";
@@ -4315,7 +4315,7 @@ input,textarea,select{ font-family:inherit; }
       if(ok){
         sl.correct++;
         awardSoloXP(10);
-        fb.textContent = "Correct! +10 XP · " + item.big + " = " + item.mean;
+        fb.textContent = "Correct! +10 Learning Points · " + item.big + " = " + item.mean;
         fb.className = "feedback good";
       } else {
         fb.textContent = "Not quite. " + item.big + " = " + item.mean + " It is waiting for you in Review.";
@@ -4364,7 +4364,7 @@ input,textarea,select{ font-family:inherit; }
       $("lesson-options").querySelectorAll(".opt").forEach(function(b){ b.disabled = true; });
       btn.classList.add(ok ? "correct" : "wrong");
       var fb = $("lesson-feedback");
-      if(ok){ sl.correct++; awardSoloXP(10); fb.textContent = "Correct! +10 XP · " + q.teach; fb.className = "feedback good"; }
+      if(ok){ sl.correct++; awardSoloXP(10); fb.textContent = "Correct! +10 Learning Points · " + q.teach; fb.className = "feedback good"; }
       else {
         fb.textContent = "Not quite. " + q.teach + " It is waiting for you in Review."; fb.className = "feedback bad";
         if(q.kind === "char") addReview(solo.player, { front:q.big, sub:"", answer:q.label, pool:"reads", teach:q.teach, ch:sl.ch });
@@ -4391,7 +4391,7 @@ input,textarea,select{ font-family:inherit; }
       var rc2 = reviewChapterCount(p, sl.ch);
       var html = '<div class="prompt-label" style="text-align:center">CHECKPOINT RESULT</div>' +
         '<div class="big-word" style="text-align:center">' + sl.correct + " of " + sl.qs.length + " correct</div>" +
-        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Checkpoint passed, +30 XP bonus. The next chapter on your path is open." : "Not yet. Four or more correct passes the checkpoint. Review the lessons above and try again, the XP you earned still counts.") +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Checkpoint passed, +30 Learning Points bonus. The next chapter on your path is open." : "Not yet. Four or more correct passes the checkpoint. Review the lessons above and try again, the Learning Points you earned still count.") +
         (rc2 ? " " + rc2 + " thing" + (rc2 === 1 ? "" : "s") + " from this chapter " + (rc2 === 1 ? "is" : "are") + " waiting in Review on this page, and they will join the next session warm up." : "") + "</p>" +
         '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="quitLesson()">Back to Path</button></div>';
       stageHTML(html);
@@ -4406,11 +4406,11 @@ input,textarea,select{ font-family:inherit; }
       lines.push("BoChi SOLO PRACTICE · ひとりれんしゅう");
       lines.push((p === "bolu" ? "Boru-san" : "Chihiro-san") + " practiced " + (p === "bolu" ? "Japanese" : "English") + " solo.");
       lines.push("Sets practiced: " + (solo.practiced.length ? solo.practiced.join(" / ") : "warm up only"));
-      lines.push("Solo XP earned this visit: " + solo.xpSession + " · today: " + state.soloToday[p]);
+      lines.push("Solo Learning Points earned this visit: " + solo.xpSession + " · today: " + state.soloToday[p]);
       lines.push("Review waiting: " + reviewCount(p) + " things to revisit");
-      lines.push("Journey now: Level " + lv + " · " + LEVELS[lv - 1].name + " (" + state.journey[p].xp + " XP)");
+      lines.push("Journey now: Level " + lv + " · " + LEVELS[lv - 1].name + " (" + state.journey[p].xp + " Learning Points)");
       lines.push("Chapters completed: " + doneCh + " of 6");
-      lines.push("Both journeys: Boru-san is Level " + levelOf("bolu") + " (" + state.journey.bolu.xp + " XP) · Chihiro is Level " + levelOf("chihiro") + " (" + state.journey.chihiro.xp + " XP)");
+      lines.push("Both journeys: Boru-san is Level " + levelOf("bolu") + " (" + state.journey.bolu.xp + " Learning Points) · Chihiro is Level " + levelOf("chihiro") + " (" + state.journey.chihiro.xp + " Learning Points)");
       lines.push("Mata ne! またね · See you at the next session.");
       return lines.join("\n");
     }
@@ -4420,7 +4420,7 @@ input,textarea,select{ font-family:inherit; }
       var lv = levelOf(solo.player);
       var card = $("solo-summary-card");
       card.style.display = "block";
-      $("solo-summary-line").textContent = "This visit: " + solo.xpSession + " solo XP earned, " + solo.practiced.length + " set" + (solo.practiced.length === 1 ? "" : "s") + " practiced. Journey: Level " + lv + " · " + LEVELS[lv - 1].name + (lv >= 6 ? ", top level reached." : ", " + xpIntoLevel(solo.player) + " of " + XP_PER_LEVEL + " XP toward the next level.");
+      $("solo-summary-line").textContent = "This visit: " + solo.xpSession + " Learning Points earned, " + solo.practiced.length + " set" + (solo.practiced.length === 1 ? "" : "s") + " practiced. Journey: Level " + lv + " · " + LEVELS[lv - 1].name + (lv >= 6 ? ", top level reached." : ", " + xpIntoLevel(solo.player) + " of " + XP_PER_LEVEL + " Learning Points toward the next level.");
       $("solo-text").value = buildSoloText();
       card.scrollIntoView({ behavior:"smooth", block:"start" });
     }
@@ -4451,9 +4451,9 @@ input,textarea,select{ font-family:inherit; }
       lines.push("BoChi SESSION SUMMARY · ぼち");
       var b = state.scores.bolu, c = state.scores.chihiro;
       lines.push("Score: Boru-san " + b + " · Chihiro " + c + (b === c ? " (tie game)" : (b > c ? " · Boru-san wins" : " · Chihiro wins")));
-      lines.push("Journey: Boru-san is Level " + levelOf("bolu") + " · " + LEVELS[levelOf("bolu")-1].name + " (" + state.journey.bolu.xp + " XP) · Chihiro is Level " + levelOf("chihiro") + " · " + LEVELS[levelOf("chihiro")-1].name + " (" + state.journey.chihiro.xp + " XP)");
+      lines.push("Journey: Boru-san is Level " + levelOf("bolu") + " · " + LEVELS[levelOf("bolu")-1].name + " (" + state.journey.bolu.xp + " Learning Points) · Chihiro is Level " + levelOf("chihiro") + " · " + LEVELS[levelOf("chihiro")-1].name + " (" + state.journey.chihiro.xp + " Learning Points)");
       if(state.unlocks.length){ lines.push("Unlocks: " + state.unlocks.join(" / ")); }
-      lines.push("Solo XP today: Boru-san " + state.soloToday.bolu + " · Chihiro " + state.soloToday.chihiro);
+      lines.push("Solo Learning Points today: Boru-san " + state.soloToday.bolu + " · Chihiro " + state.soloToday.chihiro);
       lines.push("Quiz accuracy: " + acc + "% (" + state.correct + " of " + state.asked + " correct)");
       lines.push("Words learned (" + words.length + "): " + (words.length ? words.join(" / ") : "none yet"));
       lines.push("Phrases practiced (" + phrases.length + "): " + (phrases.length ? phrases.join(" / ") : "none yet"));
@@ -4486,12 +4486,12 @@ input,textarea,select{ font-family:inherit; }
         ["bolu","chihiro"].forEach(function(p){
           var lv2 = levelOf(p);
           var doneCh = [1,2,3,4,5,6].filter(function(ch){ return chapterComplete(p, ch); }).length;
-          rows += '<div class="sum-journey-row"><b>' + (p === "bolu" ? "Boru-san" : "Chihiro-san") + "</b><span>Level " + lv2 + " · " + LEVELS[lv2-1].name + " · " + state.journey[p].xp + " XP · " + doneCh + " of 6 chapters complete · Solo XP today: " + state.soloToday[p] + " · Review waiting: " + reviewCount(p) + "</span></div>";
+          rows += '<div class="sum-journey-row"><b>' + (p === "bolu" ? "Boru-san" : "Chihiro-san") + "</b><span>Level " + lv2 + " · " + LEVELS[lv2-1].name + " · " + state.journey[p].xp + " Learning Points · " + doneCh + " of 6 chapters complete · Solo Learning Points today: " + state.soloToday[p] + " · Review waiting: " + reviewCount(p) + "</span></div>";
         });
         if(state.unlocks.length){
           rows += '<ul class="sum-unlocks">' + state.unlocks.map(function(u){ return "<li>" + esc(u) + "</li>"; }).join("") + "</ul>";
         } else {
-          rows += '<p class="howto" style="margin:10px 0 0">No level ups yet this session. Every 100 XP opens the next level, and chapter checkpoints in Practice Solo unlock new content too.</p>';
+          rows += '<p class="howto" style="margin:10px 0 0">No level ups yet this session. Every 100 Learning Points opens the next level, and chapter checkpoints in Practice Solo unlock new content too.</p>';
         }
         jb.innerHTML = rows;
       }
@@ -5833,7 +5833,7 @@ input,textarea,select{ font-family:inherit; }
         '<div class="card"><div class="kicker">OVERALL MASTERY</div>' +
           '<div class="st-ringwrap"><div class="st-ring"><svg width="118" height="118" viewBox="0 0 118 118"><circle cx="59" cy="59" r="50" fill="none" stroke="var(--surface2)" stroke-width="11"/><circle cx="59" cy="59" r="50" fill="none" stroke="var(--blue)" stroke-width="11" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="' + off + '"/></svg><div class="st-pct">' + mastery + '%</div></div>' +
           '<div class="st-parts">' + partsHtml + '</div></div>' +
-          '<div class="st-chips"><div class="st-chip"><b>Level ' + levelOf(p) + '</b><span>XP level</span></div><div class="st-chip"><b>' + (state.journey[p] ? state.journey[p].xp : 0) + '</b><span>Total XP</span></div><div class="st-chip"><b>Ch. ' + curCh + '</b><span>Current</span></div></div>' +
+          '<div class="st-chips"><div class="st-chip"><b>Level ' + levelOf(p) + '</b><span>Points level</span></div><div class="st-chip"><b>' + (state.journey[p] ? state.journey[p].xp : 0) + '</b><span>Total points</span></div><div class="st-chip"><b>Ch. ' + curCh + '</b><span>Current</span></div></div>' +
           '<p style="margin:12px 0 0; color:var(--muted); font-size:12.5px; font-weight:600; line-height:1.55">Mastery blends lessons finished, characters memorized, answers you get right, and how clear your review queue is.' + (accPct === null || s.ans < 20 ? " Accuracy joins the blend after 20 logged answers." : "") + '</p></div>' +
         '<div class="card"><div class="kicker">TIME SPENT \u00B7 LAST 30 DAYS</div>' +
           '<div class="st-bars">' + bars + '</div><div class="st-axis"><span>' + firstLbl + '</span><span>Today</span></div>' +
