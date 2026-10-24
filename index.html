@@ -87,6 +87,11 @@ input,textarea,select{ font-family:inherit; }
 .logo-name{ font-weight:800; font-size:22px; letter-spacing:-.01em; line-height:1; }
 .logo-name .jp{ font-weight:700; color:var(--shu); font-size:15px; margin-left:5px; letter-spacing:0; }
 .logo-sub{ font-size:9px; color:var(--muted); font-weight:600; letter-spacing:.07em; margin-top:3px; text-transform:uppercase; }
+.brand-logo{ display:block; height:32px; width:auto; }
+.brand-dark{ display:none; }
+:root[data-theme="dark"] .brand-dark{ display:block; }
+:root[data-theme="dark"] .brand-light{ display:none; }
+.side-logo .brand-logo{ height:25px; }
 .topbar-right{ margin-left:auto; display:flex; gap:4px; flex-wrap:wrap; background:var(--pill); border-radius:999px; padding:3px; }
 .chip-btn{
   border:none; background:transparent; color:var(--ink-soft);
@@ -890,14 +895,9 @@ input,textarea,select{ font-family:inherit; }
 
       <header class="topbar">
         <div class="logo">
-          <svg class="logo-mark" viewBox="0 0 64 64" aria-hidden="true">
-            <path d="M8 10h34a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-11 10v-10H8a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6z" fill="#6A5AE0" transform="translate(2,-2)"/>
-            <path d="M24 26h32a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6h-3v8l-10-8H24a6 6 0 0 1-6-6V32a6 6 0 0 1 6-6z" fill="#1D1D1F" opacity=".92"/>
-            <circle cx="16" cy="22" r="3" fill="#fff"/><circle cx="26" cy="22" r="3" fill="#fff"/><circle cx="36" cy="22" r="3" fill="#fff"/>
-            <text x="40" y="45" font-size="15" font-weight="800" fill="#fff" font-family="-apple-system, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif">あ</text>
-          </svg>
           <div>
-            <div class="logo-name">BoChi<span class="jp">ぼち</span></div>
+            <img class="brand-logo brand-light" src="bochi-logo-secondary-color.svg" alt="BoChi" />
+            <img class="brand-logo brand-dark" src="bochi-logo-primary-white.svg" alt="BoChi" />
             <div class="logo-sub">BORU-SAN × CHIHIRO · LANGUAGE EXCHANGE</div>
           </div>
         </div>
@@ -915,7 +915,7 @@ input,textarea,select{ font-family:inherit; }
         </button>
       </header>
       <aside class="sidebar" aria-label="Sidebar navigation">
-        <div class="side-logo">BoChi <span class="jp">ぼち</span></div>
+        <div class="side-logo"><img class="brand-logo brand-light" src="bochi-logo-secondary-color.svg" alt="BoChi" /><img class="brand-logo brand-dark" src="bochi-logo-primary-white.svg" alt="BoChi" /></div>
         <button class="side-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="side-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="side-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
