@@ -3199,6 +3199,7 @@ input,textarea,select{ font-family:inherit; }
           '<span class="wl-thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg">' +
           (v.start ? '<span class="wl-feat">START HERE</span>' : '') +
           (v.lvl ? '<span class="wl-lvl">' + v.lvl + '</span>' : '') +
+          (window.__bochiGuest ? '<span class="wl-lock"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#fff"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#fff" stroke-width="2.6"/></svg>MEMBERS</span>' : '') +
           '<span class="wl-play">▶</span>' + (v.dur ? '<span class="wl-dur">' + v.dur + '</span>' : '') + '</span>' +
           '<span class="wl-body"><span class="wl-title">' + v.t + '</span>' +
           '<span class="wl-meta" style="display:block">' + v.ch + '</span>' +
@@ -4655,7 +4656,7 @@ input,textarea,select{ font-family:inherit; }
     function onAuthed(body) {
       authState.account = body.account; authState.partner = body.partner;
       hydrateProgress(body.progressByPlayer, true);
-      updateAccountBtn(); renderAuth();
+      updateAccountBtn(); renderAuth(); applyMemberMode();
       setSync("Saved to your account.");
       toast("Welcome, " + body.account.displayName + ".");
       var dest = authState.returnTo || "home"; authState.returnTo = null;
@@ -4684,7 +4685,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function onSignedOut() {
       authState.account = null; authState.partner = null; xpOutbox = [];
-      updateAccountBtn(); renderAuth();
+      updateAccountBtn(); renderAuth(); applyGuestMode();
     }
     function authLogout() {
       apiCall("logout", { method: "POST", body: {} }).catch(function () { return null; }).then(function () {
@@ -4762,11 +4763,11 @@ input,textarea,select{ font-family:inherit; }
       apiCall("me").then(function (res) {
         if (res.status === 200 && res.body.ok) {
           authState.account = res.body.account; authState.partner = res.body.partner;
-          updateAccountBtn(); renderAuth();
+          updateAccountBtn(); renderAuth(); applyMemberMode();
           return apiCall("progress").then(function (r2) { if (r2.status === 200) hydrateProgress(r2.body.progressByPlayer, true); });
         }
-        updateAccountBtn(); renderAuth();
-      }).catch(function () { updateAccountBtn(); });
+        updateAccountBtn(); renderAuth(); applyGuestMode();
+      }).catch(function () { updateAccountBtn(); applyGuestMode(); });
       document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") { flushXP(); } });
     }
 
@@ -6260,6 +6261,141 @@ input,textarea,select{ font-family:inherit; }
       box.innerHTML = SCRIPT_DEFS.map(function (def) { return '<div class="card script-sec" id="script-sec-' + def.key + '">' + scriptSectionHTML(def, true) + "</div>"; }).join("");
       refreshScriptProgress();
     }
+</script>
+
+<style>
+  .guest-banner{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:linear-gradient(120deg,#efe9ff,#fdeef6); border:1.5px solid #d9d0f7; border-radius:18px; padding:14px 18px; margin:0 0 18px; }
+  [data-theme="dark"] .guest-banner{ background:linear-gradient(120deg,#241d3f,#33202f); border-color:#453a75; }
+  .guest-banner .gb-ic{ width:38px; height:38px; border-radius:12px; background:#6A5AE0; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .guest-banner p{ margin:0; font-size:14.5px; line-height:1.5; color:var(--ink); flex:1 1 260px; }
+  .wl-lock{ position:absolute; bottom:8px; left:8px; display:inline-flex; align-items:center; gap:5px; background:rgba(20,16,31,.85); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.06em; padding:4px 9px; border-radius:99px; z-index:3; }
+  .member-cover{ position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding:20px; background:linear-gradient(160deg, rgba(106,90,224,.94), rgba(222,123,169,.9)); color:#fff; border-radius:inherit; }
+  .member-cover .mc-ic{ width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; }
+  .member-cover h4{ margin:2px 0 0; font-size:19px; color:#fff; }
+  .member-cover p{ margin:0; font-size:13.5px; line-height:1.5; color:rgba(255,255,255,.94); max-width:340px; }
+  .member-cover .btn{ background:#fff; color:#4c3ec2; margin-top:6px; }
+  #gate-sheet{ position:fixed; inset:0; z-index:300; display:none; align-items:flex-end; justify-content:center; background:rgba(20,16,31,.45); }
+  #gate-sheet.on{ display:flex; }
+  .gate-card{ background:#FBFAFF; width:100%; max-width:460px; border-radius:24px 24px 0 0; padding:26px 24px 30px; text-align:center; box-shadow:0 -12px 40px rgba(20,16,31,.25); }
+  @media (min-width:760px){ #gate-sheet{ align-items:center; } .gate-card{ border-radius:24px; } }
+  [data-theme="dark"] .gate-card{ background:#1E1830; }
+  .gate-card .g-ic{ width:56px; height:56px; margin:0 auto 12px; border-radius:50%; background:#efe9ff; display:flex; align-items:center; justify-content:center; }
+  .gate-card h3{ margin:0 0 6px; font-size:21px; }
+  .gate-card p{ margin:0 0 6px; font-size:14.5px; line-height:1.55; color:var(--ink-soft); }
+  .gate-card .g-seats{ font-size:12.5px; color:var(--ink-faint); margin-bottom:16px; }
+  .gate-card .g-btns{ display:flex; flex-direction:column; gap:9px; }
+</style>
+<div id="gate-sheet" role="dialog" aria-modal="true">
+  <div class="gate-card">
+    <div class="g-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#6A5AE0"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#6A5AE0" stroke-width="2.2"/></svg></div>
+    <h3>Members only</h3>
+    <p id="gate-copy">This part of BoChi is for members.</p>
+    <p class="g-seats">BoChi has two seats, and both of them are taken.</p>
+    <div class="g-btns">
+      <button class="btn blue" onclick="gateSignIn()">Sign in</button>
+      <button class="btn ghost" onclick="gateClose()">Keep browsing</button>
+    </div>
+  </div>
+</div>
+<script>
+  /* ================= GUEST GATE: browse everything, use nothing ================= */
+  var GATE_THINGS = {
+    video: "Watching videos is for members. You can browse the whole library, titles, levels, and all, but playback needs a seat.",
+    cards: "Practicing the writing cards is for members. You can look through every script, but flipping, drawing, and tracking mastery needs a seat.",
+    game: "The games are for members. You can see what is here, but playing needs a seat.",
+    study: "The daily study session is planned for each member from their own path. Sign in with your seat to run yours.",
+    booking: "Booking a session is for members. The calendar is here to look at, but reserving a time needs a seat.",
+    call: "Joining the call is for members. The Meet call is where the two seats talk, live.",
+    activity: "Session activities are for members. They run live between the two seats, with points and turns."
+  };
+  function gateSheet(kind){
+    var c = document.getElementById("gate-copy"); if (c) c.textContent = GATE_THINGS[kind] || GATE_THINGS.game;
+    document.getElementById("gate-sheet").classList.add("on");
+  }
+  function gateClose(){ document.getElementById("gate-sheet").classList.remove("on"); }
+  function gateSignIn(){ gateClose(); go("auth"); }
+  document.getElementById("gate-sheet").addEventListener("click", function(e){ if (e.target === this) gateClose(); });
+  function guestGate(kind){ if (authState.account) return false; gateSheet(kind); return true; }
+  function gateWrap(name, kind){
+    var orig = window[name]; if (typeof orig !== "function") return;
+    window[name] = function(){ if (guestGate(kind)) return; return orig.apply(this, arguments); };
+  }
+  gateWrap("playVid", "video");
+  gateWrap("flipCard", "cards"); gateWrap("openCardStage", "cards"); gateWrap("stageFlip", "cards"); gateWrap("markAllScripts", "cards");
+  gateWrap("startHiragana", "game"); gateWrap("startDuel", "game"); gateWrap("startTranslate", "game"); gateWrap("startCulture", "game"); gateWrap("startWatchQuiz", "game"); gateWrap("startShadow", "game");
+  gateWrap("meetInstant", "call");
+  gateWrap("nextTopic", "activity"); gateWrap("rouletteDone", "activity"); gateWrap("finishSession", "activity"); gateWrap("resetSession", "activity"); gateWrap("addStorySentence", "activity");
+  gateWrap("dailyStudyNow", "study"); gateWrap("dailyGoLesson", "study"); gateWrap("dailyGoReview", "study"); gateWrap("dailyGoDrill", "study"); gateWrap("dailyPhraseDone", "study");
+
+  /* ---- partner name: never shown to visitors ---- */
+  var _scrubbed = new Map(), _scrubObs = null, _scrubTimer = null;
+  function scrubPartnerName(){
+    if (authState.account) return;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: function(n){
+      if (!n.nodeValue || !/chihiro/i.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      var t = n.parentElement && n.parentElement.tagName; if (t === "SCRIPT" || t === "STYLE") return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    var nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(n){
+      if (!_scrubbed.has(n)) _scrubbed.set(n, n.nodeValue);
+      n.nodeValue = n.nodeValue
+        .replace(/Boru-san × Chihiro · Language Exchange/i, "A Private Language Exchange")
+        .replace(/Chihiro-san/gi, "your partner")
+        .replace(/Chihiro's/gi, "your partner's")
+        .replace(/Chihiro/gi, "your partner");
+    });
+  }
+  function restorePartnerName(){
+    _scrubbed.forEach(function(orig, n){ if (n.isConnected) n.nodeValue = orig; });
+    _scrubbed.clear();
+  }
+  function scrubWatch(on){
+    if (on && !_scrubObs){
+      _scrubObs = new MutationObserver(function(){ clearTimeout(_scrubTimer); _scrubTimer = setTimeout(scrubPartnerName, 120); });
+      _scrubObs.observe(document.body, { subtree: true, childList: true, characterData: true });
+    } else if (!on && _scrubObs){ _scrubObs.disconnect(); _scrubObs = null; }
+  }
+
+  /* ---- guest dressing: banner + covers ---- */
+  var _featSrc = null;
+  function memberCoverEl(title, sub, kind){
+    var d = document.createElement("div"); d.className = "member-cover";
+    d.innerHTML = '<div class="mc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#fff"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#fff" stroke-width="2.2"/></svg></div><h4>' + title + '</h4><p>' + sub + '</p><button class="btn" onclick="gateSheet(\'' + kind + '\')">Sign in to continue</button>';
+    return d;
+  }
+  function applyGuestMode(){
+    window.__bochiGuest = true;
+    var home = document.getElementById("view-home");
+    if (home && !document.getElementById("guest-banner")){
+      var bn = document.createElement("div"); bn.className = "guest-banner"; bn.id = "guest-banner";
+      bn.innerHTML = '<div class="gb-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#fff"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#fff" stroke-width="2.4"/></svg></div><p><b>You are browsing as a guest.</b> Look around everything: the lessons, the scripts, the video library. To watch, practice, and play, sign in with your seat.</p><button class="btn blue" onclick="go(\'auth\')">Sign in</button>';
+      home.insertBefore(bn, home.firstChild);
+    }
+    var f = document.getElementById("watch-frame");
+    if (f && f.parentElement && !f.parentElement.querySelector(".member-cover")){
+      if (_featSrc === null) _featSrc = f.getAttribute("src");
+      f.parentElement.style.position = "relative";
+      f.parentElement.appendChild(memberCoverEl("Members watch here", "The full video library is browsable. Playback is for the two seats.", "video"));
+      f.setAttribute("src", "about:blank");
+    }
+    var cal = document.querySelector(".calendly-inline-widget");
+    if (cal && cal.parentElement && !cal.parentElement.querySelector(".member-cover")){
+      cal.parentElement.style.position = "relative";
+      cal.parentElement.appendChild(memberCoverEl("Members book here", "Session booking opens after sign-in.", "booking"));
+    }
+    renderWatchLib();
+    scrubWatch(true); scrubPartnerName();
+  }
+  function applyMemberMode(){
+    window.__bochiGuest = false;
+    var bn = document.getElementById("guest-banner"); if (bn) bn.remove();
+    document.querySelectorAll(".member-cover").forEach(function(c){ c.remove(); });
+    var f = document.getElementById("watch-frame");
+    if (f && _featSrc !== null && f.getAttribute("src") === "about:blank") f.setAttribute("src", _featSrc);
+    scrubWatch(false); restorePartnerName();
+    renderWatchLib();
+  }
 </script>
 </body>
 </html>
