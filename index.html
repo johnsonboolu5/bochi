@@ -824,7 +824,29 @@ input,textarea,select{ font-family:inherit; }
   html{ scroll-behavior:auto; }
 }
 
-    </style>
+    
+/* ===== Watch library ===== */
+.wl-sec{margin:0 0 26px}
+.wl-head{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;flex-wrap:wrap}
+.wl-head h3{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em}
+.wl-head .jp{color:var(--shu);font-size:14px;font-weight:700;margin-left:6px}
+.wl-head .cnt{margin-left:auto;font-size:11.5px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+.wl-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
+.wl-card{display:block;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;text-align:left;width:100%;padding:0;font:inherit;color:inherit;box-shadow:var(--shadow);transition:transform .15s ease,border-color .15s ease}
+.wl-card:hover{transform:translateY(-2px);border-color:var(--ac)}
+.wl-card.playing{outline:2px solid var(--ac2);outline-offset:1px}
+.wl-thumb{display:block;position:relative;aspect-ratio:16/9;background:#0d0a18}
+.wl-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.wl-play{position:absolute;left:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:rgba(20,16,31,.82);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;padding-left:2px}
+.wl-dur{position:absolute;right:10px;bottom:10px;background:rgba(20,16,31,.85);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.wl-feat{position:absolute;left:10px;top:10px;background:var(--shu);color:#fff;font-size:10px;font-weight:800;letter-spacing:.08em;padding:4px 9px;border-radius:999px}
+.wl-body{display:block;padding:12px 14px 14px}
+.wl-title{font-weight:750;font-size:14.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:39px}
+.wl-meta{margin-top:5px;font-size:12px;color:var(--muted);font-weight:600}
+.wl-blurb{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:760px){ .wl-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -2px} .wl-card{min-width:232px;max-width:232px;scroll-snap-align:start} }
+
+</style>
   <style>
 .acct-btn{appearance:none;border:1px solid transparent;background:var(--blue,#6A5AE0);color:#fff;border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-left:auto;margin-right:8px;white-space:nowrap}
 .acct-btn.on{background:var(--ink,#1d1d1f);color:var(--bg,#f5f5f7)}
@@ -1365,15 +1387,21 @@ input,textarea,select{ font-family:inherit; }
           <button class="back-link" onclick="go('home')">← All modes</button>
           <h2>Practice Videos<span class="jp">れんしゅう動画</span></h2>
         </div>
-        <p class="howto">Watch together, then prove it. Start with the featured lesson, run the lightning quiz while it is fresh, and keep the channels and news links below in your weekly rotation.</p>
+        <p class="howto">A full video library, organized by what you want to practice: writing, kanji, words, phrases, grammar, listening, and real conversation. Tap any video to load it in the player, and run the lightning quiz while the featured lesson is fresh.</p>
         <div class="card" style="padding:20px">
-          <span class="pick-tag">BORU-SAN'S PICK · THE HIRAGANA FINISHER</span>
-          <h3 style="margin:12px 0 4px; font-size:clamp(18px,3.2vw,24px); font-weight:800; letter-spacing:-.01em; line-height:1.3">Learn ALL Hiragana in 1 Hour</h3>
-          <p style="margin:0 0 16px; color:var(--muted); font-size:13.5px; line-height:1.6">JapanesePod101's full hiragana course in one sitting. Boru-san picked this one himself to finish hiragana for good, with Chihiro on pause button and quiz duty.</p>
+          <span class="pick-tag" id="watch-tag">BORU-SAN'S PICK · THE HIRAGANA FINISHER</span>
+          <h3 id="watch-title" style="margin:12px 0 4px; font-size:clamp(18px,3.2vw,24px); font-weight:800; letter-spacing:-.01em; line-height:1.3">Learn ALL Hiragana in 1 Hour</h3>
+          <p id="watch-desc" style="margin:0 0 16px; color:var(--muted); font-size:13.5px; line-height:1.6">JapanesePod101's full hiragana course in one sitting. Boru-san picked this one himself to finish hiragana for good, with Chihiro on pause button and quiz duty.</p>
           <div class="video-frame">
-            <iframe src="https://www.youtube.com/embed/6p9Il_j0zjc" title="Learn ALL Hiragana in 1 Hour - JapanesePod101" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <iframe id="watch-frame" src="https://www.youtube.com/embed/6p9Il_j0zjc" title="Learn ALL Hiragana in 1 Hour - JapanesePod101" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
           </div>
         </div>
+
+        <div class="section-title">
+          <h2>Video Library <span class="jp">動画ライブラリ</span></h2>
+          <span class="note">Organized by type · tap a video to play it above</span>
+        </div>
+        <div id="watch-lib"></div>
 
         <div class="section-title">
           <h2>Watch Together Quiz <span class="jp">クイズ</span></h2>
@@ -3055,6 +3083,73 @@ input,textarea,select{ font-family:inherit; }
     ];
     var wq = { idx:0, lock:false, results:[], wins:{bolu:0, chihiro:0} };
     function watchPlayer(){ return wq.idx % 2 === 0 ? "bolu" : "chihiro"; }
+    /* ===== Watch library ===== */
+    const WATCH_LIB = [
+      { key:"writing", title:"Writing: Hiragana & Katakana", jp:"かきかた", videos:[
+        { id:"6p9Il_j0zjc", t:"Learn ALL Hiragana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", feat:true, b:"The anchor pick: every hiragana with stroke order, mnemonics, and native pronunciation." },
+        { id:"s6DKRgtVLGA", t:"Learn ALL Katakana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", b:"The katakana twin of the hiragana course, so both kana sets get the same complete treatment." },
+        { id:"sFiP5YW1m48", t:"The Easiest Way To Learn Hiragana", ch:"Japanese Ammo with Misa", b:"Misa teaches hiragana in a logical order with memorable mnemonics and real words from the start." },
+        { id:"ZT6upZrmmnA", t:"The Easiest Way to Learn KATAKANA #1", ch:"Japanese Ammo with Misa", b:"Misa's katakana counterpart, using the same mnemonic system as her hiragana lesson." }
+      ]},
+      { key:"kanji", title:"Kanji", jp:"かんじ", videos:[
+        { id:"7sziIeT1saU", t:"Learn ALL JLPT N5 Kanji in 4 minutes", ch:"JapanesePod101", dur:"4 min", b:"A fast visual pass over all 103 N5 kanji. A good map of what to learn first." },
+        { id:"mPppVDX_GiY", t:"Learn Kanji in 45 minutes - How to Read and Write Japanese", ch:"JapanesePod101", dur:"43 min", b:"The core radicals that build 1,500+ kanji, so characters stop looking random." },
+        { id:"Xu9HIypscSM", t:"Learn Kanji with Vocab for Beginners #1", ch:"Japanese Ammo with Misa", dur:"14 min", b:"Beginner kanji taught together with the vocabulary that uses them." }
+      ]},
+      { key:"vocab", title:"Vocabulary & Words", jp:"たんご", videos:[
+        { id:"EK4YZPd7XE8", t:"80 Japanese Words for Everyday Life - Basic Vocabulary #4", ch:"JapanesePod101", b:"The right-sized starting point: 80 core everyday words, with review built in." },
+        { id:"n6QUNeRY3nU", t:"500 Japanese Words for Everyday Life - Basic Vocabulary #25", ch:"JapanesePod101", b:"The mid-size compilation for when the first 80 words feel easy." },
+        { id:"2u2FHNcxYrQ", t:"580 Japanese Words You'll Use Every Day - Basic Vocabulary #98", ch:"JapanesePod101", b:"The full-series review. Dip in anywhere to test recall across the whole word bank." }
+      ]},
+      { key:"phrases", title:"Phrases & Speaking", jp:"フレーズ", videos:[
+        { id:"rNYEmrN_3oQ", t:"10 MUST-KNOW Japanese Phrases Before Traveling to Japan", ch:"Everyday Japanese for Foreigners", dur:"2:50", b:"Ten essential phrases, each with a pause so you say it out loud yourself." },
+        { id:"8YV8KmfBbBM", t:"Learn Japanese in 4 Hours - ALL the Japanese Basics You Need", ch:"JapanesePod101", dur:"4 hr 10 min", b:"Use the chapter jumps inside: Basic Phrases, 20 Travel Phrases, and the 25 Most Common Phrases in Japan." }
+      ]},
+      { key:"grammar", title:"Grammar", jp:"ぶんぽう", videos:[
+        { id:"pSvH9vH60Ig", t:"Lesson 1: Japanese made easy! The core Japanese sentence", ch:"Cure Dolly", b:"The famous first lesson: how a Japanese sentence is really built, minus textbook confusion." },
+        { id:"FknmUij6ZIk", t:"The Ultimate Guide To: wa vs ga (The ONLY lesson you need!)", ch:"Japanese Ammo with Misa", dur:"40 min", b:"The definitive wa vs ga explanation, the one Tofugu calls the only lesson you need on it." },
+        { id:"GaQBL4XHuSo", t:"Genki 1 Lesson 1 Grammar Made Clear: X wa Y desu, ka, no", ch:"ToKini Andy", b:"Genki Lesson 1 grammar made genuinely clear, step by step." },
+        { id:"UA8cdXsYxd8", t:"Wa vs Ga particle: the REAL secret the textbooks don't tell you", ch:"Cure Dolly", b:"Cure Dolly's structural take on wa vs ga. A perfect second angle after Misa's lesson." }
+      ]},
+      { key:"listening", title:"Listening", jp:"ききとり", videos:[
+        { id:"notJC37E6vA", t:"Easy Japanese Listening with YUYU NIHONGO (N5-N4)", ch:"Japanese with Shun", b:"Two of the best learner podcasters together, speaking easy Japanese at N5 to N4 level." },
+        { id:"iQSP-aZt1jU", t:"Daily Routine in Chile - Easy Japanese Vlog (N5-N4)", ch:"Japanese with Shun", b:"Shun narrates his day in simple Japanese. Listening practice built for N5 and N4." },
+        { id:"sdFi4518Mmk", t:"Exploring Ise-Shima with My Friend | Easy Japanese (N5-N4)", ch:"Japanese with Shun", b:"A real trip with a friend, filmed entirely in easy Japanese you can actually follow." }
+      ]},
+      { key:"culture", title:"Conversation & Culture", jp:"かいわ と ぶんか", videos:[
+        { id:"TYGEJVZMh3k", t:"MUST-LISTEN Japanese music? Ask foreigners in Japan", ch:"Ask Japanese", b:"Street interviews: real people, real reactions, and a window into Japanese music taste." },
+        { id:"NhdS56ThIYk", t:"Kuuki wo yomu: Can you read the room? | Japanese Listening Practice", ch:"Japanese Podcast with Yon", dur:"20 min", b:"A gentle deep-dive on reading the air, the unspoken cues at the heart of Japanese conversation. A stretch pick: best with subtitles." },
+        { id:"I3xEzd1ehKY", t:"Japanese conversation with YUSUKE san · YUYU NIHONGO (No.1)", ch:"Miku Real Japanese", b:"A real two-person conversation between Yuyu and his senpai Yusuke, mixing polite and casual speech." },
+        { id:"ua5lkcDvl_o", t:"Easy Manga for Learning Japanese (JP with EN and JP subs)", ch:"Japanese Ammo with Misa", b:"Misa reads easy manga in Japanese with subtitles. Native material at a learner's pace." }
+      ]}
+    ];
+    function renderWatchLib(){
+      const host = document.getElementById("watch-lib"); if (!host) return;
+      host.innerHTML = WATCH_LIB.map(sec =>
+        '<div class="wl-sec"><div class="wl-head"><h3>' + sec.title + '<span class="jp">' + sec.jp + '</span></h3><span class="cnt">' + sec.videos.length + ' VIDEOS</span></div>' +
+        '<div class="wl-row">' + sec.videos.map(v =>
+          '<button class="wl-card" data-vid="' + v.id + '" onclick="playVid(this)">' +
+          '<span class="wl-thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg">' +
+          (v.feat ? '<span class="wl-feat">FEATURED</span>' : '') +
+          '<span class="wl-play">▶</span>' + (v.dur ? '<span class="wl-dur">' + v.dur + '</span>' : '') + '</span>' +
+          '<span class="wl-body"><span class="wl-title">' + v.t + '</span>' +
+          '<span class="wl-meta" style="display:block">' + v.ch + '</span>' +
+          '<span class="wl-blurb">' + v.b + '</span></span></button>'
+        ).join("") + '</div></div>'
+      ).join("");
+    }
+    function playVid(el){
+      const sec = WATCH_LIB.flatMap(s => s.videos).find(v => v.id === el.dataset.vid); if (!sec) return;
+      const f = document.getElementById("watch-frame"); if (f) f.src = "https://www.youtube.com/embed/" + sec.id + "?rel=0";
+      const t = document.getElementById("watch-title"); if (t) t.textContent = sec.t;
+      const d = document.getElementById("watch-desc"); if (d) d.textContent = sec.b + " · " + sec.ch;
+      const tag = document.getElementById("watch-tag"); if (tag) tag.textContent = "NOW PLAYING · VIDEO LIBRARY";
+      document.querySelectorAll(".wl-card.playing").forEach(c => c.classList.remove("playing"));
+      el.classList.add("playing");
+      const card = f ? f.closest(".card") : null; if (card) card.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+    renderWatchLib();
+
     function startWatchQuiz(){
       wq.idx = 0; wq.lock = false; wq.results = []; wq.wins = {bolu:0, chihiro:0};
       $("watch-play").style.display = "block";
