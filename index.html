@@ -6325,7 +6325,16 @@ input,textarea,select{ font-family:inherit; }
   gateWrap("startHiragana", "game"); gateWrap("startDuel", "game"); gateWrap("startTranslate", "game"); gateWrap("startCulture", "game"); gateWrap("startWatchQuiz", "game"); gateWrap("startShadow", "game");
   gateWrap("meetInstant", "call");
   gateWrap("nextTopic", "activity"); gateWrap("rouletteDone", "activity"); gateWrap("finishSession", "activity"); gateWrap("resetSession", "activity"); gateWrap("addStorySentence", "activity");
-  gateWrap("dailyStudyNow", "study"); gateWrap("dailyGoLesson", "study"); gateWrap("dailyGoReview", "study"); gateWrap("dailyGoDrill", "study"); gateWrap("dailyPhraseDone", "study");
+  gateWrap("dailyStudyNow", "study");
+  gateWrap("meetBook", "booking"); gateWrap("addSession", "booking"); gateWrap("sessDelete", "booking"); gateWrap("saveNotifyPrefs", "booking"); gateWrap("addRecording", "booking");
+  /* outbound Loom links + the Recordings view are member use too */
+  document.addEventListener("click", function(e){
+    if (authState.account) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href*="loom.com"]') : null;
+    if (a){ e.preventDefault(); gateSheet("call"); }
+  }, true);
+  var _goGate = go;
+  go = function(v){ if (!authState.account && (v === "session" || v === "recordings")){ requireAuth(v); return; } return _goGate(v); }; gateWrap("dailyGoLesson", "study"); gateWrap("dailyGoReview", "study"); gateWrap("dailyGoDrill", "study"); gateWrap("dailyPhraseDone", "study");
 
   /* ---- partner name: never shown to visitors ---- */
   var _scrubbed = new Map(), _scrubObs = null, _scrubTimer = null;
