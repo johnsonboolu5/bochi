@@ -124,6 +124,17 @@ input,textarea,select{ font-family:inherit; }
 .ph-stat + .ph-stat{ border-left:1px solid var(--line); }
 .ph-stat .n{ font-size:18px; font-weight:800; }
 .ph-stat .l{ font-size:10px; color:var(--muted); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
+.practice-card .ptoday{ text-align:right; }
+.practice-card .pt-n{ font-size:22px; font-weight:800; }
+.practice-card .pt-l{ font-size:10px; color:var(--muted); font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.practice-card .pt-s{ font-size:12px; color:var(--muted); font-weight:700; margin-top:2px; }
+.pweek{ display:flex; gap:8px; margin-top:16px; }
+.pday{ flex:1; text-align:center; }
+.pday .pbar-track{ height:52px; border-radius:9px; background:var(--surface2); display:flex; align-items:flex-end; overflow:hidden; }
+.pday .pbar{ width:100%; background:var(--blue); border-radius:9px 9px 0 0; }
+.pday.today .pbar{ background:var(--shu); }
+.pday span{ display:block; margin-top:6px; font-size:10.5px; font-weight:700; color:var(--muted); }
+.pday.today span{ color:var(--ink); }
 .topbar-right{ margin-left:auto; display:flex; gap:4px; flex-wrap:wrap; background:var(--pill); border-radius:999px; padding:3px; }
 .chip-btn{
   border:none; background:transparent; color:var(--ink-soft);
@@ -924,6 +935,21 @@ input,textarea,select{ font-family:inherit; }
 .sscene svg{ width:128px; height:128px; }
 .stage-face .smnem{ margin-top:8px; }
 @media (max-width:720px){ .sscene{ height:150px; } .sscene svg{ width:112px; height:112px; } }
+.stage-face{ box-shadow:0 18px 44px rgba(20,12,50,.16), 7px 7px 0 -3px var(--surface2), 13px 13px 0 -5px var(--ai-soft); }
+.stage-modes{ display:flex; gap:4px; background:var(--surface2); border:1px solid var(--line); padding:4px; border-radius:999px; margin-top:14px; }
+.smode{ border:none; background:transparent; color:var(--muted); font:inherit; font-size:13.5px; font-weight:800; padding:8px 18px; border-radius:999px; cursor:pointer; }
+.smode.on{ background:var(--surface); color:var(--ink); box-shadow:0 2px 8px rgba(20,12,50,.12); }
+.stage-backrow{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+.stage-backhint{ font-size:12.5px; color:var(--muted); font-weight:600; line-height:1.45; }
+.stage-draw{ width:100%; max-width:430px; margin-top:10px; display:flex; flex-direction:column; align-items:center; }
+.stage-draw[hidden]{ display:none; }
+.draw-wrap{ position:relative; width:100%; height:min(58vh, 540px); min-height:340px; border-radius:26px; background:linear-gradient(170deg, var(--surface) 40%, var(--ai-soft)); border:1px solid var(--line); box-shadow:0 18px 44px rgba(20,12,50,.16), 7px 7px 0 -3px var(--surface2), 13px 13px 0 -5px var(--ai-soft); overflow:hidden; }
+.draw-guide{ position:absolute; inset:0; display:grid; place-items:center; font-size:min(56vw, 240px); font-weight:700; line-height:1; color:var(--blue); opacity:.16; pointer-events:none; user-select:none; -webkit-user-select:none; }
+.draw-guide.off{ display:none; }
+.draw-guide.peek{ opacity:.85; }
+#draw-canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+.stage-draw .stage-controls{ margin-top:22px; }
+.stage-draw .stage-note{ margin-top:12px; }
 </style>
 </head>
   <body>
@@ -990,6 +1016,7 @@ input,textarea,select{ font-family:inherit; }
           <div class="ph-stat"><div class="n" id="ph-p-xp">0</div><div class="l">XP</div></div>
           <div class="ph-stat"><div class="n"><span data-spct="all">0%</span></div><div class="l">Scripts</div></div>
           <div class="ph-stat"><div class="n" id="ph-p-lessons">0</div><div class="l">Lessons Done</div></div>
+          <div class="ph-stat"><div class="n" id="ph-p-streak">0</div><div class="l">Day Streak</div></div>
         </div>
 
         <div class="section-title">
@@ -1627,6 +1654,7 @@ input,textarea,select{ font-family:inherit; }
           <p style="margin:12px 0 0; color:var(--muted); font-size:13.5px; font-weight:600">Overall: <span data-spct="all">0%</span> · <span data-scount="all"></span></p>
           <p id="scripts-auth-note" style="margin:8px 0 0; color:var(--ink-soft); font-size:14px"></p>
         </div>
+        <div id="practice-card"></div>
         <div id="scripts-sections"></div>
       </section>
 
@@ -1798,19 +1826,39 @@ input,textarea,select{ font-family:inherit; }
         <span class="stage-pos" id="stage-pos"></span>
       </div>
       <div class="stage-kicker" id="stage-kicker"></div>
+      <div class="stage-modes" role="tablist" aria-label="Card mode">
+        <button class="smode on" id="smode-flip" onclick="setStageMode('flip')">Flip card</button>
+        <button class="smode" id="smode-draw" onclick="setStageMode('draw')">Draw it</button>
+      </div>
       <div class="stage-card" id="stage-card" onclick="stageFlip()">
         <div class="scard-inner">
           <div class="sface sfront stage-face"><span class="sdone" aria-hidden="true">✓</span><span class="schar" id="stage-char"></span><span class="shint">tap card to flip</span></div>
-          <div class="sface sback stage-face"><div class="sscene" id="stage-art"></div><div class="sread" id="stage-read"></div><div class="smean" id="stage-mean"></div><p class="smnem" id="stage-mnem"></p><span class="shint" style="margin-top:auto">tap card to flip back</span></div>
+          <div class="sface sback stage-face"><div class="sscene" id="stage-art"></div><div class="sread" id="stage-read"></div><div class="smean" id="stage-mean"></div><p class="smnem" id="stage-mnem"></p><div class="stage-backrow"><button class="speak-btn" id="stage-speak" aria-label="Listen to this character"></button><span class="stage-backhint">Hear it, then switch to Draw it and write it by hand.</span></div><span class="shint" style="margin-top:auto">tap card to flip back</span></div>
         </div>
       </div>
-      <div class="stage-controls">
+      <div class="stage-controls" id="stage-flip-controls">
         <button class="btn ghost" onclick="stageNav(-1)">← Prev</button>
         <button class="btn ghost" id="stage-mark" onclick="stageToggleMark()">Mark as memorized</button>
         <button class="btn blue" onclick="stageFlip()">Flip card</button>
         <button class="btn ghost" onclick="stageNav(1)">Next →</button>
       </div>
-      <p class="stage-note">Arrow keys move between cards. Space flips. Esc closes.</p>
+      <div class="stage-draw" id="stage-draw" hidden>
+        <div class="draw-wrap" id="draw-wrap">
+          <div class="draw-guide" id="draw-guide"></div>
+          <canvas id="draw-canvas"></canvas>
+        </div>
+        <div class="stage-controls">
+          <button class="btn ghost" onclick="stageNav(-1)">← Prev</button>
+          <button class="btn ghost" id="draw-guide-btn" onclick="toggleDrawGuide()">Hide guide</button>
+          <button class="btn ghost" onclick="clearDraw()">Clear</button>
+          <button class="btn ghost" id="draw-peek">Hold to peek</button>
+          <button class="btn ghost" onclick="stageToggleMark()" id="draw-mark">Mark as memorized</button>
+          <button class="btn blue" onclick="drawDone()">Done</button>
+          <button class="btn ghost" onclick="stageNav(1)">Next →</button>
+        </div>
+        <p class="stage-note">Trace the character with your finger, stroke by stroke. Hide the guide when you are ready to write it from memory.</p>
+      </div>
+      <p class="stage-note" id="stage-flip-note">Swipe or use the arrows to move between cards. Tap the card to flip it.</p>
     </div>
     <div class="toast" id="toast" role="status"></div>
 
@@ -2146,7 +2194,8 @@ input,textarea,select{ font-family:inherit; }
       lastUnlock:{bolu:"", chihiro:""},
       soloToday:{bolu:0, chihiro:0},
       review:{bolu:{}, chihiro:{}},
-      scripts:{bolu:{hira:{}, kata:{}, kanji:{}}, chihiro:{hira:{}, kata:{}, kanji:{}}}
+      scripts:{bolu:{hira:{}, kata:{}, kanji:{}}, chihiro:{hira:{}, kata:{}, kanji:{}}},
+      practice:{bolu:{}, chihiro:{}}
     };
     var $ = function(id){ return document.getElementById(id); };
     var SPEAK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>';
@@ -3259,6 +3308,7 @@ input,textarea,select{ font-family:inherit; }
       var pl = $("ph-p-level"); if(pl) pl.textContent = "Lv " + levelOf(p);
       var px = $("ph-p-xp"); if(px) px.textContent = state.journey[p].xp;
       var pd = $("ph-p-lessons"); if(pd) pd.textContent = totDone;
+      if (typeof renderPractice === "function") renderPractice();
     }
     var practiceTier = { hiragana:null, duel:null, translate:null, shadow:null, roulette:null };
     var GAME_TIER_LABEL = { hiragana:"Boru-san's level", duel:"Table level", translate:"Table level", shadow:"Table level", roulette:"Table level" };
@@ -3813,6 +3863,7 @@ input,textarea,select{ font-family:inherit; }
       var pass = got >= Math.ceil(total * 0.6);
       if(pass){
         state.lessons[p][lessonId(sl.ch, sl.idx)] = true;
+        bumpPractice("l", 1);
         if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
       }
       scheduleSave();
@@ -4331,6 +4382,7 @@ input,textarea,select{ font-family:inherit; }
           state.review[p] = rec.review || {};
           state.lastUnlock[p] = rec.lastUnlock || "";
           if (rec.scripts) { var sm = { hira: {}, kata: {}, kanji: {} }; ["hira", "kata", "kanji"].forEach(function (k) { (rec.scripts[k] || []).forEach(function (ch) { sm[k][ch] = true; }); }); state.scripts[p] = sm; }
+          if (rec.practice && typeof rec.practice === "object") { state.practice[p] = rec.practice; }
         }
       });
       renderJourney();
@@ -4432,7 +4484,7 @@ input,textarea,select{ font-family:inherit; }
       var me = authState.account.playerKey;
       flushXP().then(function () {
         if (!authState.account) return;
-        var body = { version: authState.versions[me] || 0, progress: { lessons: state.lessons[me], checkpoints: state.checkpoints[me], lastUnlock: state.lastUnlock[me] || "", review: sanitizeReview(state.review[me]), scripts: { hira: Object.keys(state.scripts[me].hira || {}), kata: Object.keys(state.scripts[me].kata || {}), kanji: Object.keys(state.scripts[me].kanji || {}) } } };
+        var body = { version: authState.versions[me] || 0, progress: { lessons: state.lessons[me], checkpoints: state.checkpoints[me], lastUnlock: state.lastUnlock[me] || "", review: sanitizeReview(state.review[me]), scripts: { hira: Object.keys(state.scripts[me].hira || {}), kata: Object.keys(state.scripts[me].kata || {}), kanji: Object.keys(state.scripts[me].kanji || {}) }, practice: state.practice[me] || {} } };
         apiCall("progress", { method: "PUT", body: body }).then(function (res) {
           if (res.status === 200) { hydrateProgress(res.body.progressByPlayer, false); setSync("Saved."); }
           else if (res.status === 409) {
@@ -5146,10 +5198,127 @@ input,textarea,select{ font-family:inherit; }
         try { localStorage.setItem("bochi-scripts-guest", JSON.stringify(guestScripts)); } catch (e) {}
       }
     }
+    /* ==================== DAILY PRACTICE TRACKER ==================== */
+    var guestPractice = { bolu: {}, chihiro: {} };
+    try {
+      var gp = JSON.parse(localStorage.getItem("bochi-practice-guest") || "null");
+      if (gp && typeof gp === "object") ["bolu", "chihiro"].forEach(function (k) { if (gp[k] && typeof gp[k] === "object") guestPractice[k] = gp[k]; });
+    } catch (e) {}
+    function practicePlayer() {
+      if (authState.account) return authState.account.playerKey;
+      return platformPlayer();
+    }
+    function practiceTarget() {
+      var p = practicePlayer();
+      if (authState.account) {
+        if (!state.practice[p]) state.practice[p] = {};
+        return state.practice[p];
+      }
+      return guestPractice[p];
+    }
+    function practiceDateKey(d) {
+      d = d || new Date();
+      var m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+      return d.getFullYear() + "-" + m + "-" + day;
+    }
+    function practiceEntry() {
+      var t = practiceTarget(), k = practiceDateKey();
+      if (!t[k]) t[k] = { m: 0, c: 0, l: 0 };
+      return t[k];
+    }
+    var practiceSaveTimer = null;
+    function persistPractice() {
+      if (authState.account) {
+        if (practiceSaveTimer) clearTimeout(practiceSaveTimer);
+        practiceSaveTimer = setTimeout(function () { saveDetailed(); }, 800);
+      } else {
+        try { localStorage.setItem("bochi-practice-guest", JSON.stringify(guestPractice)); } catch (e) {}
+      }
+    }
+    function bumpPractice(kind, n) {
+      var e = practiceEntry();
+      e[kind] = (e[kind] || 0) + (n || 1);
+      persistPractice();
+      renderPractice();
+    }
+    function practiceDayDone(e) { return !!e && ((e.m || 0) >= 1 || (e.c || 0) > 0 || (e.l || 0) > 0); }
+    function practiceStreak() {
+      var t = practiceTarget(), streak = 0;
+      var d = new Date();
+      if (!practiceDayDone(t[practiceDateKey(d)])) d.setDate(d.getDate() - 1);
+      while (practiceDayDone(t[practiceDateKey(d)])) { streak++; d.setDate(d.getDate() - 1); }
+      return streak;
+    }
+    function practiceTotalDays() {
+      var t = practiceTarget(), n = 0;
+      for (var k in t) if (practiceDayDone(t[k])) n++;
+      return n;
+    }
+    function renderPractice() {
+      var streak = practiceStreak();
+      var hs = $("ph-p-streak"); if (hs) hs.textContent = streak;
+      var box = $("practice-card"); if (!box) return;
+      var t = practiceTarget(), today = practiceEntry();
+      var days = [];
+      for (var i = 6; i >= 0; i--) {
+        var d = new Date(); d.setDate(d.getDate() - i);
+        var k = practiceDateKey(d), e = t[k];
+        days.push({ label: "SMTWTFS"[d.getDay()], mins: e ? (e.m || 0) : 0, done: practiceDayDone(e), today: i === 0 });
+      }
+      var maxM = 30;
+      days.forEach(function (x) { if (x.mins > maxM) maxM = x.mins; });
+      var bars = days.map(function (x) {
+        var h = x.done ? Math.max(14, Math.round(x.mins / maxM * 100)) : 4;
+        return '<div class="pday' + (x.today ? " today" : "") + '"><div class="pbar-track"><div class="pbar" style="height:' + h + '%"></div></div><span>' + x.label + '</span></div>';
+      }).join("");
+      box.innerHTML = '<div class="card practice-card">' +
+        '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap">' +
+          '<div><div class="kicker">DAILY PRACTICE · まいにち</div>' +
+          '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + streak + ' day streak</h3>' +
+          '<p style="margin:0; color:var(--muted); font-size:13.5px; font-weight:600">' + practiceTotalDays() + ' days practiced in total · showing up is the whole method</p></div>' +
+          '<div class="ptoday"><div class="pt-n">' + (today.m || 0) + ' min</div><div class="pt-l">today</div>' +
+          '<div class="pt-s">' + (today.c || 0) + ' cards · ' + (today.l || 0) + ' lessons</div></div>' +
+        '</div>' +
+        '<div class="pweek">' + bars + '</div>' +
+        '<p style="margin:10px 0 0; color:var(--muted); font-size:12.5px; font-weight:600">Time counts while you are in Learn, Scripts, or a card. Marking a card, drawing one, or finishing a lesson also counts for the day.</p>' +
+      '</div>';
+    }
+    /* practice time accumulation: count focused time in learning views */
+    var practicePendingSecs = 0;
+    function practiceContextActive() {
+      var st = $("card-stage");
+      if (st && !st.hidden) return true;
+      return ["solo", "scripts", "hira", "kata", "kanji"].indexOf(CURRENT) !== -1;
+    }
+    setInterval(function () {
+      if (document.visibilityState !== "visible") return;
+      if (!practiceContextActive()) return;
+      practicePendingSecs += 20;
+      if (practicePendingSecs >= 60) {
+        var mins = Math.floor(practicePendingSecs / 60);
+        practicePendingSecs -= mins * 60;
+        var e = practiceEntry();
+        e.m = (e.m || 0) + mins;
+        persistPractice();
+        renderPractice();
+      }
+    }, 20000);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden" && practicePendingSecs >= 30) {
+        var e = practiceEntry();
+        e.m = (e.m || 0) + 1;
+        practicePendingSecs = 0;
+        persistPractice();
+        renderPractice();
+      }
+    });
+
     function toggleScriptChar(key, ch, btn) {
       var map = scriptsTarget();
       if (!map[key]) map[key] = {};
+      var turningOn = !map[key][ch];
       if (map[key][ch]) delete map[key][ch]; else map[key][ch] = true;
+      if (turningOn) bumpPractice("c", 1);
       persistScripts();
       var card = btn ? btn.closest(".scard") : null;
       if (card) card.classList.toggle("known", !!map[key][ch]);
@@ -5175,6 +5344,7 @@ input,textarea,select{ font-family:inherit; }
     var stageState = { key: "hira", idx: 0, flipped: false };
     function openCardStage(key, idx) {
       stageState = { key: key, idx: idx, flipped: false };
+      stageMode = "flip";
       var st = $("card-stage");
       if (!st) return;
       st.hidden = false;
@@ -5207,8 +5377,15 @@ input,textarea,select{ font-family:inherit; }
       card.classList.toggle("flipped", stageState.flipped);
       card.classList.toggle("known", known);
       $("stage-mark").textContent = known ? "✓ Memorized" : "Mark as memorized";
+      var dm = $("draw-mark"); if (dm) dm.textContent = known ? "✓ Memorized" : "Mark as memorized";
+      var sp = $("stage-speak");
+      if (sp) { sp.innerHTML = SPEAK_SVG; sp.onclick = function (ev) { if (ev) ev.stopPropagation(); speak(it.ch, "ja-JP"); }; }
+      var gd = $("draw-guide"); if (gd) gd.textContent = it.ch;
+      drawCounted = false;
+      if (stageMode === "draw") { sizeDrawCanvas(); clearDraw(); }
     }
-    function stageFlip() { stageState.flipped = !stageState.flipped; var c = $("stage-card"); if (c) c.classList.toggle("flipped", stageState.flipped); }
+    var lastSwipeAt = 0;
+    function stageFlip() { if (Date.now() - lastSwipeAt < 400) return; stageState.flipped = !stageState.flipped; var c = $("stage-card"); if (c) c.classList.toggle("flipped", stageState.flipped); }
     function stageNav(d) { stageState.idx += d; stageState.flipped = false; stageRender(); }
     function stageToggleMark() {
       var list = SCRIPT_FLAT[stageState.key] || [];
@@ -5219,6 +5396,99 @@ input,textarea,select{ font-family:inherit; }
       renderScriptPage(stageState.key);
       stageRender();
     }
+
+    /* ==================== CARD STAGE: DRAW MODE + SWIPE ==================== */
+    var stageMode = "flip";
+    var drawCounted = false;
+    var drawCtx = null, drawDown = false, drawLast = null, drawGuideOn = true;
+    function setStageMode(m) {
+      stageMode = m;
+      var isDraw = m === "draw";
+      $("smode-flip").classList.toggle("on", !isDraw);
+      $("smode-draw").classList.toggle("on", isDraw);
+      $("stage-card").style.display = isDraw ? "none" : "";
+      $("stage-flip-controls").style.display = isDraw ? "none" : "";
+      $("stage-flip-note").style.display = isDraw ? "none" : "";
+      $("stage-draw").hidden = !isDraw;
+      if (isDraw) { sizeDrawCanvas(); clearDraw(); drawCounted = false; }
+    }
+    function sizeDrawCanvas() {
+      var c = $("draw-canvas"); if (!c) return;
+      var wrap = $("draw-wrap"); var r = wrap.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      c.width = Math.round(r.width * dpr);
+      c.height = Math.round(r.height * dpr);
+      drawCtx = c.getContext("2d");
+      drawCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+      drawCtx.lineWidth = Math.max(7, r.width * 0.045);
+      drawCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#2C2742";
+    }
+    function drawPoint(ev) {
+      var c = $("draw-canvas"); var r = c.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    }
+    function clearDraw() { if (drawCtx) { var c = $("draw-canvas"); drawCtx.clearRect(0, 0, c.width, c.height); } }
+    function toggleDrawGuide() {
+      drawGuideOn = !drawGuideOn;
+      $("draw-guide").classList.toggle("off", !drawGuideOn);
+      $("draw-guide-btn").textContent = drawGuideOn ? "Hide guide" : "Show guide";
+    }
+    function drawDone() {
+      toast("Look at your strokes, then flip the card and compare. Writing it is remembering it.");
+      setStageMode("flip");
+      if (!stageState.flipped) stageFlip();
+    }
+    (function initDraw() {
+      var c = $("draw-canvas"); if (!c) return;
+      c.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        if (!drawCtx) sizeDrawCanvas();
+        if (!drawCtx) return;
+        drawDown = true;
+        try { c.setPointerCapture(ev.pointerId); } catch (e) {}
+        drawLast = drawPoint(ev);
+        drawCtx.beginPath();
+        drawCtx.moveTo(drawLast.x, drawLast.y);
+        drawCtx.lineTo(drawLast.x + 0.1, drawLast.y + 0.1);
+        drawCtx.stroke();
+        if (!drawCounted) { drawCounted = true; bumpPractice("c", 1); }
+      });
+      c.addEventListener("pointermove", function (ev) {
+        if (!drawDown || !drawCtx) return;
+        var p = drawPoint(ev);
+        drawCtx.beginPath();
+        drawCtx.moveTo(drawLast.x, drawLast.y);
+        drawCtx.lineTo(p.x, p.y);
+        drawCtx.stroke();
+        drawLast = p;
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(function (t) {
+        c.addEventListener(t, function () { drawDown = false; });
+      });
+      var peek = $("draw-peek");
+      if (peek) {
+        peek.addEventListener("pointerdown", function (ev) { ev.preventDefault(); $("draw-guide").classList.add("peek"); });
+        ["pointerup", "pointercancel", "pointerleave"].forEach(function (t) {
+          peek.addEventListener(t, function () { $("draw-guide").classList.remove("peek"); });
+        });
+      }
+      var st = $("card-stage");
+      if (st) {
+        var tx = 0, ty = 0;
+        st.addEventListener("touchstart", function (ev) {
+          if (ev.target && ev.target.id === "draw-canvas") return;
+          tx = ev.changedTouches[0].clientX; ty = ev.changedTouches[0].clientY;
+        }, { passive: true });
+        st.addEventListener("touchend", function (ev) {
+          if (ev.target && ev.target.id === "draw-canvas") return;
+          var dx = ev.changedTouches[0].clientX - tx, dy = ev.changedTouches[0].clientY - ty;
+          if (Math.abs(dx) > 56 && Math.abs(dy) < 64) { lastSwipeAt = Date.now(); stageNav(dx < 0 ? 1 : -1); }
+        }, { passive: true });
+      }
+      window.addEventListener("resize", function () { if (stageMode === "draw") sizeDrawCanvas(); });
+    })();
     document.addEventListener("keydown", function (ev) {
       var st = $("card-stage");
       if (!st || st.hidden) return;
@@ -5296,6 +5566,7 @@ input,textarea,select{ font-family:inherit; }
         "</div>" + groups;
     }
     function renderScripts() {
+      renderPractice();
       var box = $("scripts-sections");
       if (!box) return;
       var note = $("scripts-auth-note");
