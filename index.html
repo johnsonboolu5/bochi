@@ -845,6 +845,27 @@ input,textarea,select{ font-family:inherit; }
 .wl-meta{margin-top:5px;font-size:12px;color:var(--muted);font-weight:600}
 .wl-blurb{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media(max-width:760px){ .wl-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -2px} .wl-card{min-width:232px;max-width:232px;scroll-snap-align:start} }
+/* Watch library: topic tabs */
+.wl-tabs{display:flex;gap:18px;align-items:flex-start}
+.wl-side{flex:0 0 208px;display:flex;flex-direction:column;gap:6px}
+.wl-sidebtn{display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;border:1px solid transparent;color:var(--muted);font:inherit;font-weight:700;font-size:14px;text-align:left;padding:11px 13px;border-radius:12px;cursor:pointer;width:100%}
+.wl-sidebtn:hover{color:var(--ink)}
+.wl-sidebtn.on{background:var(--card);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+.wl-sidebtn .n{font-size:11px;background:var(--chip, rgba(106,90,224,.12));padding:2px 8px;border-radius:999px;color:var(--muted);font-weight:800}
+.wl-pane{flex:1;min-width:0;display:none}
+.wl-pane.on{display:block}
+.wl-why{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:14px;box-shadow:var(--shadow)}
+.wl-why b{color:var(--ink)}
+.wl-lvl{position:absolute;right:10px;top:10px;background:rgba(20,16,31,.85);color:#fff;font-size:10px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:999px}
+@media(max-width:760px){
+  .wl-tabs{flex-direction:column}
+  .wl-side{flex:0 0 auto;flex-direction:row;overflow-x:auto;width:100%;padding-bottom:6px;scrollbar-width:none}
+  .wl-sidebtn{white-space:nowrap;width:auto;flex:0 0 auto;border-radius:999px;border-color:var(--line);background:var(--card)}
+  .wl-sidebtn .n{display:none}
+  .wl-row{display:grid;grid-template-columns:1fr;overflow:visible;padding:0;margin:0}
+  .wl-card{min-width:0;max-width:none}
+}
+
 
 
 /* ===== Today's Studies (daily session) ===== */
@@ -3106,60 +3127,73 @@ input,textarea,select{ font-family:inherit; }
     ];
     var wq = { idx:0, lock:false, results:[], wins:{bolu:0, chihiro:0} };
     function watchPlayer(){ return wq.idx % 2 === 0 ? "bolu" : "chihiro"; }
-    /* ===== Watch library ===== */
+    /* ===== Watch library (topic tabs) ===== */
     const WATCH_LIB = [
-      { key:"writing", title:"Writing: Hiragana & Katakana", jp:"かきかた", videos:[
-        { id:"6p9Il_j0zjc", t:"Learn ALL Hiragana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", feat:true, b:"The anchor pick: every hiragana with stroke order, mnemonics, and native pronunciation." },
-        { id:"s6DKRgtVLGA", t:"Learn ALL Katakana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", b:"The katakana twin of the hiragana course, so both kana sets get the same complete treatment." },
-        { id:"sFiP5YW1m48", t:"The Easiest Way To Learn Hiragana", ch:"Japanese Ammo with Misa", b:"Misa teaches hiragana in a logical order with memorable mnemonics and real words from the start." },
-        { id:"ZT6upZrmmnA", t:"The Easiest Way to Learn KATAKANA #1", ch:"Japanese Ammo with Misa", b:"Misa's katakana counterpart, using the same mnemonic system as her hiragana lesson." }
+      { key:"writing", title:"Writing: Hiragana & Katakana", short:"Writing: Kana", jp:"かきかた", why:"<b>Finish the kana first.</b> Everything else in the library gets easier once reading is automatic. Start with the hiragana finisher, then its katakana twin.", videos:[
+        { id:"6p9Il_j0zjc", t:"Learn ALL Hiragana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", lvl:"BEGINNER", start:true, b:"The anchor pick: every hiragana with stroke order, mnemonics, and native pronunciation." },
+        { id:"s6DKRgtVLGA", t:"Learn ALL Katakana in 1 Hour - How to Write and Read Japanese", ch:"JapanesePod101", dur:"1 hr", lvl:"BEGINNER", b:"The katakana twin of the hiragana course, so both kana sets get the same complete treatment." },
+        { id:"sFiP5YW1m48", t:"The Easiest Way To Learn Hiragana", ch:"Japanese Ammo with Misa", lvl:"BEGINNER", b:"Misa teaches hiragana in a logical order with memorable mnemonics and real words from the start." },
+        { id:"ZT6upZrmmnA", t:"The Easiest Way to Learn KATAKANA #1", ch:"Japanese Ammo with Misa", lvl:"BEGINNER", b:"Misa's katakana counterpart, using the same mnemonic system as her hiragana lesson." }
       ]},
-      { key:"kanji", title:"Kanji", jp:"かんじ", videos:[
-        { id:"7sziIeT1saU", t:"Learn ALL JLPT N5 Kanji in 4 minutes", ch:"JapanesePod101", dur:"4 min", b:"A fast visual pass over all 103 N5 kanji. A good map of what to learn first." },
-        { id:"mPppVDX_GiY", t:"Learn Kanji in 45 minutes - How to Read and Write Japanese", ch:"JapanesePod101", dur:"43 min", b:"The core radicals that build 1,500+ kanji, so characters stop looking random." },
-        { id:"Xu9HIypscSM", t:"Learn Kanji with Vocab for Beginners #1", ch:"Japanese Ammo with Misa", dur:"14 min", b:"Beginner kanji taught together with the vocabulary that uses them." }
+      { key:"kanji", title:"Kanji", short:"Kanji", jp:"かんじ", why:"<b>Kanji stops looking random once you know the building blocks.</b> Start with the N5 map, then learn kanji through the words that use them, then the radicals.", videos:[
+        { id:"7sziIeT1saU", t:"Learn ALL JLPT N5 Kanji in 4 minutes", ch:"JapanesePod101", dur:"4 min", lvl:"BEGINNER", start:true, b:"A fast visual pass over all 103 N5 kanji. A good map of what to learn first." },
+        { id:"Xu9HIypscSM", t:"Learn Kanji with Vocab for Beginners #1", ch:"Japanese Ammo with Misa", dur:"14 min", lvl:"BEGINNER", b:"Beginner kanji taught together with the vocabulary that uses them." },
+        { id:"mPppVDX_GiY", t:"Learn Kanji in 45 minutes - How to Read and Write Japanese", ch:"JapanesePod101", dur:"43 min", lvl:"BEGINNER+", b:"The core radicals that build 1,500+ kanji, so characters stop looking random." }
       ]},
-      { key:"vocab", title:"Vocabulary & Words", jp:"たんご", videos:[
-        { id:"EK4YZPd7XE8", t:"80 Japanese Words for Everyday Life - Basic Vocabulary #4", ch:"JapanesePod101", b:"The right-sized starting point: 80 core everyday words, with review built in." },
-        { id:"n6QUNeRY3nU", t:"500 Japanese Words for Everyday Life - Basic Vocabulary #25", ch:"JapanesePod101", b:"The mid-size compilation for when the first 80 words feel easy." },
-        { id:"2u2FHNcxYrQ", t:"580 Japanese Words You'll Use Every Day - Basic Vocabulary #98", ch:"JapanesePod101", b:"The full-series review. Dip in anywhere to test recall across the whole word bank." }
+      { key:"vocab", title:"Vocabulary & Words", short:"Vocabulary", jp:"たんご", why:"<b>Words for everyday life, in growing sets.</b> Start with the 80. Each bigger set reviews the words before it, so the marathons double as review.", videos:[
+        { id:"EK4YZPd7XE8", t:"80 Japanese Words for Everyday Life - Basic Vocabulary #4", ch:"JapanesePod101", lvl:"BEGINNER", start:true, b:"The right-sized starting point: 80 core everyday words, with review built in." },
+        { id:"n6QUNeRY3nU", t:"500 Japanese Words for Everyday Life - Basic Vocabulary #25", ch:"JapanesePod101", lvl:"BEGINNER+", b:"The mid-size compilation for when the first 80 words feel easy." },
+        { id:"2u2FHNcxYrQ", t:"580 Japanese Words You'll Use Every Day - Basic Vocabulary #98", ch:"JapanesePod101", lvl:"ALL LEVELS", b:"The full-series review. Dip in anywhere to test recall across the whole word bank." }
       ]},
-      { key:"phrases", title:"Phrases & Speaking", jp:"フレーズ", videos:[
-        { id:"rNYEmrN_3oQ", t:"10 MUST-KNOW Japanese Phrases Before Traveling to Japan", ch:"Everyday Japanese for Foreigners", dur:"2:50", b:"Ten essential phrases, each with a pause so you say it out loud yourself." },
-        { id:"8YV8KmfBbBM", t:"Learn Japanese in 4 Hours - ALL the Japanese Basics You Need", ch:"JapanesePod101", dur:"4 hr 10 min", b:"Use the chapter jumps inside: Basic Phrases, 20 Travel Phrases, and the 25 Most Common Phrases in Japan." }
+      { key:"phrases", title:"Phrases & Speaking", short:"Phrases", jp:"フレーズ", why:"<b>Say it out loud.</b> Short phrase practice first, with pauses built in for speaking. The 4-hour basics video works as a reference you jump into by chapter.", videos:[
+        { id:"rNYEmrN_3oQ", t:"10 MUST-KNOW Japanese Phrases Before Traveling to Japan", ch:"Everyday Japanese for Foreigners", dur:"2:50", lvl:"BEGINNER", start:true, b:"Ten essential phrases, each with a pause so you say it out loud yourself." },
+        { id:"8YV8KmfBbBM", t:"Learn Japanese in 4 Hours - ALL the Japanese Basics You Need", ch:"JapanesePod101", dur:"4 hr 10 min", lvl:"BEGINNER", b:"Use the chapter jumps inside: Basic Phrases, 20 Travel Phrases, and the 25 Most Common Phrases in Japan." }
       ]},
-      { key:"grammar", title:"Grammar", jp:"ぶんぽう", videos:[
-        { id:"pSvH9vH60Ig", t:"Lesson 1: Japanese made easy! The core Japanese sentence", ch:"Cure Dolly", b:"The famous first lesson: how a Japanese sentence is really built, minus textbook confusion." },
-        { id:"FknmUij6ZIk", t:"The Ultimate Guide To: wa vs ga (The ONLY lesson you need!)", ch:"Japanese Ammo with Misa", dur:"40 min", b:"The definitive wa vs ga explanation, the one Tofugu calls the only lesson you need on it." },
-        { id:"GaQBL4XHuSo", t:"Genki 1 Lesson 1 Grammar Made Clear: X wa Y desu, ka, no", ch:"ToKini Andy", b:"Genki Lesson 1 grammar made genuinely clear, step by step." },
-        { id:"UA8cdXsYxd8", t:"Wa vs Ga particle: the REAL secret the textbooks don't tell you", ch:"Cure Dolly", b:"Cure Dolly's structural take on wa vs ga. A perfect second angle after Misa's lesson." }
+      { key:"grammar", title:"Grammar", short:"Grammar", jp:"ぶんぽう", why:"<b>How sentences are really built.</b> Start with the core sentence, then Genki Lesson 1, then tackle wa vs ga from two different angles.", videos:[
+        { id:"pSvH9vH60Ig", t:"Lesson 1: Japanese made easy! The core Japanese sentence", ch:"Cure Dolly", lvl:"BEGINNER", start:true, b:"The famous first lesson: how a Japanese sentence is really built, minus textbook confusion." },
+        { id:"GaQBL4XHuSo", t:"Genki 1 Lesson 1 Grammar Made Clear: X wa Y desu, ka, no", ch:"ToKini Andy", lvl:"BEGINNER", b:"Genki Lesson 1 grammar made genuinely clear, step by step." },
+        { id:"FknmUij6ZIk", t:"The Ultimate Guide To: wa vs ga (The ONLY lesson you need!)", ch:"Japanese Ammo with Misa", dur:"40 min", lvl:"BEGINNER+", b:"The definitive wa vs ga explanation, the one Tofugu calls the only lesson you need on it." },
+        { id:"UA8cdXsYxd8", t:"Wa vs Ga particle: the REAL secret the textbooks don't tell you", ch:"Cure Dolly", lvl:"BEGINNER+", b:"Cure Dolly's structural take on wa vs ga. A perfect second angle after Misa's lesson." }
       ]},
-      { key:"listening", title:"Listening", jp:"ききとり", videos:[
-        { id:"notJC37E6vA", t:"Easy Japanese Listening with YUYU NIHONGO (N5-N4)", ch:"Japanese with Shun", b:"Two of the best learner podcasters together, speaking easy Japanese at N5 to N4 level." },
-        { id:"iQSP-aZt1jU", t:"Daily Routine in Chile - Easy Japanese Vlog (N5-N4)", ch:"Japanese with Shun", b:"Shun narrates his day in simple Japanese. Listening practice built for N5 and N4." },
-        { id:"sdFi4518Mmk", t:"Exploring Ise-Shima with My Friend | Easy Japanese (N5-N4)", ch:"Japanese with Shun", b:"A real trip with a friend, filmed entirely in easy Japanese you can actually follow." }
+      { key:"listening", title:"Listening", short:"Listening", jp:"ききとり", why:"<b>Easy Japanese, real voices.</b> N5 to N4 listening at a pace you can follow. Watch once with subtitles, then again without.", videos:[
+        { id:"notJC37E6vA", t:"Easy Japanese Listening with YUYU NIHONGO (N5-N4)", ch:"Japanese with Shun", lvl:"BEGINNER", start:true, b:"Two of the best learner podcasters together, speaking easy Japanese at N5 to N4 level." },
+        { id:"iQSP-aZt1jU", t:"Daily Routine in Chile - Easy Japanese Vlog (N5-N4)", ch:"Japanese with Shun", lvl:"BEGINNER", b:"Shun narrates his day in simple Japanese. Listening practice built for N5 and N4." },
+        { id:"sdFi4518Mmk", t:"Exploring Ise-Shima with My Friend | Easy Japanese (N5-N4)", ch:"Japanese with Shun", lvl:"BEGINNER", b:"A real trip with a friend, filmed entirely in easy Japanese you can actually follow." }
       ]},
-      { key:"culture", title:"Conversation & Culture", jp:"かいわ と ぶんか", videos:[
-        { id:"TYGEJVZMh3k", t:"MUST-LISTEN Japanese music? Ask foreigners in Japan", ch:"Ask Japanese", b:"Street interviews: real people, real reactions, and a window into Japanese music taste." },
-        { id:"NhdS56ThIYk", t:"Kuuki wo yomu: Can you read the room? | Japanese Listening Practice", ch:"Japanese Podcast with Yon", dur:"20 min", b:"A gentle deep-dive on reading the air, the unspoken cues at the heart of Japanese conversation. A stretch pick: best with subtitles." },
-        { id:"I3xEzd1ehKY", t:"Japanese conversation with YUSUKE san · YUYU NIHONGO (No.1)", ch:"Miku Real Japanese", b:"A real two-person conversation between Yuyu and his senpai Yusuke, mixing polite and casual speech." },
-        { id:"ua5lkcDvl_o", t:"Easy Manga for Learning Japanese (JP with EN and JP subs)", ch:"Japanese Ammo with Misa", b:"Misa reads easy manga in Japanese with subtitles. Native material at a learner's pace." }
+      { key:"culture", title:"Conversation & Culture", short:"Culture", jp:"かいわ と ぶんか", why:"<b>Real conversation, and the culture inside it.</b> Street interviews, natural two-person dialogue, manga in Japanese, and the art of reading the room.", videos:[
+        { id:"TYGEJVZMh3k", t:"MUST-LISTEN Japanese music? Ask foreigners in Japan", ch:"Ask Japanese", lvl:"ALL LEVELS", start:true, b:"Street interviews: real people, real reactions, and a window into Japanese music taste." },
+        { id:"I3xEzd1ehKY", t:"Japanese conversation with YUSUKE san · YUYU NIHONGO (No.1)", ch:"Miku Real Japanese", lvl:"BEGINNER+", b:"A real two-person conversation between Yuyu and his senpai Yusuke, mixing polite and casual speech." },
+        { id:"ua5lkcDvl_o", t:"Easy Manga for Learning Japanese (JP with EN and JP subs)", ch:"Japanese Ammo with Misa", lvl:"BEGINNER+", b:"Misa reads easy manga in Japanese with subtitles. Native material at a learner's pace." },
+        { id:"NhdS56ThIYk", t:"Kuuki wo yomu: Can you read the room? | Japanese Listening Practice", ch:"Japanese Podcast with Yon", dur:"20 min", lvl:"STRETCH", b:"A gentle deep-dive on reading the air, the unspoken cues at the heart of Japanese conversation. Best with subtitles for now." }
       ]}
     ];
+    var watchTab = "writing";
     function renderWatchLib(){
       const host = document.getElementById("watch-lib"); if (!host) return;
-      host.innerHTML = WATCH_LIB.map(sec =>
-        '<div class="wl-sec"><div class="wl-head"><h3>' + sec.title + '<span class="jp">' + sec.jp + '</span></h3><span class="cnt">' + sec.videos.length + ' VIDEOS</span></div>' +
+      const rail = WATCH_LIB.map(sec =>
+        '<button class="wl-sidebtn' + (sec.key === watchTab ? " on" : "") + '" data-tab="' + sec.key + '" onclick="setWatchTab(\'' + sec.key + '\')"><span>' + sec.short + '</span><span class="n">' + sec.videos.length + '</span></button>'
+      ).join("");
+      const panes = WATCH_LIB.map(sec =>
+        '<div class="wl-pane' + (sec.key === watchTab ? " on" : "") + '" data-pane="' + sec.key + '">' +
+        '<div class="wl-head"><h3>' + sec.title + '<span class="jp">' + sec.jp + '</span></h3><span class="cnt">' + sec.videos.length + ' VIDEOS</span></div>' +
+        '<div class="wl-why">' + sec.why + '</div>' +
         '<div class="wl-row">' + sec.videos.map(v =>
           '<button class="wl-card" data-vid="' + v.id + '" onclick="playVid(this)">' +
           '<span class="wl-thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg">' +
-          (v.feat ? '<span class="wl-feat">FEATURED</span>' : '') +
+          (v.start ? '<span class="wl-feat">START HERE</span>' : '') +
+          (v.lvl ? '<span class="wl-lvl">' + v.lvl + '</span>' : '') +
           '<span class="wl-play">▶</span>' + (v.dur ? '<span class="wl-dur">' + v.dur + '</span>' : '') + '</span>' +
           '<span class="wl-body"><span class="wl-title">' + v.t + '</span>' +
           '<span class="wl-meta" style="display:block">' + v.ch + '</span>' +
           '<span class="wl-blurb">' + v.b + '</span></span></button>'
         ).join("") + '</div></div>'
       ).join("");
+      host.innerHTML = '<div class="wl-tabs"><div class="wl-side">' + rail + '</div>' + panes + '</div>';
+    }
+    function setWatchTab(key){
+      watchTab = key;
+      document.querySelectorAll(".wl-sidebtn").forEach(b => b.classList.toggle("on", b.dataset.tab === key));
+      document.querySelectorAll(".wl-pane").forEach(pn => pn.classList.toggle("on", pn.dataset.pane === key));
     }
     function playVid(el){
       const sec = WATCH_LIB.flatMap(s => s.videos).find(v => v.id === el.dataset.vid); if (!sec) return;
