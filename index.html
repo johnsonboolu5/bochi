@@ -561,7 +561,8 @@ input,textarea,select{ font-family:inherit; }
   transition:transform .12s var(--ease), border-color .12s var(--ease), background .12s var(--ease); line-height:1.35; word-break:break-word;
 }
 .opt small{ display:block; font-size:11.5px; color:var(--muted); font-weight:500; margin-top:3px; line-height:1.4; }
-.opt:hover:not(:disabled){ border-color:var(--blue); }
+@media (hover:hover) and (pointer:fine){ .opt:hover:not(:disabled){ border-color:var(--blue); } }
+.opt{ -webkit-tap-highlight-color:transparent; }
 .opt:active:not(:disabled){ transform:scale(.97); }
 .opt:disabled{ cursor:default; }
 .opt.correct{ background:var(--green-soft); border-color:var(--green); color:var(--green); }
@@ -3920,10 +3921,16 @@ input,textarea,select{ font-family:inherit; }
     }
     function stageHTML(html){
       var st = $("solo-stage");
+      var fresh = st.style.display === "none";
+      if (document.activeElement && st.contains(document.activeElement)) document.activeElement.blur();
       st.style.display = "block";
       st.innerHTML = html;
-      st.scrollIntoView({ behavior:"smooth", block:"start" });
+      if (fresh) st.scrollIntoView({ behavior:"smooth", block:"center" });
     }
+    document.addEventListener("click", function(e){
+      var t = e.target;
+      if (t && t.classList && t.classList.contains("opt")) setTimeout(function(){ t.blur(); }, 0);
+    }, true);
     function closeStage(){
       var st = $("solo-stage");
       if(st){ st.style.display = "none"; st.innerHTML = ""; }
