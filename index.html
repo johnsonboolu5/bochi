@@ -573,6 +573,30 @@ input,textarea,select{ font-family:inherit; }
 .st-prof{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; background:var(--ai-soft); border-radius:14px; padding:12px 14px; }
 .st-prof .band{ font-size:19px; font-weight:800; color:var(--ink); }
 .st-prof .sub{ font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; line-height:1.45; }
+.jlpt-pills{ display:flex; gap:8px; flex-wrap:wrap; margin:4px 0 6px; }
+.jlpt-pill{ border:1.5px solid var(--line-strong); background:transparent; color:var(--ink-soft); font-weight:800; font-size:13px; padding:8px 16px; border-radius:99px; cursor:pointer; }
+.jlpt-pill.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+.d-node{ display:flex; gap:12px; position:relative; padding:12px 0; }
+.d-node:not(:last-child)::before{ content:""; position:absolute; left:15px; top:46px; bottom:-4px; width:2px; background:var(--line-strong); border-radius:2px; }
+.d-ico{ width:32px; height:32px; border-radius:50%; border:2px solid var(--line-strong); background:var(--surface); color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex:none; z-index:1; }
+.d-node.done .d-ico{ background:#2F9E6E; border-color:#2F9E6E; color:#fff; }
+.d-main{ flex:1; min-width:0; }
+.d-kind{ font-size:10.5px; font-weight:800; letter-spacing:1.4px; color:var(--blue); }
+.d-title{ font-weight:800; font-size:16.5px; margin-top:1px; }
+.d-detail{ color:var(--muted); font-size:13.5px; font-weight:600; margin-top:1px; line-height:1.45; }
+.d-act{ flex:none; align-self:center; display:flex; gap:6px; }
+.d-forecast{ margin-top:14px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); font-size:13.5px; font-weight:600; line-height:1.55; }
+.d-extra{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+.gloss-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:10px; }
+.g-chip{ background:var(--surface2); border:1px solid var(--line); border-radius:10px; padding:5px 9px; font-size:13px; font-weight:700; }
+.g-chip .g-m{ color:var(--muted); font-weight:600; font-size:12px; margin-left:5px; }
+.g-dot{ color:var(--muted); font-weight:800; }
+.stage-head{ margin:28px 0 2px; }
+.stage-kick{ font-size:11px; font-weight:800; letter-spacing:1.6px; color:var(--blue); }
+.stage-name{ font-size:22px; font-weight:800; margin-top:2px; }
+.stage-blurb{ color:var(--muted); font-size:13.5px; font-weight:600; margin-top:2px; line-height:1.5; }
+.stage-preview{ margin:28px 0 2px; border:1.5px dashed var(--line-strong); border-radius:18px; padding:16px 18px; opacity:.85; }
+.stage-soon{ margin-top:8px; font-size:12px; font-weight:800; color:var(--muted); letter-spacing:.4px; }
 .st-prof-tag{ flex:none; font-size:10px; font-weight:800; letter-spacing:.14em; color:var(--blue); border:1.5px solid var(--blue); padding:5px 9px; border-radius:99px; }
 .feedback{ min-height:30px; margin-top:18px; font-weight:700; font-size:15px; line-height:1.55; }
 .feedback.good{ color:var(--green); } .feedback.bad{ color:var(--red); }
@@ -761,6 +785,16 @@ input,textarea,select{ font-family:inherit; }
 .tab svg{ width:24px; height:24px; }
 .tab:active{ transform:scale(.93); }
 .tab.active{ color:var(--blue); background:var(--pill); }
+.tabbar{ display:none !important; }
+.menu-btn{ display:none; align-items:center; justify-content:center; width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:var(--pill); color:var(--ink); cursor:pointer; flex:none; padding:0; }
+.menu-btn svg{ width:21px; height:21px; }
+#mobile-menu{ position:fixed; top:76px; left:12px; right:12px; z-index:85; background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border:1px solid var(--line); border-radius:22px; box-shadow:0 18px 44px rgba(0,0,0,.22); padding:8px; display:none; }
+#mobile-menu.open{ display:block; }
+.menu-item{ display:flex; align-items:center; gap:12px; width:100%; padding:12px; border:0; border-radius:14px; background:transparent; color:var(--ink-soft); font:inherit; font-size:15.5px; font-weight:700; cursor:pointer; text-align:left; }
+.menu-item svg{ width:21px; height:21px; flex:none; }
+.menu-item.active{ background:var(--ai-soft); color:var(--blue); }
+@media (max-width:1023px){ .menu-btn{ display:flex; } }
+@media (min-width:1024px){ #mobile-menu{ display:none !important; } }
 
 /* ---------- confetti ---------- */
 .confetti-layer{ position:fixed; inset:0; pointer-events:none; z-index:90; overflow:hidden; }
@@ -1090,6 +1124,7 @@ input,textarea,select{ font-family:inherit; }
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         </button>
+        <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </header>
       <aside class="sidebar" aria-label="Sidebar navigation">
         <div class="side-logo"><img class="brand-logo brand-light" src="bochi-logo-secondary-color.svg" alt="BoChi" /><img class="brand-logo brand-dark" src="bochi-logo-primary-white.svg" alt="BoChi" /></div>
@@ -1955,6 +1990,17 @@ input,textarea,select{ font-family:inherit; }
 
       <p class="foot">BoChi ぼち · Boru-san (Bo) + Chihiro (chi)<br />Made for two friends learning each other's language, one game at a time.</p>
     </div>
+    <div id="mobile-menu" aria-label="Menu">
+        <button class="menu-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
+        <button class="menu-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
+        <button class="menu-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
+        <button class="menu-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
+        <button class="menu-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
+        <button class="menu-item" data-nav="calendar" onclick="go('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+        <button class="menu-item" data-nav="recordings" onclick="go('recordings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg><span>Recordings</span></button>
+        <button class="menu-item" data-nav="session" onclick="go('session')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 6.5h11M8.5 12h11M8.5 17.5h11"/><circle cx="4.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.1" fill="currentColor" stroke="none"/></svg><span>Session Plan</span></button>
+        <button class="menu-item" data-nav="summary" onclick="go('summary')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke-linejoin="round"/></svg><span>Summary</span></button>
+    </div>
     <nav class="tabbar" aria-label="Main navigation">
       <button class="tab" data-nav="home" onclick="go('home')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg>
@@ -2081,9 +2127,36 @@ input,textarea,select{ font-family:inherit; }
        enTheme:"Two-way conversation, opinions, and natural replies."},
       {n:6, name:"Confident Exchange", chapter:"Confident Exchange",
        jpTheme:"Katakana arrives, plus free talk challenges, tongue twisters, and news words.",
-       enTheme:"Idioms, natural speed phrases, and news words."}
+       enTheme:"Idioms, natural speed phrases, and news words."},
+      {n:7, name:"Te-Form Trails", chapter:"Requests and Everyday Verbs",
+       jpTheme:"Te-form requests and permissions, plus the verbs of daily life.",
+       enTheme:"Requests with please, permissions with may I, and everyday verbs."},
+      {n:8, name:"Past Tense Paths", chapter:"Travel and Experiences",
+       jpTheme:"Ta-form past tense, experiences with koto ga aru, and travel words.",
+       enTheme:"Past tense stories and have-you-ever experiences, plus travel words."},
+      {n:9, name:"Plain Speech", chapter:"Thoughts and Feelings",
+       jpTheme:"Plain forms, quoting with to, and saying what you think and feel.",
+       enTheme:"Saying what you think, quoting others, and feelings words."},
+      {n:10, name:"If and When", chapter:"Conditionals and Giving",
+       jpTheme:"Tara and nara conditionals, and giving and receiving.",
+       enTheme:"If-sentences and giving and receiving."},
+      {n:11, name:"Can Do", chapter:"Potential and Plans",
+       jpTheme:"Potential form, intentions with tsumori, and plans with yotei.",
+       enTheme:"Can-do sentences, intentions, and plans."},
+      {n:12, name:"Polite Heights", chapter:"Honorifics and Review",
+       jpTheme:"Volitional form, obligations, first honorifics, and an N4 review.",
+       enTheme:"Let's and must, polite requests, and an A2 review."}
     ];
-    var UNLOCK_TEXT = {
+    var CONTENT_CHAPTERS = 12;
+     var STAGES = [
+       { lvl: 5, from: 1, to: 6, jp: "JLPT N5", en: "CEFR A1", title: "Foundations", blurb: "Sounds, scripts, core words, and your first real sentences." },
+       { lvl: 4, from: 7, to: 12, jp: "JLPT N4", en: "CEFR A2", title: "Building Range", blurb: "Te-forms, past tense, conditionals, potential, and polite speech." },
+       { lvl: 3, from: 13, to: 18, jp: "JLPT N3", en: "CEFR B1", title: "Real Japanese", blurb: "Natural conversation, passive and causative forms, and reading real text. The syllabus is mapped." },
+       { lvl: 2, from: 19, to: 24, jp: "JLPT N2", en: "CEFR B2", title: "Fluency Push", blurb: "Workplace Japanese, nuance, and reading speed. The syllabus is mapped." },
+       { lvl: 1, from: 25, to: 30, jp: "JLPT N1", en: "CEFR C1", title: "Mastery", blurb: "Advanced reading, formal registers, and native-level range. The syllabus is mapped." }
+     ];
+     function stageOf(ch) { for (var i = 0; i < STAGES.length; i++) if (ch >= STAGES[i].from && ch <= STAGES[i].to) return STAGES[i]; return STAGES[0]; }
+     var UNLOCK_TEXT = {
       bolu:{2:"S-row and t-row kana unlocked, with new word and phrase sets.",3:"Full hiragana unlocked, with everyday phrase sets.",4:"Dakuten kana unlocked, with sentence sets.",5:"Conversation sets unlocked, with longer lines to shadow.",6:"Katakana unlocked, with tongue twisters and news words."},
       chihiro:{2:"Letters G to M unlocked, with new word and phrase sets.",3:"Letters N to S unlocked, with everyday phrase sets.",4:"The full alphabet unlocked, with sentence sets.",5:"Tricky sounds and conversation sets unlocked.",6:"The full alphabet speed round unlocked, with idioms and news words."}
     };
@@ -2106,6 +2179,13 @@ input,textarea,select{ font-family:inherit; }
         {name:"Feelings and Ideas", items:[["こころ","kokoro","heart"],["ゆめ","yume","dream"],["じかん","jikan","time"],["こえ","koe","voice"],["うた","uta","song"],["きもち","kimochi","feeling"],["おもいで","omoide","a memory"],["えいが","eiga","movie"]]},
         {name:"Everyday Mix", items:[["ほん","hon","book"],["いえ","ie","house"],["そら","sora","sky"],["うみ","umi","sea / ocean"],["やま","yama","mountain"],["はな","hana","flower"],["ゆき","yuki","snow"],["つき","tsuki","moon"]]},
         {name:"News Words", items:[["てんき","tenki","weather"],["よほう","yohou","forecast"],["じしん","jishin","earthquake"],["かいぎ","kaigi","meeting"],["せいふ","seifu","government"],["あんぜん","anzen","safety"]]}
+      ,
+        {name:"Everyday Verbs", items:[["起きる","okiru","to wake up"],["寝る","neru","to sleep"],["働く","hataraku","to work"],["休む","yasumu","to rest"],["遊ぶ","asobu","to play"],["泳ぐ","oyogu","to swim"],["作る","tsukuru","to make"],["売る","uru","to sell"],["知る","shiru","to know"],["歩く","aruku","to walk"]]},
+        {name:"Travel and Transport", items:[["飛行機","hikouki","airplane"],["船","fune","ship"],["空港","kuukou","airport"],["地図","chizu","map"],["写真","shashin","photo"],["切符","kippu","ticket"],["旅館","ryokan","Japanese inn"],["予約","yoyaku","reservation"],["旅行","ryokou","travel"],["海","umi","sea"]]},
+        {name:"Feelings and Opinions", items:[["嬉しい","ureshii","happy"],["悲しい","kanashii","sad"],["忙しい","isogashii","busy"],["有名","yuumei","famous"],["便利","benri","convenient"],["安全","anzen","safe"],["大切","taisetsu","precious"],["心配","shinpai","worry"],["自由","jiyuu","freedom"],["優しい","yasashii","kind"]]},
+        {name:"Home and Daily Life", items:[["部屋","heya","room"],["窓","mado","window"],["机","tsukue","desk"],["椅子","isu","chair"],["冷蔵庫","reizouko","refrigerator"],["洗濯","sentaku","laundry"],["掃除","souji","cleaning"],["料理","ryouri","cooking"],["買い物","kaimono","shopping"],["散歩","sanpo","a walk"]]},
+        {name:"Abilities and Activities", items:[["運転","unten","driving"],["歌","uta","song"],["絵","e","picture"],["踊り","odori","dance"],["野球","yakyuu","baseball"],["練習","renshuu","practice"],["質問","shitsumon","question"],["答え","kotae","answer"],["問題","mondai","problem"],["趣味","shumi","hobby"]]},
+        {name:"Work and School", items:[["会社","kaisha","company"],["会議","kaigi","meeting"],["仕事","shigoto","job"],["宿題","shukudai","homework"],["試験","shiken","exam"],["授業","jugyou","class"],["説明","setsumei","explanation"],["電話","denwa","phone"],["手紙","tegami","letter"],["住所","juusho","address"]]}
       ],
       chihiro:[
         {name:"Greetings and Numbers", items:[["hello","ハロー","こんにちは"],["good morning","グッドモーニング","おはよう"],["thank you","サンキュー","ありがとう"],["goodbye","グッバイ","さようなら"],["please","プリーズ","おねがいします"],["one","ワン","いち"],["two","トゥー","に"],["three","スリー","さん"],["four","フォー","よん"],["five","ファイブ","ご"]]},
@@ -2113,7 +2193,13 @@ input,textarea,select{ font-family:inherit; }
         {name:"Travel and Work", items:[["train","トレイン","でんしゃ"],["car","カー","くるま"],["station","ステーション","えき"],["airplane","エアプレーン","ひこうき"],["school","スクール","がっこう"],["teacher","ティーチャー","せんせい"],["work","ワーク","しごと"],["town","タウン","まち"]]},
         {name:"Feelings and Ideas", items:[["heart","ハート","こころ"],["dream","ドリーム","ゆめ"],["time","タイム","じかん"],["voice","ボイス","こえ"],["song","ソング","うた"],["feeling","フィーリング","きもち"],["memory","メモリー","おもいで"],["movie","ムービー","えいが"]]},
         {name:"Everyday Mix", items:[["book","ブック","ほん"],["house","ハウス","いえ"],["sky","スカイ","そら"],["sea","シー","うみ"],["mountain","マウンテン","やま"],["flower","フラワー","はな"],["snow","スノー","ゆき"],["moon","ムーン","つき"]]},
-        {name:"News Words", items:[["weather","ウェザー","てんき"],["forecast","フォーキャスト","よほう"],["earthquake","アースクエイク","じしん"],["meeting","ミーティング","かいぎ"],["government","ガバメント","せいふ"],["safety","セーフティ","あんぜん"]]}
+        {name:"News Words", items:[["weather","ウェザー","てんき"],["forecast","フォーキャスト","よほう"],["earthquake","アースクエイク","じしん"],["meeting","ミーティング","かいぎ"],["government","ガバメント","せいふ"],["safety","セーフティ","あんぜん"]]},
+        {name:"Everyday Verbs", items:[["wake up","ウェイクアップ","おきる"],["sleep","スリープ","ねる"],["work","ワーク","はたらく"],["rest","レスト","やすむ"],["play","プレイ","あそぶ"],["swim","スイム","およぐ"],["meet","ミート","あう"],["make","メイク","つくる"],["sell","セル","うる"],["know","ノウ","しる"]]},
+        {name:"Travel and Transport", items:[["airplane","エアプレイン","ひこうき"],["train","トレイン","でんしゃ"],["ship","シップ","ふね"],["airport","エアポート","くうこう"],["station","ステーション","えき"],["map","マップ","ちず"],["photo","フォト","しゃしん"],["ticket","チケット","きっぷ"],["inn","イン","りょかん"],["reservation","レザベーション","よやく"]]},
+        {name:"Feelings and Opinions", items:[["happy","ハッピー","うれしい"],["sad","サッド","かなしい"],["busy","ビジー","いそがしい"],["famous","フェイマス","ゆうめい"],["convenient","コンビニエント","べんり"],["safe","セーフ","あんぜん"],["precious","プレシャス","たいせつ"],["worry","ウォリー","しんぱい"],["free","フリー","じゆう"],["kind","カインド","やさしい"]]},
+        {name:"Home and Daily Life", items:[["room","ルーム","へや"],["window","ウィンドウ","まど"],["desk","デスク","つくえ"],["chair","チェア","いす"],["fridge","フリッジ","れいぞうこ"],["laundry","ランドリー","せんたく"],["cleaning","クリーニング","そうじ"],["cooking","クッキング","りょうり"],["shopping","ショッピング","かいもの"],["walk","ウォーク","さんぽ"]]},
+        {name:"Abilities and Activities", items:[["driving","ドライビング","うんてん"],["song","ソング","うた"],["picture","ピクチャー","え"],["dance","ダンス","おどり"],["baseball","ベースボール","やきゅう"],["practice","プラクティス","れんしゅう"],["question","クエスチョン","しつもん"],["answer","アンサー","こたえ"],["problem","プロブレム","もんだい"],["hobby","ホビー","しゅみ"]]},
+        {name:"Work and School", items:[["company","カンパニー","かいしゃ"],["meeting","ミーティング","かいぎ"],["job","ジョブ","しごと"],["homework","ホームワーク","しゅくだい"],["exam","イグザム","しけん"],["class","クラス","じゅぎょう"],["explanation","エクスプラネーション","せつめい"],["phone","フォーン","でんわ"],["letter","レター","てがみ"],["address","アドレス","じゅうしょ"]]}
       ]
     };
     var PHRASE_SETS = {
@@ -2124,6 +2210,13 @@ input,textarea,select{ font-family:inherit; }
         {name:"Sentences", items:[["これは おいしいです","kore wa oishii desu","This is delicious"],["ゆっくり おねがいします","yukkuri onegaishimasu","Slowly, please"],["もう一度 おねがいします","mou ichido onegaishimasu","One more time, please"],["わたしは まいにち コーヒーを のみます","watashi wa mainichi koohii o nomimasu","I drink coffee every day"]]},
         {name:"Conversation", items:[["おげんきですか","ogenki desu ka","How are you?"],["きょうは どうですか","kyou wa dou desu ka","How is today going?"],["さいきん どうですか","saikin dou desu ka","How have you been lately?"],["それは とても よさそうです","sore wa totemo yosasou desu","That sounds really good"]]},
         {name:"Confident Exchange", items:[["わくわくします","wakuwaku shimasu","I am excited"],["じつは、にほんに いきたいです","jitsu wa, nihon ni ikitai desu","Actually, I want to go to Japan"],["なまむぎ なまごめ なまたまご","namamugi namagome namatamago","Tongue twister: raw wheat, raw rice, raw egg"]]}
+      ,
+        {name:"Requests with the Te-Form", items:[["待ってください","matte kudasai","Please wait"],["見てください","mite kudasai","Please look"],["教えてください","oshiete kudasai","Please tell me"],["手伝ってください","tetsudatte kudasai","Please help me"],["窓を開けてください","mado o akete kudasai","Please open the window"],["ここに名前を書いてください","koko ni namae o kaite kudasai","Please write your name here"],["入ってもいいですか","haitte mo ii desu ka","May I come in?"],["写真を撮ってもいいですか","shashin o totte mo ii desu ka","May I take a photo?"]]},
+        {name:"Experiences with the Ta-Form", items:[["日本へ行ったことがあります","nihon e itta koto ga arimasu","I have been to Japan"],["寿司を食べたことがあります","sushi o tabeta koto ga arimasu","I have eaten sushi"],["富士山を見たことがあります","fujisan o mita koto ga arimasu","I have seen Mt. Fuji"],["昨日は映画を見ました","kinou wa eiga o mimashita","I watched a movie yesterday"],["友達と遊んだり、買い物をしたりしました","tomodachi to asondari, kaimono o shitari shimashita","I did things like hang out with friends and shop"],["北海道へ行ったことがありません","hokkaidou e itta koto ga arimasen","I have never been to Hokkaido"],["この本を読んだことがありますか","kono hon o yonda koto ga arimasu ka","Have you read this book?"],["朝ご飯を食べたり、散歩をしたりしました","asagohan o tabetari, sanpo o shitari shimashita","I did things like eat breakfast and take a walk"]]},
+        {name:"Thoughts with To", items:[["明日は雨だと思います","ashita wa ame da to omoimasu","I think it will rain tomorrow"],["日本の夏は暑いと思います","nihon no natsu wa atsui to omoimasu","I think Japanese summers are hot"],["彼は学生だと言っていました","kare wa gakusei da to itte imashita","He said he is a student"],["試験は難しかったと思います","shiken wa muzukashikatta to omoimasu","I think the exam was difficult"],["この店は安いと思います","kono mise wa yasui to omoimasu","I think this shop is cheap"],["彼女は忙しいと言っていました","kanojo wa isogashii to itte imashita","She said she is busy"],["来週、旅行すると思います","raishuu, ryokou suru to omoimasu","I think I will travel next week"],["行ってみたいと思います","itte mitai to omoimasu","I think I want to try going"]]},
+        {name:"If and Giving", items:[["雨が降ったら、家にいます","ame ga futtara, ie ni imasu","If it rains, I will stay home"],["安かったら、買います","yasukattara, kaimasu","If it is cheap, I will buy it"],["時間があったら、手伝います","jikan ga attara, tetsudaimasu","If I have time, I will help"],["日本へ行くなら、春がいいです","nihon e iku nara, haru ga ii desu","If you go to Japan, spring is best"],["友達に本をあげました","tomodachi ni hon o agemashita","I gave a book to my friend"],["先生に辞書をもらいました","sensei ni jisho o moraimashita","I received a dictionary from my teacher"],["母がケーキを作ってくれました","haha ga keeki o tsukutte kuremashita","My mother made a cake for me"],["寒かったら、窓を閉めてください","samukattara, mado o shimete kudasai","If you are cold, please close the window"]]},
+        {name:"Potential and Plans", items:[["日本語が話せます","nihongo ga hanasemasu","I can speak Japanese"],["漢字が読めます","kanji ga yomemasu","I can read kanji"],["車が運転できます","kuruma ga unten dekimasu","I can drive a car"],["明日、早く起きるつもりです","ashita, hayaku okiru tsumori desu","I intend to get up early tomorrow"],["来年、日本へ行くつもりです","rainen, nihon e iku tsumori desu","I intend to go to Japan next year"],["週末は友達と会う予定です","shuumatsu wa tomodachi to au yotei desu","I plan to meet my friend this weekend"],["ピアノが弾けます","piano ga hikemasu","I can play the piano"],["泳げますか","oyogemasu ka","Can you swim?"]]},
+        {name:"Let's and Must", items:[["一緒に行こう","issho ni ikou","Let's go together"],["映画を見に行こう","eiga o mi ni ikou","Let's go see a movie"],["薬を飲まなければなりません","kusuri o nomanakereba narimasen","I must take the medicine"],["宿題をしなければなりません","shukudai o shinakereba narimasen","I must do my homework"],["先生がいらっしゃいます","sensei ga irasshaimasu","The teacher is here (honorific)"],["どうぞお掛けください","douzo okake kudasai","Please have a seat"],["休もうと思います","yasumou to omoimasu","I am thinking of resting"],["日本語をもっと勉強しよう","nihongo o motto benkyou shiyou","Let's study Japanese more"]]}
       ],
       chihiro:[
         {name:"Greetings", items:[["Hello","","こんにちは"],["Good morning","","おはよう"],["Thank you very much","","ありがとうございます"],["Excuse me","","すみません"]]},
@@ -2131,7 +2224,13 @@ input,textarea,select{ font-family:inherit; }
         {name:"Everyday Idioms", items:[["A piece of cake","","とても かんたん"],["Better late than never","","おくれても、しないより いい"],["Break a leg","","幸運を祈る ことば：がんばって"],["See you later","","またね"]]},
         {name:"Sentences", items:[["Could you say that again, please?","","もう一度 言ってください"],["Let me think for a second","","ちょっと 考えさせて"],["I drink coffee every day","","わたしは まいにち コーヒーを のみます"],["The station is near my house","","えきは いえの ちかくです"]]},
         {name:"Conversation", items:[["How is it going today?","","きょうは どうですか"],["That sounds really good","","それは とても よさそうです"],["How have you been lately?","","さいきん どうですか"],["What do you think?","","どう 思いますか"]]},
-        {name:"Confident Idioms", items:[["It costs an arm and a leg","","とても 高い"],["Burn the midnight oil","","夜おそくまで がんばる"],["Once in a blue moon","","めったに ない"],["The ball is in your court","","つぎは あなたの番です"]]}
+        {name:"Confident Idioms", items:[["It costs an arm and a leg","","とても 高い"],["Burn the midnight oil","","夜おそくまで がんばる"],["Once in a blue moon","","めったに ない"],["The ball is in your court","","つぎは あなたの番です"]]},
+        {name:"Requests", items:[["Please wait","","まってください"],["Please look","","みてください"],["Please tell me","","おしえてください"],["Please help me","","てつだってください"],["Please open the window","","まどを あけてください"],["May I come in?","","はいっても いいですか"],["May I take a photo?","","しゃしんを とっても いいですか"],["Please write your name here","","ここに なまえを かいてください"]]},
+        {name:"Experiences", items:[["I have been to Japan","","にほんへ いったことがあります"],["I have eaten sushi","","すしを たべたことがあります"],["I watched a movie yesterday","","きのう えいがを みました"],["I have never been to Hokkaido","","ほっかいどうへ いったことがありません"],["Have you read this book?","","この ほんを よんだことがありますか"],["I have seen Mt. Fuji","","ふじさんを みたことがあります"],["I did things like shop and take walks","","かいものを したり さんぽを したりしました"],["Last week I played with friends","","せんしゅう ともだちと あそびました"]]},
+        {name:"Thoughts", items:[["I think it will rain tomorrow","","あしたは あめだと おもいます"],["I think Japanese summers are hot","","にほんの なつは あついと おもいます"],["He said he is a student","","かれは がくせいだと いっていました"],["I think the exam was difficult","","しけんは むずかしかったと おもいます"],["She said she is busy","","かのじょは いそがしいと いっていました"],["I think this shop is cheap","","この みせは やすいと おもいます"],["I think I will travel next week","","らいしゅう りょこうすると おもいます"],["I want to try going","","いってみたいと おもいます"]]},
+        {name:"If and Giving", items:[["If it rains, I will stay home","","あめが ふったら いえにいます"],["If it is cheap, I will buy it","","やすかったら かいます"],["If I have time, I will help","","じかんが あったら てつだいます"],["If you go to Japan, spring is best","","にほんへ いくなら はるが いいです"],["I gave a book to my friend","","ともだちに ほんを あげました"],["I received a dictionary from my teacher","","せんせいに じしょを もらいました"],["My mother made a cake for me","","ははが ケーキを つくってくれました"],["If you are cold, please close the window","","さむかったら まどを しめてください"]]},
+        {name:"Can and Plans", items:[["I can speak Japanese","","にほんごが はなせます"],["I can read kanji","","かんじが よめます"],["I can drive a car","","くるまが うんてんできます"],["I intend to get up early tomorrow","","あした はやく おきるつもりです"],["I plan to meet my friend this weekend","","しゅうまつは ともだちと あうよていです"],["Can you swim?","","およげますか"],["I can play the piano","","ピアノが ひけます"],["I intend to go to Japan next year","","らいねん にほんへ いくつもりです"]]},
+        {name:"Must and Let's", items:[["Let's go together","","いっしょに いこう"],["Let's go see a movie","","えいがを みにいこう"],["I must take the medicine","","くすりを のまなければなりません"],["I must do my homework","","しゅくだいを しなければなりません"],["Please have a seat","","どうぞ おかけください"],["I am thinking of resting","","やすもうと おもいます"],["Let's study Japanese more","","にほんごを もっと べんきょうしよう"],["The teacher is here","","せんせいが いらっしゃいます"]]}
       ]
     };
     var VOCAB = [
@@ -2509,11 +2608,14 @@ input,textarea,select{ font-family:inherit; }
       else if(view === "watch"){ setTurn(watchPlayer()); }
       else if(view === "shadow"){ setTurn(shadowPlayer()); }
     }
+    function toggleMenu(force) { var mm = $("mobile-menu"); if (!mm) return; var open = typeof force === "boolean" ? force : !mm.classList.contains("open"); mm.classList.toggle("open", open); }
+    document.addEventListener("click", function (e) { var mm = $("mobile-menu"); if (mm && mm.classList.contains("open") && !mm.contains(e.target) && !(e.target.closest && e.target.closest("#menu-btn"))) mm.classList.remove("open"); });
     function go(view){
       CURRENT = view;
       syncTurnForView(view);
       document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("on"); });
       $("view-" + view).classList.add("on");
+      var mm0 = $("mobile-menu"); if (mm0) mm0.classList.remove("open");
       document.querySelectorAll("[data-nav]").forEach(function(b){
         b.classList.toggle("active", b.getAttribute("data-nav") === view);
       });
@@ -3449,7 +3551,8 @@ input,textarea,select{ font-family:inherit; }
     }
 
     /* ==================== JOURNEY: XP, LEVELS, GAME TIERS ==================== */
-    function levelOf(p){ return Math.min(6, Math.floor(state.journey[p].xp / XP_PER_LEVEL) + 1); }
+    function notifyRankSafe(p, intro) { try { if (typeof maybeNotifyRank !== "function") return; if (!p && typeof practicePlayer === "function") p = practicePlayer(); if (p) maybeNotifyRank(p, intro); } catch (e) {} }
+    function levelOf(p){ return Math.min(12, Math.floor(state.journey[p].xp / XP_PER_LEVEL) + 1); }
     function xpIntoLevel(p){ return state.journey[p].xp - (levelOf(p) - 1) * XP_PER_LEVEL; }
     function soloName(p){ return p === "bolu" ? "Boru-san" : "Chihiro-san"; }
     function addJourneyXP(player, pts, opts){
@@ -3494,13 +3597,14 @@ input,textarea,select{ font-family:inherit; }
         if(un){
           un.innerHTML = state.lastUnlock[p]
             ? "<b>Latest unlock:</b> " + esc(state.lastUnlock[p])
-            : (lv >= 6 ? "Every level unlocked. Confident exchange!" : "<b>Next unlock:</b> Level " + (lv + 1) + " · " + LEVELS[lv].name + ". " + (UNLOCK_TEXT[p][lv + 1] || ""));
+            : (lv >= LEVELS.length ? "Every level unlocked. The whole road is open." : "<b>Next unlock:</b> Level " + (lv + 1) + " · " + LEVELS[lv].name + ". " + (UNLOCK_TEXT[p][lv + 1] || ""));
         }
         var sj = $("j-solo-" + p); if(sj) sj.textContent = "Solo Learning Points today: " + state.soloToday[p];
       });
       renderPathLines();
       renderTierBars();
       renderPlatformHome();
+      notifyRankSafe(null, true);
     }
 
     /* ==================== PLATFORM HOME ==================== */
@@ -3509,7 +3613,7 @@ input,textarea,select{ font-family:inherit; }
       return solo.player || "bolu";
     }
     function nextLessonFor(p){
-      for(var ch = 1; ch <= 6; ch++){
+      for(var ch = 1; ch <= CONTENT_CHAPTERS; ch++){
         if(!chapterUnlocked(p, ch)) continue;
         var lessons = chapterLessons(p, ch), cnt = chapterDoneCount(p, ch);
         for(var i = 0; i < lessons.length; i++){
@@ -3567,7 +3671,7 @@ input,textarea,select{ font-family:inherit; }
           '<div class="ph-row" style="margin-top:12px"><button class="ph-btn" style="margin-left:0" onclick="continueDone()">Open the Path</button></div>' + revChip;
       }
       var totDone = 0, curCh = nx.ch || 6;
-      for(var c = 1; c <= 6; c++) totDone += chapterDoneCount(p, c).done;
+      for(var c = 1; c <= CONTENT_CHAPTERS; c++) totDone += chapterDoneCount(p, c).done;
       var ls = $("ph-stat-learn");
       if(ls) ls.textContent = "Chapter " + curCh + " of 6 · " + totDone + " lessons done";
       var ps = $("ph-stat-practice");
@@ -3761,6 +3865,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function finishReview(){
       var p = solo.player, left = reviewCount(p);
+      if (dailySess && dailySess.queue[dailySess.i] === "review") { var cl0 = reviewRun ? reviewRun.cleared : 0; reviewRun = null; renderReviewCard(); renderSoloHead(); stageHTML(dailyAdvanceHtml("Smart Review", cl0 ? cl0 + " cleared" : "Queue refreshed")); return; }
       var html = '<div class="prompt-label" style="text-align:center">REVIEW DONE</div>' +
         '<div class="big-word" style="text-align:center">' + reviewRun.cleared + " cleared</div>" +
         '<p class="howto" style="text-align:center; margin:8px auto 0">' + (left ? left + " thing" + (left === 1 ? "" : "s") + " still waiting for next time. They will be here, and in the next session warm up." : "Review is empty. Everything you missed is now yours.") + "</p>" +
@@ -3795,7 +3900,7 @@ input,textarea,select{ font-family:inherit; }
           5:[["Tricky Sounds th, sh","think, ship",TRICKY.slice(0,2)],["Tricky Sounds ch, ph, wh","cheese, phone, what",TRICKY.slice(2)]],
           6:[["Full Alphabet Mix","A to Z, shuffled",LETTERS]]};
       }
-      return byCh[ch].map(function(c){ return { kind:"char", name:c[0], sub:c[1], items:it(c[2]), glyph:c[2][0][0] }; });
+      return (byCh[ch] || []).map(function(c){ return { kind:"char", name:c[0], sub:c[1], items:it(c[2]), glyph:c[2][0][0] }; });
     }
     function chapterLessons(p, ch){
       var lessons = charLessonsFor(p, ch);
@@ -3809,7 +3914,10 @@ input,textarea,select{ font-family:inherit; }
     }
     function lessonId(ch, i){ return "ch" + ch + "-" + i; }
     function chapterUnlocked(p, ch){
-      return ch === 1 || levelOf(p) >= ch || !!state.checkpoints[p][ch - 1];
+      if (ch === 1) return true;
+      if (state.checkpoints[p][ch - 1]) return true;
+      for (var c = ch; c <= CONTENT_CHAPTERS; c++) { if (chapterDoneCount(p, c).done > 0) return true; }
+      return false;
     }
     function chapterDoneCount(p, ch){
       var lessons = chapterLessons(p, ch), done = 0;
@@ -3848,8 +3956,9 @@ input,textarea,select{ font-family:inherit; }
       $("solo-badge").textContent = "LEVEL " + lv;
       $("solo-bar").style.width = (lv >= 6 ? 100 : xpIntoLevel(p)) + "%";
       $("solo-xp-line").textContent = lv >= 6 ? state.journey[p].xp + " Learning Points · top level" : xpIntoLevel(p) + " / " + XP_PER_LEVEL + " Learning Points to Level " + (lv + 1);
-      var profEl = $("solo-prof-line"); if (profEl) { var pf = proficiencyOf(p); profEl.innerHTML = "Proficiency: <b>" + pf.band + "</b> · " + pf.score + "%"; }
+      var profEl = $("solo-prof-line"); if (profEl) { var pf = proficiencyOf(p); profEl.innerHTML = "Rank: <b>" + pf.rank + "</b> " + starsStr(pf.rankIdx + 1) + " \u00B7 " + pf.score + "%"; }
       $("solo-today-line").textContent = "Solo Learning Points earned today: " + state.soloToday[p] + " · this visit: " + solo.xpSession;
+      notifyRankSafe(p, false);
     }
     function awardSoloXP(pts){
       var p = solo.player; if(!p || !pts) return;
@@ -3863,17 +3972,24 @@ input,textarea,select{ font-family:inherit; }
       var wrap = $("solo-chapters");
       wrap.innerHTML = "";
       var totL = 0, doneL = 0;
-      for(var c0 = 1; c0 <= 6; c0++){ var cc0 = chapterDoneCount(p, c0); totL += cc0.total; doneL += cc0.done; }
+      for(var c0 = 1; c0 <= CONTENT_CHAPTERS; c0++){ var cc0 = chapterDoneCount(p, c0); totL += cc0.total; doneL += cc0.done; }
       var head = document.createElement("div");
       head.className = "path-top";
       head.innerHTML = '<button class="course-btn" onclick="changeProfile()">' + (p === "bolu" ? "Japanese for Boru-san" : "English for Chihiro-san") + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>' +
         '<div class="path-prog"><span>' + doneL + " of " + totL + ' lessons done</span><div class="path-prog-bar"><div style="width:' + Math.round(doneL / totL * 100) + '%"></div></div></div>';
       wrap.appendChild(head);
-      for(var ch = 1; ch <= 6; ch++){
+      for(var ch = 1; ch <= CONTENT_CHAPTERS; ch++){
         (function(ch){
           var L = LEVELS[ch - 1];
           var lessons = chapterLessons(p, ch);
           var cnt = chapterDoneCount(p, ch);
+          var stg = stageOf(ch);
+          if (ch === stg.from) {
+            var sh = document.createElement("div");
+            sh.className = "stage-head";
+            sh.innerHTML = '<div class="stage-kick">STAGE ' + (STAGES.indexOf(stg) + 1) + ' \u00B7 ' + (p === "bolu" ? stg.jp : stg.en) + '</div><div class="stage-name">' + stg.title + '</div><div class="stage-blurb">' + stg.blurb + '</div>';
+            wrap.appendChild(sh);
+          }
           var unlocked = chapterUnlocked(p, ch);
           var block = document.createElement("div");
           block.className = "chapter";
@@ -3918,7 +4034,7 @@ input,textarea,select{ font-family:inherit; }
             '<span class="cp-state">' + (cpDone ? "Passed ✓" : (unlocked && allDone ? "Start" : "Locked")) + "</span>";
           cp.addEventListener("click", function(){
             if(cpDone){ toast("Checkpoint already passed. Practice any lesson to keep sharp."); return; }
-            if(!unlocked){ toast("This chapter is locked. Reach Level " + ch + " or pass the previous checkpoint."); return; }
+            if(!unlocked){ toast("This chapter is locked. Master Chapter " + (ch - 1) + " first: finish its lessons and pass its checkpoint."); return; }
             if(!allDone){ toast("Finish every lesson in Chapter " + ch + " first."); return; }
             openCheckpoint(ch);
           });
@@ -3926,6 +4042,13 @@ input,textarea,select{ font-family:inherit; }
           wrap.appendChild(block);
         })(ch);
       }
+      STAGES.forEach(function (stg2) {
+        if (stg2.from <= CONTENT_CHAPTERS) return;
+        var pv = document.createElement("div");
+        pv.className = "stage-preview";
+        pv.innerHTML = '<div class="stage-kick">STAGE ' + (STAGES.indexOf(stg2) + 1) + ' \u00B7 ' + (p === "bolu" ? stg2.jp : stg2.en) + '</div><div class="stage-name">' + stg2.title + '</div><div class="stage-blurb">' + stg2.blurb + '</div><div class="stage-soon">LESSONS IN PREPARATION</div>';
+        wrap.appendChild(pv);
+      });
     }
     function stageHTML(html){
       var st = $("solo-stage");
@@ -4026,7 +4149,7 @@ input,textarea,select{ font-family:inherit; }
           '<div class="flash-big">' + esc(item.big) + "</div>" +
           (sl.showRead && item.read ? '<div class="flash-sub">' + esc(item.read) + "</div>" : "") +
           '<div class="flash-mean">' + esc(les.kind === "char" ? item.teach : item.mean) + "</div>" +
-          (ex ? '<p class="teach-text" style="margin-top:10px">' + esc(ex) + "</p>" : "") +
+          (ex ? '<p class="teach-text" style="margin-top:10px">' + esc(ex) + "</p>" + glossForExample(ex, item, p) : "") +
           '<div style="text-align:center; margin-top:12px"><button class="speak-btn" id="lesson-speak" aria-label="Listen"></button></div>';
       }
       html += '<div class="btn-row" style="justify-content:center; margin-top:16px">' +
@@ -4111,6 +4234,7 @@ input,textarea,select{ font-family:inherit; }
       var sl = solo.lesson; if(!sl || sl.lock) return;
       sl.lock = true;
       logAnswer("lesson", sl.ch || null, ok, solo.player);
+      if (q.format === "listen") { var lst = statsTarget(solo.player); var le = lst.src["listen"] || (lst.src["listen"] = { a: 0, c: 0 }); le.a++; if (ok) le.c++; persistStats(solo.player); }
       var p = solo.player, les = sl.les, item = q.item;
       $("lesson-options").querySelectorAll(".opt").forEach(function(b){ b.disabled = true; });
       btn.classList.add(ok ? "correct" : "wrong");
@@ -4137,17 +4261,18 @@ input,textarea,select{ font-family:inherit; }
     function finishLessonQuiz(){
       var sl = solo.lesson, p = solo.player;
       var total = sl.qs.length, got = sl.correct;
-      var pass = got >= Math.ceil(total * 0.6);
+      var pass = got >= Math.ceil(total * 0.8);
       if(pass){
         state.lessons[p][lessonId(sl.ch, sl.idx)] = true;
         bumpPractice("l", 1);
         if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
       }
       scheduleSave();
+      if (dailySess && dailySess.queue[dailySess.i] === "lesson") { renderSoloHead(); renderPath(); stageHTML(dailyAdvanceHtml("Today's lesson", got + " of " + total + " correct")); return; }
       var rc = reviewChapterCount(p, sl.ch);
       var html = lessonHead() +
         '<div class="big-word" style="text-align:center">' + got + " of " + total + " correct</div>" +
-        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete. The node on your path is checked, and the Learning Points are on your journey." : "Good practice, and the Learning Points still count. Score 60% or more to check this node, then try again when you are ready.") +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete. The node on your path is checked, and the Learning Points are on your journey." : "Good practice, and the Learning Points still count. Score 80% or more to check this node. The goal is mastery, not just getting through.") +
         (rc ? " " + rc + " thing" + (rc === 1 ? "" : "s") + " from this chapter " + (rc === 1 ? "is" : "are") + " waiting in Review on this page." : "") + "</p>" +
         '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="quitLesson()">Back to Path</button>' +
         (pass ? "" : '<button class="btn ghost" onclick="retryLesson()">Try Again</button>') + "</div>";
@@ -4389,13 +4514,14 @@ input,textarea,select{ font-family:inherit; }
       if(pass && !state.checkpoints[p][sl.ch]){
         state.checkpoints[p][sl.ch] = true;
         awardSoloXP(30);
-        if(sl.ch < 6){
+        if(sl.ch < CONTENT_CHAPTERS){
           state.unlocks.push(playerName(p) + " passed the Chapter " + sl.ch + " checkpoint and opened Chapter " + (sl.ch + 1) + ".");
           state.lastUnlock[p] = "Chapter " + sl.ch + " checkpoint passed. " + (UNLOCK_TEXT[p][sl.ch + 1] || "");
         }
         renderJourney();
       }
       scheduleSave();
+      if (dailySess && dailySess.queue[dailySess.i] === "lesson") { renderSoloHead(); renderPath(); stageHTML(dailyAdvanceHtml("Checkpoint", pass ? "Checkpoint passed" : "Checkpoint practiced")); return; }
       var rc2 = reviewChapterCount(p, sl.ch);
       var html = '<div class="prompt-label" style="text-align:center">CHECKPOINT RESULT</div>' +
         '<div class="big-word" style="text-align:center">' + sl.correct + " of " + sl.qs.length + " correct</div>" +
@@ -5261,7 +5387,57 @@ input,textarea,select{ font-family:inherit; }
         ["西","nishi","west","The sun settling down into its nest."],
         ["南","minami","south","The warm gate of the sunny south."],
         ["北","kita","north","Two figures back to back against the cold."]
-      ]}
+      ] },
+      { name: "JLPT N4 Kanji", items: [
+        ["京","きょう","capital","A tower on a high hill: the capital."],
+        ["室","しつ","room","Under one roof, a room of your own."],
+        ["活","かつ","lively","Water on the tongue: lively speech."],
+        ["計","けい","measure","Words and a cross: measure and plan."],
+        ["界","かい","world","Rice fields divided: the world's borders."],
+        ["品","しな","goods","Three boxes stacked: goods on display."],
+        ["便","べん","convenient","A person with a parcel: convenient delivery."],
+        ["利","り","profit","Grain and a knife: harvest profit."],
+        ["波","なみ","wave","Water wearing a skin: a wave."],
+        ["洋","よう","ocean","Water and sheep: the vast ocean."],
+        ["屋","や","shop","A roof where things arrive: a shop."],
+        ["旅","たび","travel","A flag moving through people: a journey."],
+        ["歌","うた","song","A mouth open wide: a song."],
+        ["映","えい","reflect","The sun in the center: light reflected."],
+        ["画","が","picture","A field framed with a brush: a picture."],
+        ["悪","わる","bad","A second heart gone wrong: bad."],
+        ["暗","くら","dark","The sun and sound shut out: dark."],
+        ["耳","みみ","ear","One shape only: an ear listening."],
+        ["歩","ある","walk","A few footprints: walking."],
+        ["走","はし","run","Feet kicking up dirt: run."],
+        ["止","と","stop","A foot planted: stop."],
+        ["正","ただ","correct","One line on top, feet below: correct."],
+        ["直","なお","fix","Eyes under a cross: fix it straight."],
+        ["注","ちゅう","pour","Water and a master: pour carefully."],
+        ["洗","あら","wash","Water first: wash it clean."],
+        ["浅","あさ","shallow","Water and a little cut: shallow."],
+        ["深","ふか","deep","Water and a hole: deep down."],
+        ["速","はや","fast","A bundle hurrying along the road: fast."],
+        ["遅","おそ","slow","A sheep on the road: slow going."],
+        ["重","おも","heavy","Layers stacked on layers: heavy."],
+        ["軽","かる","light","A cart rolling easily: light."],
+        ["弱","よわ","weak","Two bows with no strength: weak."],
+        ["強","つよ","strong","A bow and an insect: strong."],
+        ["寒","さむ","cold","A house stuffed against the cold."],
+        ["暑","あつ","hot","The sun over a person: hot."],
+        ["冷","つめ","cold","An order to the water: cold to the touch."],
+        ["暖","あたた","warm","The sun lending a hand: warm."],
+        ["春","はる","spring","Three people under the sun: spring."],
+        ["夏","なつ","summer","A face in the heat: summer."],
+        ["秋","あき","autumn","Grain and fire: autumn harvest."],
+        ["冬","ふゆ","winter","Feet on ice: winter."],
+        ["朝","あさ","morning","The sun rising through the grass: morning."],
+        ["昼","ひる","noon","The sun measured at its peak: noon."],
+        ["夜","よる","night","A person under the evening roof: night."],
+        ["夕","ゆう","evening","Half the sun sinking: evening."],
+        ["問","と","ask","A gate and a mouth: ask at the gate."],
+        ["答","こた","answer","Bamboo and joining words: an answer."],
+        ["題","だい","topic","A head with a page: the topic."]
+      ] }
     ];
 
 
@@ -5420,7 +5596,7 @@ input,textarea,select{ font-family:inherit; }
 
     var HIRA_ART = {"あ":"apple","い":"eel","う":"glove","え":"ninja","お":"golf","か":"kite","き":"key","く":"bird","け":"barrel","こ":"fishpond","さ":"dancer","し":"hook","す":"swing","せ":"sensei","そ":"stitch","た":"taco","ち":"cheer","つ":"wave","て":"hand","と":"foot","な":"knot","に":"needle","ぬ":"noodles","ね":"net","の":"nosign","は":"laugh","ひ":"foot","ふ":"fuji","へ":"hill","ほ":"hoe","ま":"knot","み":"music","む":"cow","め":"eye","も":"hook","や":"yak","ゆ":"fish","よ":"yoga","ら":"rabbit","り":"reeds","る":"route","れ":"dog","ろ":"road","わ":"swan","を":"wolf","ん":"dot"};
     var KATA_ART = {"ア":"axe","イ":"easel","ウ":"house","エ":"elevator","オ":"singer","カ":"chop","キ":"key","ク":"cookhat","ケ":"barrel","サ":"saddle","シ":"shield","ス":"slide","セ":"steps","ソ":"sofa","タ":"taco","チ":"flag","ツ":"wave","テ":"pole","ト":"totem","ナ":"narwhal","ニ":"needle","ヌ":"boot","ネ":"necklace","ノ":"nose","ハ":"hat","ヒ":"foot","フ":"fuji","ヘ":"hill","ホ":"cross","マ":"flag","ミ":"rocket","ム":"cow","メ":"eye","モ":"road","ヤ":"yak","ユ":"flag","ヨ":"cup","ラ":"capback","リ":"reeds","ル":"reeds","レ":"carpet","ロ":"robot","ワ":"wineglass","ヲ":"wolf","ン":"dot"};
-    var KANJI_ART = {"一":"lines1","二":"lines2","三":"lines3","四":"window","五":"stitch","六":"hat","七":"spoon","八":"valley","九":"slide","十":"plus","百":"box","千":"flag","万":"flag","半":"half","分":"clock","円":"coin","日":"sun","月":"moon","火":"fire","水":"drop","木":"tree","金":"coins","土":"sprout","年":"field","時":"temple","週":"cycle","間":"gate","毎":"heart","何":"question","人":"person","男":"field","女":"woman","子":"child","父":"hand","母":"heart","兄":"mouth","姉":"stall","弟":"ribbon","妹":"woman","友":"people","先":"footsteps","生":"sprout","学":"book","校":"tree","語":"mouth","本":"book","字":"letter","文":"pencil","新":"axe","山":"mountain","川":"river","田":"field","天":"person","雨":"rain","電":"bolt","気":"steam","車":"car","駅":"horse","店":"shop","社":"altar","行":"crossroads","来":"fruit","帰":"broom","見":"eye","聞":"ear","読":"bookopen","書":"brush","食":"meal","飲":"drink","買":"moneybag","話":"mouth","出":"mountain","入":"arrowin","立":"person","休":"rest","思":"think","知":"target","作":"ruler","会":"people","大":"big","小":"small","中":"target","長":"hair","高":"tower","安":"tag","古":"books","多":"moon","少":"few","早":"sunrise","元":"flag","力":"arm","今":"clock","前":"arrowR","後":"footsteps","左":"arrowL","右":"hand","上":"arrowU","下":"arrowD","東":"sunrise","西":"sunset","南":"gate","北":"snow"};
+    var KANJI_ART = {"一":"lines1","二":"lines2","三":"lines3","四":"window","五":"stitch","六":"hat","七":"spoon","八":"valley","九":"slide","十":"plus","百":"box","千":"flag","万":"flag","半":"half","分":"clock","円":"coin","日":"sun","月":"moon","火":"fire","水":"drop","木":"tree","金":"coins","土":"sprout","年":"field","時":"temple","週":"cycle","間":"gate","毎":"heart","何":"question","人":"person","男":"field","女":"woman","子":"child","父":"hand","母":"heart","兄":"mouth","姉":"stall","弟":"ribbon","妹":"woman","友":"people","先":"footsteps","生":"sprout","学":"book","校":"tree","語":"mouth","本":"book","字":"letter","文":"pencil","新":"axe","山":"mountain","川":"river","田":"field","天":"person","雨":"rain","電":"bolt","気":"steam","車":"car","駅":"horse","店":"shop","社":"altar","行":"crossroads","来":"fruit","帰":"broom","見":"eye","聞":"ear","読":"bookopen","書":"brush","食":"meal","飲":"drink","買":"moneybag","話":"mouth","出":"mountain","入":"arrowin","立":"person","休":"rest","思":"think","知":"target","作":"ruler","会":"people","大":"big","小":"small","中":"target","長":"hair","高":"tower","安":"tag","古":"books","多":"moon","少":"few","早":"sunrise","元":"flag","力":"arm","今":"clock","前":"arrowR","後":"footsteps","左":"arrowL","右":"hand","上":"arrowU","下":"arrowD","東":"sunrise","西":"sunset","南":"gate","北":"snow","京":"tower","室":"gate","活":"drop","計":"pencil","界":"field","品":"box","便":"people","利":"coins","波":"drop","洋":"drop","屋":"shop","旅":"flag","歌":"mouth","映":"sun","画":"pencil","悪":"heart","暗":"sun","耳":"ear","歩":"footsteps","走":"footsteps","止":"footsteps","正":"target","直":"target","注":"drop","洗":"drop","浅":"drop","深":"drop","速":"arrowR","遅":"arrowR","重":"box","軽":"car","弱":"ribbon","強":"arm","寒":"snow","暑":"sun","冷":"snow","暖":"sun","春":"sun","夏":"sun","秋":"fire","冬":"snow","朝":"sunrise","昼":"sun","夜":"moon","夕":"sunset","問":"mouth","答":"book","題":"book"};
 
     /* ==================== SCRIPTS: PRACTICE CARDS + MASTERY ==================== */
     var SCRIPT_DEFS = [
@@ -5548,7 +5724,7 @@ input,textarea,select{ font-family:inherit; }
     function dailySavePlan(p, plan) { try { localStorage.setItem("bochi-daily-" + p, JSON.stringify(plan)); } catch (e) {} }
     function weakestScript() {
       var best = null, bestPct = 101;
-      SCRIPT_DEFS.forEach(function (d) { var pc = scriptPct(d.key); if (pc < bestPct) { bestPct = pc; best = d; } });
+      SCRIPT_DEFS.forEach(function (d) { if (!scriptUnlocked(d.key)) return; var pc = scriptPct(d.key); if (pc < bestPct) { bestPct = pc; best = d; } });
       return { def: best, pct: bestPct };
     }
     function dailySteps(p, plan) {
@@ -5570,21 +5746,136 @@ input,textarea,select{ font-family:inherit; }
       steps.push({ id: "phrase", title: "Phrase of the Day", detail: "", done: !!plan.phraseDone, fn: "", btn: "" });
       return { steps: steps, nx: nx };
     }
-    function dailyStepHtml(s, p) {
-      var h = '<div class="d-step' + (s.done ? " done" : "") + '"' + (s.id === "phrase" ? ' id="daily-phrase"' : "") + '>' +
-        '<span class="d-check">✓</span><div class="d-body"><div class="d-title">' + s.title + '</div>';
-      if (s.id === "phrase") {
-        var ph = p === "bolu" ? potdJp : potdEn;
-        h += '<div class="d-phrase">' + esc(ph.main) + '</div>' +
-          (p === "bolu" && ph.romaji ? '<div class="d-phrase-sub">' + esc(ph.romaji) + '</div>' : '') +
-          '<div class="d-phrase-sub">' + esc(ph.mean) + '</div></div>' +
-          '<div class="d-act"><button class="btn ghost small" onclick="dailyPhraseListen()">Listen</button>' +
-          (s.done ? '<button class="btn small" disabled style="opacity:.65">✓ Practiced</button>' : '<button class="btn blue small" onclick="dailyPhraseDone()">Mark practiced</button>') + '</div>';
-      } else {
-        h += '<div class="d-detail">' + esc(s.detail) + '</div></div>' +
-          '<div class="d-act">' + (s.done ? '<span style="color:var(--muted);font-weight:700;font-size:13px;padding-top:5px">Done</span>' : '<button class="btn blue small" onclick="' + s.fn + '()">' + s.btn + '</button>') + '</div>';
+    function dailyStepHtml(st, p) {
+      var glyph = { lesson: "\u672C", review: "\u5FA9", drill: "\u5B57", speak: "\u58F0", phrase: "\u8A71", checkpoint: "\u7AE0" }[st.id] || "\u2022";
+      var kind = { lesson: "LESSON", review: "REVIEWS FIRST", drill: "WRITING DRILL", speak: "SPEAKING", phrase: "DIALOGUE", checkpoint: "CHECKPOINT" }[st.id] || "";
+      var act;
+      if (st.done) act = '<span style="font-weight:800; color:#2F9E6E">Done</span>';
+      else if (st.id === "phrase") act = '<button class="btn ghost small" onclick="dailyPhraseListen()">Listen</button><button class="btn blue small" onclick="dailyGoDialogue()">Practice</button>';
+      else if (st.fn) act = '<button class="btn blue small" onclick="' + st.fn + '()">' + st.btn + '</button>';
+      else act = "";
+      return '<div class="d-node' + (st.done ? " done" : "") + '"><div class="d-ico">' + (st.done ? "\u2713" : glyph) + '</div>' +
+        '<div class="d-main"><div class="d-kind">' + kind + '</div><div class="d-title">' + st.title + '</div><div class="d-detail">' + st.detail + '</div></div>' +
+        '<div class="d-act">' + act + '</div></div>';
+    }
+    function startDailySession() {
+      var p = practicePlayer(), plan = dailyPlanLoad(p), ds = dailySteps(p, plan);
+      var queue = [];
+      ds.steps.forEach(function (st) {
+        if (st.done) return;
+        if (st.id === "review") queue.unshift("review");
+        else if (st.id === "lesson" || st.id === "checkpoint") queue.push("lesson");
+        else if (st.id === "speak") queue.push("speak");
+        else if (st.id === "phrase") queue.push("phrase");
+      });
+      if (!queue.length) { toast("Today's studies are complete. Strong work."); return; }
+      go("solo"); if (solo.player !== p) pickProfile(p);
+      dailySess = { p: p, queue: queue, i: 0 };
+      toast("Reviews first, then new material. One session, in order.");
+      runDailyStep();
+    }
+    function runDailyStep() {
+      if (!dailySess) return;
+      var id = dailySess.queue[dailySess.i];
+      if (!id) { stageHTML(dailyFinishHtml()); return; }
+      if (id === "review") openReview();
+      else if (id === "lesson") {
+        var nx = nextLessonFor(dailySess.p);
+        if (nx.type === "lesson" || nx.type === "checkpoint") continueTo(nx.ch, nx.type === "checkpoint" ? "cp" : nx.idx);
+        else stageHTML(dailyAdvanceHtml("Lesson", "The whole path is complete"));
       }
-      return h + '</div>';
+      else if (id === "speak") startSpeakDaily();
+      else if (id === "phrase") renderDailyDialogue();
+    }
+    function dailyAdvanceHtml(label, detail) {
+      if (!dailySess) return "";
+      dailySess.i++;
+      var total = dailySess.queue.length;
+      if (dailySess.i >= total) return dailyFinishHtml();
+      var nextName = { review: "Smart Review", lesson: "Today's lesson", speak: "Speaking practice", phrase: "Dialogue" }[dailySess.queue[dailySess.i]] || "Next step";
+      return '<div class="prompt-label" style="text-align:center">TODAY\u2019S STUDIES \u00B7 STEP ' + dailySess.i + ' OF ' + total + ' DONE</div>' +
+        '<div class="big-word" style="text-align:center">' + label + ' \u2713</div>' +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">' + detail + '. Up next: ' + nextName + '.</p>' +
+        '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="runDailyStep()">Continue</button>' +
+        '<button class="btn ghost" onclick="dailySessQuit()">Pause here</button></div>';
+    }
+    function dailyFinishHtml() {
+      var n = dailySess ? reviewCount(dailySess.p) : 0;
+      return '<div class="prompt-label" style="text-align:center">TODAY\u2019S STUDIES</div>' +
+        '<div class="big-word" style="text-align:center">Session complete</div>' +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">Reviews first, then new material, then your voice: the full day, done in order. Tomorrow\u2019s reviews: ' + n + ' waiting.</p>' +
+        '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="dailySessQuit()">Back to Today</button></div>';
+    }
+    function dailySessQuit() { dailySess = null; closeStage(); go("home"); renderDaily(); }
+    function renderDailyDialogue() {
+      var p = dailySess ? dailySess.p : practicePlayer();
+      var ph = p === "bolu" ? potdJp : potdEn;
+      var html = '<div class="prompt-label" style="text-align:center">DIALOGUE \u00B7 PHRASE OF THE DAY</div>' +
+        '<div class="flash-big" style="margin-top:10px">' + esc(ph.main) + '</div>' +
+        (ph.romaji ? '<div class="flash-sub">' + esc(ph.romaji) + '</div>' : "") +
+        '<div class="flash-mean">' + esc(ph.mean) + '</div>' +
+        glossChipsHTML(ph.main, p) +
+        '<p class="howto" style="text-align:center; margin:12px auto 0">Listen, then say it out loud twice, shadowing the rhythm. The dialogue is where the day\u2019s language becomes yours.</p>' +
+        '<div class="btn-row" style="justify-content:center; margin-top:14px"><button class="btn ghost" id="dlg-listen">Listen</button>' +
+        '<button class="btn blue" onclick="dailyDialogueDone()">I practiced it</button></div>';
+      stageHTML(html);
+      var lb = $("dlg-listen"); if (lb) lb.addEventListener("click", function () { speak(ph.main, p === "bolu" ? "ja-JP" : "en-US"); });
+    }
+    function dailyDialogueDone() {
+      var p = dailySess ? dailySess.p : practicePlayer(), plan = dailyPlanLoad(p);
+      plan.phraseDone = true; dailySavePlan(p, plan);
+      if (dailySess && dailySess.queue[dailySess.i] === "phrase") { stageHTML(dailyAdvanceHtml("Dialogue", "Phrase practiced")); return; }
+      dailySessQuit();
+    }
+    function dailyGoDialogue() {
+      var p = practicePlayer();
+      go("solo"); if (solo.player !== p) pickProfile(p);
+      if (!dailySess) dailySess = { p: p, queue: ["phrase"], i: 0 };
+      renderDailyDialogue();
+    }
+    var _glossCache = {};
+    function glossDict(p) {
+      if (_glossCache[p]) return _glossCache[p];
+      var d = {};
+      WORD_SETS[p].forEach(function (st) { st.items.forEach(function (w) { if (!d[w[0]]) d[w[0]] = w[2]; }); });
+      PHRASE_SETS[p].forEach(function (st) { st.items.forEach(function (w) { if (!d[w[0]]) d[w[0]] = w[2]; }); });
+      _glossCache[p] = d; return d;
+    }
+    function glossChipsHTML(sentence, p) {
+      if (!sentence || p !== "bolu") return "";
+      var d = glossDict(p), keys = Object.keys(d).sort(function (a, b) { return b.length - a.length; });
+      var out = [], i = 0;
+      while (i < sentence.length) {
+        var hit = null;
+        for (var k = 0; k < keys.length; k++) { if (keys[k].length > 1 && sentence.indexOf(keys[k], i) === i) { hit = keys[k]; break; } }
+        if (hit) { out.push({ t: hit, m: d[hit] }); i += hit.length; }
+        else {
+          var j = i + 1;
+          while (j < sentence.length) { var any = false; for (var k2 = 0; k2 < keys.length; k2++) { if (keys[k2].length > 1 && sentence.indexOf(keys[k2], j) === j) { any = true; break; } } if (any) break; j++; }
+          out.push({ t: sentence.slice(i, j), m: "" }); i = j;
+        }
+      }
+      var chips = out.filter(function (x) { return x.t.trim() && x.t !== "\u3001" && x.t !== "\u3002"; }).map(function (x) {
+        return '<span class="g-chip">' + esc(x.t) + (x.m ? '<span class="g-m">' + esc(x.m) + '</span>' : "") + '</span>';
+      }).join('<span class="g-dot">\u00B7</span>');
+      return chips ? '<div class="gloss-row">' + chips + '</div>' : "";
+    }
+    function glossForExample(ex, item, p) {
+      if (p !== "bolu" || !ex) return "";
+      var jp = "";
+      if (ex.indexOf("In a phrase: ") === 0) jp = ex.slice("In a phrase: ".length).split(" \u00B7 ")[0];
+      else if (ex.indexOf("Example word: ") === 0) jp = ex.slice("Example word: ".length).split(" (")[0];
+      if (!jp) return "";
+      return glossChipsHTML(jp, p);
+    }
+    function dailyForecastHTML(p) {
+      var n = reviewCount(p);
+      var line = n === 0 ? "Tomorrow starts clean: no reviews waiting." : n < 10 ? "A light review day tomorrow. Room to learn new material." : "A fuller review day tomorrow. Clearing a few extra today keeps it light.";
+      return '<div class="d-forecast"><b style="color:var(--ink)">Tomorrow\u2019s reviews: ' + n + ' waiting.</b> ' + line + '</div>' +
+        '<div class="d-extra"><span style="font-size:11px; font-weight:800; letter-spacing:1.2px; color:var(--muted)">EXTRA PRACTICE</span>' +
+        '<button class="btn ghost small" onclick="go(\'play\')">Play a game</button>' +
+        '<button class="btn ghost small" onclick="go(\'watch\')">Watch a video</button>' +
+        '<button class="btn ghost small" onclick="go(\'scripts\')">Writing Systems</button></div>';
     }
     function renderDaily() {
       var host = document.getElementById("ph-daily"); if (!host) return;
@@ -5601,9 +5892,10 @@ input,textarea,select{ font-family:inherit; }
         '<div class="daily-sub">' + (allDone ? "Come back tomorrow for the next one. Day streak: " + practiceStreak() + "." : "About 10 minutes, " + steps.length + " short steps, built from where you are in the path. " + doneN + " of " + steps.length + " done.") + '</div></div>' +
         (allDone ? '<span class="daily-done-pill">✓ COMPLETE</span>' : '<button class="ph-btn" onclick="dailyStudyNow()">Study Now</button>') + '</div>';
       steps.forEach(function (s) { html += dailyStepHtml(s, p); });
+      html += dailyForecastHTML(p);
       var nx = ds.nx, up = "";
       if (nx.type === "lesson") { var ls = chapterLessons(p, nx.ch), nxt = ls[nx.idx + 1]; up = nxt ? "Up next in your path: " + nxt.name : "After this lesson: the Chapter " + nx.ch + " checkpoint"; }
-      else if (nx.type === "checkpoint") up = nx.ch < 6 ? "Up next: Chapter " + (nx.ch + 1) + " opens after the checkpoint" : "Up next: the finish line";
+      else if (nx.type === "checkpoint") up = nx.ch < CONTENT_CHAPTERS ? "Up next: Chapter " + (nx.ch + 1) + " opens after the checkpoint" : "Up next: the finish line";
       if (up) html += '<div class="daily-up">' + esc(up) + '</div>';
       html += '</div>';
       host.innerHTML = html;
@@ -5613,19 +5905,7 @@ input,textarea,select{ font-family:inherit; }
     function dailyGoDrill() { var p = practicePlayer(); if (p === "bolu") { go(weakestScript().def.key); } else { go("solo"); } }
     function dailyPhraseListen() { var p = practicePlayer(), ph = p === "bolu" ? potdJp : potdEn; speak(ph.main, p === "bolu" ? "ja-JP" : "en-US"); }
     function dailyPhraseDone() { var p = practicePlayer(), plan = dailyPlanLoad(p); plan.phraseDone = true; dailySavePlan(p, plan); renderDaily(); toast("Phrase practiced. Nicely done."); }
-    function dailyStudyNow() {
-      var p = practicePlayer(), plan = dailyPlanLoad(p), ds = dailySteps(p, plan);
-      for (var i = 0; i < ds.steps.length; i++) {
-        var s = ds.steps[i];
-        if (!s.done) {
-          if (s.id === "phrase") { var el = document.getElementById("daily-phrase"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); dailyPhraseListen(); }
-          else if (s.fn && typeof window[s.fn] === "function") window[s.fn]();
-          return;
-        }
-      }
-      toast("Today's studies are complete.");
-    }
-    if (document.getElementById("ph-daily")) renderDaily();
+    function dailyStudyNow() { startDailySession(); }
     function dailyGoSpeak() { var p = practicePlayer(); go("solo"); if (solo.player !== p) pickProfile(p); startSpeakDaily(); }
 
     /* ==================== DAILY SPEAKING PRACTICE ==================== */
@@ -5826,6 +6106,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function renderSpeakDone() {
       var ss = speakSess; if (!ss) return;
+      if (dailySess && dailySess.queue[dailySess.i] === "speak") { stageHTML(dailyAdvanceHtml("Speaking practice", ss.correct + " of " + ss.items.length + " correct")); return; }
       stageHTML(
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 DONE</div>' +
         '<div class="flash-big" style="font-size:30px">' + ss.correct + " of " + ss.items.length + " correct</div>" +
@@ -5951,7 +6232,7 @@ input,textarea,select{ font-family:inherit; }
     function proficiencyOf(p) {
       var s = statsTarget(p);
       var lDone = 0, lTotal = 0;
-      for (var c = 1; c <= 6; c++) { var dc = chapterDoneCount(p, c); lDone += dc.done; lTotal += dc.total; }
+      for (var c = 1; c <= CONTENT_CHAPTERS; c++) { var dc = chapterDoneCount(p, c); lDone += dc.done; lTotal += dc.total; }
       var lessonsPct = lTotal ? Math.round(lDone / lTotal * 100) : 0;
       var sKnown = 0, sTotal = 0;
       SCRIPT_DEFS.forEach(function (def) { sKnown += scriptKnownCount(def.key); sTotal += scriptTotals(def); });
@@ -5962,13 +6243,151 @@ input,textarea,select{ font-family:inherit; }
       var wSum = 0.75, mSum = lessonsPct * 0.35 + scriptsPct * 0.25 + reviewScore * 0.15;
       if (accPct !== null && s.ans >= 20) { wSum = 1; mSum += accPct * 0.25; }
       var score = Math.round(mSum / wSum);
-      var bands = p === "bolu"
-        ? [[0, "Pre-N5 · Starting Out"], [10, "N5 · Foundations"], [25, "N5 · Building"], [45, "N5 · Confident"], [65, "N5 · Strong"], [85, "N5 Complete · Reaching for N4"]]
-        : [[0, "Pre-A1 · Starting Out"], [10, "A1 · Foundations"], [25, "A1 · Building"], [45, "A1 · Confident"], [65, "A1 · Strong"], [85, "A1 Complete · Reaching for A2"]];
-      var band = bands[0][1];
-      bands.forEach(function (b) { if (score >= b[0]) band = b[1]; });
-      return { score: score, band: band, lessonsPct: lessonsPct, scriptsPct: scriptsPct, accPct: accPct, answers: s.ans };
+var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "Proficient"], [75, "Expert"], [90, "Native"]];
+      var rank = RANKS[0][1], rankIdx = 0;
+      RANKS.forEach(function (r, ri) { if (score >= r[0]) { rank = r[1]; rankIdx = ri; } });
+      return { score: score, rank: rank, rankIdx: rankIdx, lessonsPct: lessonsPct, scriptsPct: scriptsPct, accPct: accPct, answers: s.ans };
     }
+    function starsStr(n) { var t = ""; for (var i = 0; i < 6; i++) t += i < n ? "\u2605" : "\u2606"; return t; }
+    function maybeNotifyRank(p, intro) {
+      if (!p || p !== practicePlayer()) return;
+      var pf = proficiencyOf(p);
+      var key = "bochi-rank-" + p, seen = null;
+      try { seen = localStorage.getItem(key); } catch (e) {}
+      if (seen === null || seen === undefined) {
+        try { localStorage.setItem(key, String(pf.rankIdx)); } catch (e) {}
+        if (intro) toast("Your proficiency rank: " + pf.rank + " " + starsStr(pf.rankIdx + 1) + ". It climbs with your whole journey.");
+      } else if (pf.rankIdx > parseInt(seen, 10)) {
+        try { localStorage.setItem(key, String(pf.rankIdx)); } catch (e) {}
+        toast("Rank up! You are now " + pf.rank + " " + starsStr(pf.rankIdx + 1) + ".");
+        if (window.confettiBurst) confettiBurst(window.innerWidth / 2, 180);
+      }
+      checkJlptReady(p);
+    }
+    function checkJlptReady(p) {
+      if (p !== "bolu") return;
+      [5, 4].forEach(function (lvl) {
+        var d = jlptData(p, lvl);
+        if (!d.ready) return;
+        var key = "bochi-jlpt-ready-" + lvl;
+        try {
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, "1");
+            toast("You are ready for JLPT N" + lvl + ". Every domain is strong enough. Your radar is in Progress.");
+            if (window.confettiBurst) confettiBurst(window.innerWidth / 2, 200);
+          }
+        } catch (e) {}
+      });
+    }
+    var jlptSel = 5;
+    function jlptStage(lvl) { var f = null; STAGES.forEach(function (x) { if (x.lvl === lvl) f = x; }); return f; }
+    function jlptAxes(p, lvl) {
+      var s = statsTarget(p), pf = proficiencyOf(p), stg = jlptStage(lvl);
+      var lastCh = Math.min(stg.to, CONTENT_CHAPTERS);
+      var vTot = 0, vKnown = 0;
+      for (var c = stg.from; c <= lastCh; c++) {
+        chapterLessons(p, c).forEach(function (les, li) {
+          if (les.kind === "char") return;
+          var n = (les.items || []).length;
+          vTot += n; if (state.lessons[p][lessonId(c, li)]) vKnown += n;
+        });
+      }
+      var vocab = vTot ? Math.round(vKnown / vTot * 100) : 0;
+      var kDef = null;
+      SCRIPT_DEFS.forEach(function (d) { if (d.key === "kanji") kDef = d; });
+      var knownMap = scriptsTarget().kanji || {};
+      var kKnown = 0, kTot = 0;
+      if (kDef) kDef.groups.forEach(function (g) {
+        var isN4 = g.name.indexOf("N4") >= 0;
+        if ((lvl === 4) !== isN4) return;
+        g.items.forEach(function (it) { kTot++; if (knownMap[it.ch]) kKnown++; });
+      });
+      var kanji = kTot ? Math.round(kKnown / kTot * 100) : 0;
+      var gChs = lvl === 5 ? [4, 5, 6] : [10, 11, 12];
+      var gDone = 0, gTot = 0;
+      gChs.forEach(function (gc) { var dc = chapterDoneCount(p, gc); gDone += dc.done; gTot += dc.total; });
+      var cpDone = 0, cpTot = 0;
+      for (var c2 = stg.from; c2 <= lastCh; c2++) { cpTot++; if (state.checkpoints[p][c2]) cpDone++; }
+      var grammar = Math.round(0.5 * (gTot ? gDone / gTot * 100 : 0) + 0.5 * (cpTot ? cpDone / cpTot * 100 : 0));
+      var li = s.src["listen"], listening, liEst = false, liDetail;
+      if (li && li.a >= 10) { listening = Math.round(li.c / li.a * 100); liDetail = li.a + " listening answers logged"; }
+      else if (s.src["lesson"] && s.src["lesson"].a >= 10) { listening = Math.round(s.src["lesson"].c / s.src["lesson"].a * 100); liEst = true; liDetail = "estimated from lesson answers until more listening is logged"; }
+      else { listening = 0; liDetail = "answer the listening questions in lessons to build this"; }
+      var rA = 0, rC = 0;
+      for (var c3 = stg.from; c3 <= lastCh; c3++) { var ce = s.ch[c3]; if (ce) { rA += ce.a; rC += ce.c; } }
+      var reading, rEst = false, rDetail;
+      if (rA >= 10) { reading = Math.round(rC / rA * 100); rDetail = "accuracy across " + rA + " answers in this stage's chapters"; }
+      else if (s.ans >= 20) { reading = Math.round(s.cor / s.ans * 100); rEst = true; rDetail = "estimated from your overall accuracy until this stage has 10 answers"; }
+      else { reading = pf.lessonsPct; rEst = true; rDetail = "estimated from lessons finished until more answers are logged"; }
+      var sp = s.src["speak"], speaking = sp && sp.a >= 3 ? Math.round(sp.c / sp.a * 100) : 0;
+      return [
+        { k: "Vocabulary", pct: vocab, detail: vKnown + " of " + vTot + " words and phrases in finished N" + lvl + " lessons" },
+        { k: "Kanji", pct: kanji, detail: kKnown + " of " + kTot + " N" + lvl + " kanji memorized" },
+        { k: "Grammar", pct: grammar, detail: "sentence chapters " + gDone + " of " + gTot + " lessons, " + cpDone + " of " + cpTot + " stage checkpoints passed" },
+        { k: "Listening", pct: listening, detail: liDetail, est: liEst },
+        { k: "Reading", pct: reading, detail: rDetail, est: rEst },
+        { k: "Speaking", pct: speaking, detail: sp && sp.a ? sp.a + " spoken answers in daily practice" : "from your daily speaking practice", bonus: true }
+      ];
+    }
+    function jlptData(p, lvl) {
+      if (lvl >= 4) {
+        var axes = jlptAxes(p, lvl);
+        var core = axes.filter(function (a) { return !a.bonus; });
+        var sum = 0, min = 101, weak = "";
+        core.forEach(function (a) { sum += a.pct; if (a.pct < min) { min = a.pct; weak = a.k; } });
+        var overall = Math.round(sum / core.length);
+        var ready = overall >= 85 && min >= 70 && statsTarget(p).ans >= 100;
+        return { axes: axes, overall: overall, ready: ready, weakest: weak, min: min };
+      }
+      var base = jlptAxes(p, 4);
+      var tr = { Vocabulary: 0.3, Kanji: 0.5, Grammar: 0.25, Listening: 0.3, Reading: 0.3, Speaking: 0.4 };
+      var fAxes = base.map(function (a) { return { k: a.k, pct: Math.round(a.pct * (tr[a.k] || 0.3)), detail: a.detail, bonus: a.bonus, est: a.est }; });
+      var fSum = 0; fAxes.forEach(function (a) { if (!a.bonus) fSum += a.pct; });
+      return { axes: fAxes, overall: Math.round(fSum / 5), ready: false, foundation: true };
+    }
+    function jlptRadar(axes, foundation) {
+      var cx = 130, cy = 118, R = 84, pts = [], grid = "", i, rad, x, y;
+      for (var ring = 1; ring <= 4; ring++) {
+        var rp = [];
+        for (i = 0; i < 6; i++) { rad = -Math.PI / 2 + i * Math.PI / 3; rp.push((cx + R * ring / 4 * Math.cos(rad)).toFixed(1) + "," + (cy + R * ring / 4 * Math.sin(rad)).toFixed(1)); }
+        grid += '<polygon points="' + rp.join(" ") + '" fill="none" stroke="var(--line-strong)" stroke-width="0.7" opacity="' + (ring === 4 ? "0.9" : "0.45") + '"/>';
+      }
+      var labels = "";
+      axes.forEach(function (ax, i2) {
+        rad = -Math.PI / 2 + i2 * Math.PI / 3;
+        x = cx + R * Math.cos(rad); y = cy + R * Math.sin(rad);
+        grid += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="var(--line-strong)" stroke-width="0.7" opacity="0.6"/>';
+        var lx = cx + (R + 20) * Math.cos(rad), ly = cy + (R + 16) * Math.sin(rad);
+        var anch = Math.abs(Math.cos(rad)) < 0.3 ? "middle" : (Math.cos(rad) > 0 ? "start" : "end");
+        labels += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 3).toFixed(1) + '" text-anchor="' + anch + '" font-size="10.5" font-weight="700" fill="var(--muted)">' + ax.k + '</text>';
+        var vx = cx + R * ax.pct / 100 * Math.cos(rad), vy = cy + R * ax.pct / 100 * Math.sin(rad);
+        pts.push(vx.toFixed(1) + "," + vy.toFixed(1));
+      });
+      return '<svg viewBox="0 0 260 236" style="width:100%; max-width:300px; display:block; margin:2px auto 0">' + grid +
+        '<polygon points="' + pts.join(" ") + '" fill="' + (foundation ? "rgba(139,132,168,.22)" : "rgba(106,90,224,.30)") + '" stroke="' + (foundation ? "var(--muted)" : "var(--blue)") + '" stroke-width="2" stroke-linejoin="round"/>' + labels + '</svg>';
+    }
+    function renderJlptCard(p) {
+      if (p !== "bolu") return '<div class="card"><div class="kicker">JLPT READINESS</div><p style="margin:10px 0 0; color:var(--muted); font-size:14px; font-weight:600; line-height:1.55">JLPT measures Japanese, so this section follows Boru-san\u2019s journey. Your rank and mastery above track your English, and your path runs the CEFR stages.</p></div>';
+      var d = jlptData(p, jlptSel);
+      var pills = [5, 4, 3, 2, 1].map(function (n) { return '<button class="jlpt-pill' + (jlptSel === n ? " on" : "") + '" onclick="jlptPick(' + n + ')">N' + n + '</button>'; }).join("");
+      var verdict, vcol;
+      if (d.foundation) { verdict = "Foundation only. N" + jlptSel + " has its syllabus mapped in your path and its lessons are in preparation, so this radar shows the ground your N4 work lays for it, not exam readiness."; vcol = "var(--muted)"; }
+      else if (d.ready) { verdict = "READY. Every domain is at strength and your answers back it up. You could sit JLPT N" + jlptSel + " with confidence."; vcol = "#2F9E6E"; }
+      else if (d.overall >= 60) { verdict = "Almost there. " + d.weakest + " is the domain holding this exam back."; vcol = "#D9930D"; }
+      else { verdict = "In progress. The radar fills as BoChi can prove each domain: finished lessons, memorized kanji, and real answers."; vcol = "var(--muted)"; }
+      var bars = d.axes.map(function (a) {
+        return '<div class="st-part"><span class="lbl">' + a.k + (a.bonus ? " \u00B7 bonus" : "") + '</span><span class="trk"><span class="fill" style="width:' + a.pct + '%;background:' + (d.foundation ? "var(--muted)" : "var(--blue)") + '"></span></span><span class="val">' + (a.est ? "~" : "") + a.pct + '%</span></div>' +
+          '<div style="font-size:11px; color:var(--muted); font-weight:600; margin:-2px 0 4px">' + a.detail + '</div>';
+      }).join("");
+      return '<div class="card"><div class="kicker">JLPT READINESS \u00B7 \u306B\u307B\u3093\u3054\u306E\u3046\u308A\u3087\u304F\u3057\u3051\u3093</div>' +
+        '<div class="jlpt-pills">' + pills + '</div>' +
+        '<div style="text-align:center; margin-top:2px"><span style="font-size:30px; font-weight:800">' + d.overall + '%</span> <span style="color:var(--muted); font-weight:700; font-size:13px">' + (d.foundation ? "FOUNDATION FOR N" + jlptSel : "READY FOR N" + jlptSel) + '</span></div>' +
+        jlptRadar(d.axes, d.foundation) +
+        '<p style="margin:8px 0 10px; color:' + vcol + '; font-size:13.5px; font-weight:700; line-height:1.55">' + verdict + '</p>' +
+        bars +
+        '<p style="margin:10px 0 0; color:var(--muted); font-size:12px; font-weight:600; line-height:1.55">Speaking is a bonus spoke: the JLPT does not test it, but your exchange does, so it is tracked here and left out of the readiness score. Ready means 85% overall, no core domain under 70%, and at least 100 logged answers behind it.</p></div>';
+    }
+    function jlptPick(n) { jlptSel = n; renderStats(); }
     function renderStats() {
       var body = $("stats-body"); if (!body) return;
       var p = practicePlayer();
@@ -5977,7 +6396,7 @@ input,textarea,select{ font-family:inherit; }
 
       /* ---- lessons + scripts ---- */
       var lDone = 0, lTotal = 0;
-      for (var c = 1; c <= 6; c++) { var dc = chapterDoneCount(p, c); lDone += dc.done; lTotal += dc.total; }
+      for (var c = 1; c <= CONTENT_CHAPTERS; c++) { var dc = chapterDoneCount(p, c); lDone += dc.done; lTotal += dc.total; }
       var lessonsPct = lTotal ? Math.round(lDone / lTotal * 100) : 0;
       var sKnown = 0, sTotal = 0;
       SCRIPT_DEFS.forEach(function (def) { sKnown += scriptKnownCount(def.key); sTotal += scriptTotals(def); });
@@ -6031,7 +6450,7 @@ input,textarea,select{ font-family:inherit; }
           '<p style="margin:10px 0 0; color:var(--muted); font-size:14px; font-weight:600; line-height:1.55">No answers logged yet. From now on, every answer you give in lessons, Smart Review, and games is counted here, so your accuracy is real, never guessed.</p></div>';
       } else {
         var rows = "";
-        for (var ch = 1; ch <= 6; ch++) {
+        for (var ch = 1; ch <= CONTENT_CHAPTERS; ch++) {
           var ce = s.ch[ch];
           if (ce && ce.a) {
             var cp = Math.round(ce.c / ce.a * 100);
@@ -6059,7 +6478,7 @@ input,textarea,select{ font-family:inherit; }
         needs.push({ ic: lowDef.def.jp || "\u3082", t: lowDef.def.label + " is " + (highDef && highDef.pct - lowDef.pct >= 20 ? "falling behind" : "up next"), s: lowDef.known + " of " + lowDef.total + " memorized" + (highDef && highDef.def !== lowDef.def ? " \u00B7 " + highDef.def.label + " is at " + highDef.known : ""), b: "Practice", fn: "go('" + lowDef.def.key + "')" });
       }
       var worstCh = null, worstPct = 101;
-      for (var c2 = 1; c2 <= 6; c2++) { var ce2 = s.ch[c2]; if (ce2 && ce2.a >= 8) { var cp2 = Math.round(ce2.c / ce2.a * 100); if (cp2 < worstPct) { worstPct = cp2; worstCh = c2; } } }
+      for (var c2 = 1; c2 <= CONTENT_CHAPTERS; c2++) { var ce2 = s.ch[c2]; if (ce2 && ce2.a >= 8) { var cp2 = Math.round(ce2.c / ce2.a * 100); if (cp2 < worstPct) { worstPct = cp2; worstCh = c2; } } }
       if (worstCh && worstPct < 75) needs.push({ ic: "\u805e", t: "Chapter " + worstCh + " accuracy", s: worstPct + "% right \u00B7 your lowest chapter score", b: "Practice", fn: "go('solo')" });
       if (rq >= 5) needs.push({ ic: "\u5FA9", t: "Review queue is backing up", s: rq + " items waiting \u00B7 clears at two right in a row", b: "Review", fn: "reviewTo()" });
       var needsHtml = "";
@@ -6068,17 +6487,19 @@ input,textarea,select{ font-family:inherit; }
           needs.slice(0, 3).map(function (n) { return '<div class="st-need"><div class="ic">' + n.ic + '</div><div class="tx"><b>' + n.t + '</b><span>' + n.s + '</span></div><button class="go" onclick="' + n.fn + '">' + n.b + '</button></div>'; }).join("") + '</div>';
       }
 
+      var jlptHtml = renderJlptCard(p);
       body.innerHTML =
         '<div class="card"><div class="kicker">OVERALL MASTERY</div>' +
           '<div class="st-ringwrap"><div class="st-ring"><svg width="118" height="118" viewBox="0 0 118 118"><circle cx="59" cy="59" r="50" fill="none" stroke="var(--surface2)" stroke-width="11"/><circle cx="59" cy="59" r="50" fill="none" stroke="var(--blue)" stroke-width="11" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="' + off + '"/></svg><div class="st-pct">' + mastery + '%</div></div>' +
           '<div class="st-parts">' + partsHtml + '</div></div>' +
           '<div class="st-chips"><div class="st-chip"><b>Level ' + levelOf(p) + '</b><span>Points level</span></div><div class="st-chip"><b>' + (state.journey[p] ? state.journey[p].xp : 0) + '</b><span>Total points</span></div><div class="st-chip"><b>Ch. ' + curCh + '</b><span>Current</span></div></div>' +
-          '<div class="st-prof"><div><div class="band">' + prof.band + '</div><div class="sub">Your ' + (p === "bolu" ? "Japanese" : "English") + ' proficiency rating, from the score above: lessons ' + prof.lessonsPct + '%, scripts ' + prof.scriptsPct + '%' + (prof.accPct !== null && prof.answers >= 20 ? ', accuracy ' + prof.accPct + '%' : '') + '. It moves as you practice.</div></div><span class="st-prof-tag">PROFICIENCY</span></div>' +
+          '<div class="st-prof"><div><div class="band">' + prof.rank + ' <span style="color:var(--blue); font-size:15px; letter-spacing:2px">' + starsStr(prof.rankIdx + 1) + '</span></div><div class="sub">Your cumulative rank across your whole journey, from the score above: lessons ' + prof.lessonsPct + '%, scripts ' + prof.scriptsPct + '%' + (prof.accPct !== null && prof.answers >= 20 ? ', accuracy ' + prof.accPct + '%' : '') + '. Ranks run Amateur, Intermediate, Professional, Proficient, Expert, Native.</div></div><span class="st-prof-tag">RANK</span></div>' +
         '<p style="margin:12px 0 0; color:var(--muted); font-size:12.5px; font-weight:600; line-height:1.55">Mastery blends lessons finished, characters memorized, answers you get right, and how clear your review queue is.' + (accPct === null || s.ans < 20 ? " Accuracy joins the blend after 20 logged answers." : "") + '</p></div>' +
         '<div class="card"><div class="kicker">TIME SPENT \u00B7 LAST 30 DAYS</div>' +
           '<div class="st-bars">' + bars + '</div><div class="st-axis"><span>' + firstLbl + '</span><span>Today</span></div>' +
           '<div class="st-chips"><div class="st-chip"><b>' + fmtMins(total30) + '</b><span>Total</span></div><div class="st-chip"><b>' + fmtMins(total30 / 30) + '</b><span>Daily avg</span></div><div class="st-chip"><b>' + fmtMins(best) + '</b><span>Best day</span></div></div>' +
           '<p style="margin:12px 0 0; color:var(--muted); font-size:12.5px; font-weight:600">This week: ' + fmtMins(wk[0]) + ' \u00B7 last week: ' + fmtMins(wk[1]) + ' \u00B7 streak: ' + practiceStreak() + ' days</p></div>' +
+        jlptHtml +
         accHtml +
         '<div id="stats-meetings"><div class="card"><div class="kicker">MEETINGS \u00B7 \u304B\u3044\u308F</div><p style="margin:10px 0 0; color:var(--muted); font-size:14px; font-weight:600">Loading your sessions\u2026</p></div></div>' +
         needsHtml;
@@ -6271,6 +6692,7 @@ input,textarea,select{ font-family:inherit; }
     function renderAllScriptPages() { ["hira", "kata", "kanji"].forEach(function (k) { renderScriptPage(k); }); }
     var stageState = { key: "hira", idx: 0, flipped: false };
     function openCardStage(key, idx) {
+      if (!scriptUnlocked(key)) { toast("Master " + scriptLabel(scriptPrereq(key)) + " first. " + scriptLabel(key) + " unlocks when it is fully memorized."); return; }
       stageState = { key: key, idx: idx, flipped: false };
       stageMode = "flip";
       var st = $("card-stage");
@@ -6459,6 +6881,7 @@ input,textarea,select{ font-family:inherit; }
         var known = scriptKnownCount(def.key), total = scriptTotals(def), pct = total ? Math.round(known / total * 100) : 0;
         allK += known; allT += total;
         pcts[def.key] = { pct: pct, text: known + " of " + total + " memorized", short: known + "/" + total };
+        if (!scriptUnlocked(def.key)) pcts[def.key].text = known + " of " + total + " memorized \u00B7 locked: master " + scriptLabel(scriptPrereq(def.key)) + " first";
       });
       pcts.all = { pct: allT ? Math.round(allK / allT * 100) : 0, text: allK + " of " + allT + " characters", short: allK + "/" + allT };
       document.querySelectorAll("[data-spct]").forEach(function (el) { var d = pcts[el.getAttribute("data-spct")]; if (d) el.textContent = d.pct + "%"; });
@@ -6472,7 +6895,20 @@ input,textarea,select{ font-family:inherit; }
           '<div class="sface sfront"><span class="sdone" aria-hidden="true">✓</span><span class="schar">' + esc(it.ch) + '</span><span class="shint">tap to open</span></div>' +
         "</div></div>";
     }
+    function scriptMastered(key) { var def = null; SCRIPT_DEFS.forEach(function (d) { if (d.key === key) def = d; }); return def ? scriptKnownCount(key) >= scriptTotals(def) : false; }
+    function scriptPrereq(key) { return key === "kata" ? "hira" : (key === "kanji" ? "kata" : null); }
+    function scriptUnlocked(key) { var pre = scriptPrereq(key); return !pre || scriptMastered(pre); }
+    function scriptLabel(key) { var lbl = key; SCRIPT_DEFS.forEach(function (d) { if (d.key === key) lbl = d.label; }); return lbl; }
     function scriptSectionHTML(def, showOpen) {
+      if (!scriptUnlocked(def.key)) {
+        var pre2 = scriptPrereq(def.key);
+        var preDef = null; SCRIPT_DEFS.forEach(function (d) { if (d.key === pre2) preDef = d; });
+        var pk = scriptKnownCount(pre2), pt = preDef ? scriptTotals(preDef) : 0;
+        return '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap"><div><div class="kicker">' + esc(def.label.toUpperCase()) + " \u00B7 " + esc(def.jp) + '</div>' +
+          '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + esc(def.label) + ' <span class="spct" style="font-size:14px">LOCKED</span></h3>' +
+          '<p style="margin:0; color:var(--muted); font-weight:600; font-size:14px; line-height:1.55; max-width:520px">Mastery opens the door here. ' + esc(def.label) + ' unlocks when every ' + esc(scriptLabel(pre2)) + ' card is memorized: you are at ' + pk + ' of ' + pt + '. The goal is mastery, not just getting through.</p></div>' +
+          '<div class="row" style="gap:8px"><button class="btn blue small" onclick="go(\'' + pre2 + '\')">Master ' + esc(scriptLabel(pre2)) + '</button></div></div>';
+      }
       var idx = 0;
       var groups = def.groups.map(function (g) {
         var cards = g.items.map(function (it) { var h = scriptCardHTML(def.key, it, idx); idx++; return h; }).join("");
@@ -6581,7 +7017,7 @@ input,textarea,select{ font-family:inherit; }
     if (a){ e.preventDefault(); gateSheet("call"); }
   }, true);
   var _goGate = go;
-  go = function(v){ if (!authState.account && (v === "session" || v === "recordings")){ requireAuth(v); return; } return _goGate(v); }; gateWrap("dailyGoLesson", "study"); gateWrap("dailyGoReview", "study"); gateWrap("dailyGoDrill", "study"); gateWrap("dailyPhraseDone", "study"); gateWrap("dailyGoSpeak", "study");
+  go = function(v){ if (!authState.account && (v === "session" || v === "recordings")){ requireAuth(v); return; } return _goGate(v); }; gateWrap("dailyGoLesson", "study"); gateWrap("dailyGoReview", "study"); gateWrap("dailyGoDrill", "study"); gateWrap("dailyPhraseDone", "study"); gateWrap("dailyGoSpeak", "study"); gateWrap("dailyGoDialogue", "study");
 
   /* ---- partner name: never shown to visitors ---- */
   var _scrubbed = new Map(), _scrubObs = null, _scrubTimer = null;
