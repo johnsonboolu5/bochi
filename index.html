@@ -591,6 +591,32 @@ input,textarea,select{ font-family:inherit; }
 .g-chip{ background:var(--surface2); border:1px solid var(--line); border-radius:10px; padding:5px 9px; font-size:13px; font-weight:700; }
 .g-chip .g-m{ color:var(--muted); font-weight:600; font-size:12px; margin-left:5px; }
 .g-dot{ color:var(--muted); font-weight:800; }
+.unit-sec{ border-top:1px solid var(--line); padding:20px 0 6px; margin-top:20px; }
+.unit-sec-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:8px; }
+.unit-sec-num{ font-size:11px; font-weight:800; letter-spacing:.12em; color:var(--blue); border:1.5px solid var(--blue); border-radius:999px; padding:3px 9px; white-space:nowrap; }
+.unit-sec.done .unit-sec-num{ background:var(--green); border-color:var(--green); color:#fff; }
+.unit-sec-title{ font-size:19px; font-weight:800; }
+.unit-rail{ display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 2px; }
+.unit-chip{ font-size:11px; font-weight:700; letter-spacing:.05em; padding:5px 10px; border-radius:999px; border:1px solid var(--line-strong); color:var(--ink-soft); }
+.unit-chip.done{ background:var(--green); border-color:var(--green); color:#fff; }
+.u-pattern{ background:var(--surface-2); border:1px solid var(--line); border-radius:16px; padding:16px 18px; margin:12px 0; }
+.u-pat-big{ font-size:24px; font-weight:800; color:var(--blue); margin-bottom:6px; }
+.u-pattern p{ margin:6px 0; font-size:14.5px; line-height:1.65; color:var(--ink-soft); }
+.u-pattern .think{ border-left:3px solid var(--pink); padding-left:12px; color:var(--ink); }
+.u-ex{ display:flex; gap:12px; align-items:flex-start; padding:13px 0; border-bottom:1px dashed var(--line); }
+.u-ex:last-child{ border-bottom:none; }
+.u-ex-main{ flex:1; min-width:0; }
+.u-ex-big{ font-size:21px; font-weight:750; line-height:1.35; }
+.u-ex-read{ font-size:13px; color:var(--blue); font-weight:600; margin-top:1px; }
+.u-ex-mean{ font-size:14px; color:var(--ink-soft); margin-top:2px; line-height:1.55; }
+.u-ex-teach{ font-size:13px; color:var(--muted); margin-top:3px; line-height:1.55; }
+.u-listen{ flex:none; }
+.u-dlg-line{ display:flex; gap:12px; margin:12px 0; align-items:flex-start; }
+.u-spk{ flex:none; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; background:var(--blue); }
+.u-spk.b{ background:var(--pink); }
+.u-dlg-body{ flex:1; background:var(--surface-2); border:1px solid var(--line); border-radius:4px 16px 16px 16px; padding:11px 14px; min-width:0; }
+.u-banner{ background:var(--green); color:#fff; border-radius:14px; padding:12px 16px; font-weight:700; font-size:14.5px; margin-bottom:6px; }
+.u-waypoint{ background:var(--surface-2); border:1.5px dashed var(--line-strong); border-radius:18px; padding:18px; margin-top:22px; }
 .stage-head{ margin:28px 0 2px; }
 .stage-kick{ font-size:11px; font-weight:800; letter-spacing:1.6px; color:var(--blue); }
 .stage-name{ font-size:22px; font-weight:800; margin-top:2px; }
@@ -3865,7 +3891,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function finishReview(){
       var p = solo.player, left = reviewCount(p);
-      if (dailySess && dailySess.queue[dailySess.i] === "review") { var cl0 = reviewRun ? reviewRun.cleared : 0; reviewRun = null; renderReviewCard(); renderSoloHead(); stageHTML(dailyAdvanceHtml("Smart Review", cl0 ? cl0 + " cleared" : "Queue refreshed")); return; }
+      if (unitCtx) { var cl0 = reviewRun ? reviewRun.cleared : 0; reviewRun = null; renderReviewCard(); unitReturn("Smart Review", cl0 ? cl0 + " cleared" : "Queue refreshed"); return; }
       var html = '<div class="prompt-label" style="text-align:center">REVIEW DONE</div>' +
         '<div class="big-word" style="text-align:center">' + reviewRun.cleared + " cleared</div>" +
         '<p class="howto" style="text-align:center; margin:8px auto 0">' + (left ? left + " thing" + (left === 1 ? "" : "s") + " still waiting for next time. They will be here, and in the next session warm up." : "Review is empty. Everything you missed is now yours.") + "</p>" +
@@ -4268,7 +4294,7 @@ input,textarea,select{ font-family:inherit; }
         if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
       }
       scheduleSave();
-      if (dailySess && dailySess.queue[dailySess.i] === "lesson") { renderSoloHead(); renderPath(); stageHTML(dailyAdvanceHtml("Today's lesson", got + " of " + total + " correct")); return; }
+      if (unitCtx) { unitReturn("Today's lesson", got + " of " + total + " correct"); return; }
       var rc = reviewChapterCount(p, sl.ch);
       var html = lessonHead() +
         '<div class="big-word" style="text-align:center">' + got + " of " + total + " correct</div>" +
@@ -4521,7 +4547,7 @@ input,textarea,select{ font-family:inherit; }
         renderJourney();
       }
       scheduleSave();
-      if (dailySess && dailySess.queue[dailySess.i] === "lesson") { renderSoloHead(); renderPath(); stageHTML(dailyAdvanceHtml("Checkpoint", pass ? "Checkpoint passed" : "Checkpoint practiced")); return; }
+      if (unitCtx) { unitReturn("Checkpoint", pass ? "Checkpoint passed" : "Checkpoint practiced"); return; }
       var rc2 = reviewChapterCount(p, sl.ch);
       var html = '<div class="prompt-label" style="text-align:center">CHECKPOINT RESULT</div>' +
         '<div class="big-word" style="text-align:center">' + sl.correct + " of " + sl.qs.length + " correct</div>" +
@@ -5758,6 +5784,180 @@ input,textarea,select{ font-family:inherit; }
         '<div class="d-main"><div class="d-kind">' + kind + '</div><div class="d-title">' + st.title + '</div><div class="d-detail">' + st.detail + '</div></div>' +
         '<div class="d-act">' + act + '</div></div>';
     }
+    /* ==================== DAILY UNIT PAGE (NativShark model) ====================
+       One page of material per day: reviews first, a taught lesson page, speaking,
+       a dialogue built from the lesson, and a waypoint. Study Now opens this page. */
+    var PATTERN_GUIDE = {
+      bolu: {
+        "Greetings": { pat: "あいさつ · Greetings", form: "Whole phrases, learned as complete sounds. Japanese greetings change with the time of day, so each one carries its moment inside it.", think: "Think of each greeting as a small ceremony: you are marking the time and the meeting at once.", use: "The first seconds of any encounter, at home, at work, anywhere.", can: "greet anyone at any time of day, politely and naturally" },
+        "Introductions": { pat: "〜は〜です", form: "The skeleton under these phrases is topic, then は (said wa), then the thing, then です: わたしは Boru です. Topic first, verb last, always.", think: "Think of は as a spotlight: it points at what the sentence is about.", use: "Saying who you are, where you are from, and what you do.", can: "introduce yourself with the topic pattern 〜は〜です" },
+        "Everyday Phrases": { pat: "Everyday phrases", form: "Short, complete phrases for the moments that happen every day: thanks, apologies, requests, goodbyes.", think: "Think of these as the glue of daily life. They are short because they are used constantly.", use: "Shops, streets, offices, homes: anywhere people are polite to each other.", can: "handle the small polite moments of a Japanese day" },
+        "Sentences": { pat: "〜は〜です · 〜ます", form: "Full sentences now. The topic comes first, the verb comes last, and です or ます closes the sentence politely.", think: "Think of the verb as the period of the sentence: nothing counts until it lands.", use: "Saying real things about yourself, your day, and the world.", can: "build full polite sentences with the verb at the end" },
+        "Conversation": { pat: "〜か · Questions", form: "A sentence becomes a question by adding か at the end. Answers often start with はい or いいえ, then the sentence itself.", think: "Think of か as a question mark you can hear.", use: "Asking and answering in shops, stations, and first conversations.", can: "ask questions with か and answer them in full sentences" },
+        "Confident Exchange": { pat: "Natural exchange", form: "Longer, natural exchanges: softeners like すみません, reactions, and follow up questions, the way people actually talk.", think: "Think of softeners as cushions: they make a request land gently.", use: "Real conversations that go past one exchange.", can: "hold a natural exchange past the first question" },
+        "Requests with the Te-Form": { pat: "〜てください", form: "Take the verb's te-form and add ください: かく becomes かいて, then かいてください. The te-form is the great connector of Japanese verbs.", think: "Think of it as: please do this for me. The ください carries the please.", use: "Asking someone to write, wait, listen, repeat, or help.", can: "make polite requests with 〜てください" },
+        "Experiences with the Ta-Form": { pat: "〜たことがあります", form: "Take the verb's ta-form (its plain past) and add ことがあります: いったことがあります, I have been there.", think: "Think of it literally: the fact of having done it exists.", use: "Talking about what you have done, eaten, seen, and tried.", can: "talk about your experiences with 〜たことがあります" },
+        "Thoughts with To": { pat: "〜と思います", form: "Put a plain sentence before と and add 思います for what you think, or 言いました for what someone said. と wraps the thought like quotation marks.", think: "Think of と as the frame around a thought or a quote.", use: "Giving opinions, reporting speech, saying what you believe.", can: "share thoughts and quotes with 〜と" },
+        "If and Giving": { pat: "〜たら · あげる くれる もらう", form: "The たら form (ta-form plus ら) means if or when something happens. Giving verbs point by direction: あげる gives outward, くれる gives toward you, もらう receives.", think: "Think of たら as a door: when this opens, that follows.", use: "Plans, conditions, favors, and gifts.", can: "talk about if and when, and about giving and receiving" },
+        "Potential and Plans": { pat: "〜ことができます", form: "Dictionary form plus ことができます says you can do something; the potential form shortens it. つもり and よてい carry plans: what you intend, and what is scheduled.", think: "Think of ことができる as: the doing of it is possible.", use: "Abilities, skills, schedules, and plans.", can: "say what you can do and what you plan to do" },
+        "Let's and Must": { pat: "〜ましょう · 〜なければなりません", form: "ましょう invites: let us, or I will. なければなりません is a double negative that works out to must: if you do not do it, it will not do.", think: "Think of ましょう as an open hand, and なければなりません as a rule you can hear.", use: "Invitations, suggestions, duties, and rules.", can: "invite with ましょう and state duties with 〜なければなりません" }
+      },
+      chihiro: {
+        "Greetings": { pat: "Hello · Good morning", form: "Whole greetings first, learned as complete sounds for each time of day.", think: "Think of a greeting as the door opening: everything after it goes easier.", use: "Meeting anyone, anywhere.", can: "greet people naturally in English" },
+        "Introductions": { pat: "I am ... · This is ...", form: "The frames are I am, my name is, and this is. Name first, then one true thing about yourself.", think: "Think of it as a name tag plus a gift: who you are, and something to talk about.", use: "First meetings, classes, and calls.", can: "introduce yourself in English" },
+        "Everyday Idioms": { pat: "Everyday idioms", form: "Short idioms natives use daily. Learn each one inside a situation, not as a definition.", think: "Think of idioms as shortcuts the whole language agreed on.", use: "Daily conversation with friends and coworkers.", can: "use everyday English idioms" },
+        "Sentences": { pat: "Subject · Verb · Object", form: "English sentences run subject, verb, object, in that order, and the verb changes with the subject.", think: "Think of the subject as the driver: it decides the verb's shape.", use: "Saying anything real, all day.", can: "build full English sentences" },
+        "Conversation": { pat: "Do you ...? · Questions", form: "Questions often open with do, does, or a question word, and short answers echo them: Yes, I do.", think: "Think of the short answer as a mirror of the question.", use: "Shops, stations, and first conversations.", can: "ask and answer questions in English" },
+        "Confident Idioms": { pat: "Natural exchange", form: "Longer exchanges with natural idioms, reactions, and follow up questions.", think: "Think of reactions as the music of conversation: small sounds that keep it alive.", use: "Real conversations that go past one exchange.", can: "hold a natural English exchange" },
+        "Requests": { pat: "Could you ... please?", form: "Could you plus the plain verb is the polite request frame. Please can open it or close it.", think: "Think of could as the softener: it asks without pushing.", use: "Asking for help, time, or a favor.", can: "make polite requests in English" },
+        "Experiences": { pat: "I have ... · Present perfect", form: "Have plus the past participle talks about experience up to now: I have been, I have tried.", think: "Think of it as a bridge from the past into this moment.", use: "Talking about what you have done and tried.", can: "talk about experiences with have" },
+        "Thoughts": { pat: "I think that ...", form: "I think plus a full sentence shares an opinion. That can stay or go; the sentence carries it.", think: "Think of I think as a frame: it tells people an opinion is coming.", use: "Opinions, plans, and gentle disagreement.", can: "share opinions with I think" },
+        "If and Giving": { pat: "If ... · give and get", form: "If plus a present sentence, then will plus the result. Giving verbs follow who gives and who receives.", think: "Think of if as a door: when this opens, that follows.", use: "Plans, conditions, favors, and gifts.", can: "talk about if, and about giving" },
+        "Can and Plans": { pat: "can · be going to", form: "Can states ability, be going to states a plan already decided.", think: "Think of can as what is possible, and going to as what is already in motion.", use: "Abilities, skills, and plans.", can: "talk about ability and plans" },
+        "Must and Let's": { pat: "must · let's", form: "Must states a duty. Let's invites: it always includes the speaker in the plan.", think: "Think of let's as an open hand, and must as a rule you can hear.", use: "Invitations, suggestions, duties, and rules.", can: "use must and let's naturally" }
+      }
+    };
+    var unitCtx = null;
+    var unitSpeakItems = [];
+    function unitSpeak(i) { var it = unitSpeakItems[i]; if (it) speak(it[0], it[1]); }
+    function unitListenBtn(big, lang) { unitSpeakItems.push([big, lang]); return '<button class="btn ghost small u-listen" onclick="unitSpeak(' + (unitSpeakItems.length - 1) + ')">Listen</button>'; }
+    function openDailyUnit(anchor) {
+      var p = practicePlayer();
+      go("solo"); if (solo.player !== p) pickProfile(p);
+      var nx = nextLessonFor(p);
+      unitCtx = { p: p, ch: nx.ch || 1, idx: nx.idx, type: nx.type, reviewDone: false };
+      renderUnitPage("", anchor || "unit-top");
+    }
+    function unitStage() { var st = STAGES.filter(function (x) { return unitCtx.ch >= x.from && unitCtx.ch <= x.to; })[0]; return st || STAGES[0]; }
+    function unitGuide(les) { if (!les || les.kind !== "phrase") return null; return (PATTERN_GUIDE[unitCtx.p] || {})[les.name] || null; }
+    function unitAbility(les) {
+      var g = unitGuide(les);
+      if (g && g.can) return g.can;
+      if (!les) return "keep the road moving forward";
+      if (les.kind === "word") return "recognize and use the words of " + les.name + " inside real phrases";
+      if (les.kind === "char") return "read " + les.name + " on sight, without stopping to think";
+      return "use " + les.name + " in real sentences";
+    }
+    function unitItemRow(item, les) {
+      var p = unitCtx.p, lang = p === "bolu" ? "ja-JP" : "en-US";
+      var ex = les.kind === "char" ? charExampleLine(item, p) : (les.kind === "word" ? wordExampleLine(item, p) : "");
+      var gloss = "";
+      if (les.kind === "phrase") gloss = glossChipsHTML(item.big, p);
+      else if (ex) gloss = glossForExample(ex, item, p);
+      return '<div class="u-ex"><div class="u-ex-main">' +
+        '<div class="u-ex-big">' + esc(item.big) + '</div>' +
+        (item.read ? '<div class="u-ex-read">' + esc(item.read) + '</div>' : "") +
+        '<div class="u-ex-mean">' + esc(item.mean || "") + '</div>' +
+        (item.teach ? '<div class="u-ex-teach">' + esc(item.teach) + '</div>' : "") +
+        (ex ? '<div class="u-ex-teach">' + esc(ex) + '</div>' : "") + gloss +
+        '</div>' + unitListenBtn(item.big, lang) + '</div>';
+    }
+    function unitDialogueLines(les) {
+      var p = unitCtx.p, src = null;
+      if (les && les.kind === "phrase") src = les.items;
+      else { var ps = PHRASE_SETS[p][Math.min(unitCtx.ch, CONTENT_CHAPTERS) - 1]; if (ps) src = ps.items.map(function (w) { return { big: w[0], read: w[1], mean: w[2] }; }); }
+      return (src || []).slice(0, 6);
+    }
+    function unitHTML(banner) {
+      unitSpeakItems = [];
+      var p = unitCtx.p, plan = dailyPlanLoad(p);
+      var les = unitCtx.type === "lesson" ? chapterLessons(p, unitCtx.ch)[unitCtx.idx] : null;
+      var st = unitStage();
+      var g = unitGuide(les);
+      var lessonDone = les ? !!state.lessons[p][lessonId(unitCtx.ch, unitCtx.idx)] : false;
+      var revN = reviewCount(p);
+      var revDone = unitCtx.reviewDone || revN === 0;
+      var spkDone = (plan.speakDone || 0) >= 3;
+      var dlgDone = !!plan.phraseDone;
+      var dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+      var chName = (LEVELS[unitCtx.ch - 1] || {}).en || ("Chapter " + unitCtx.ch);
+      var title = unitCtx.type === "checkpoint" ? "Chapter " + unitCtx.ch + " Checkpoint" : (les ? les.name : "The road ahead");
+      var html = '<div id="unit-top"></div>';
+      if (banner) html += '<div class="u-banner">✓ ' + esc(banner) + '</div>';
+      html += '<div class="prompt-label">TODAY\u2019S UNIT \u00B7 ' + esc(dateStr.toUpperCase()) + '</div>' +
+        '<div class="flash-big" style="font-size:30px; line-height:1.2">' + esc(title) + '</div>' +
+        '<p class="howto" style="margin-top:6px">Stage ' + (STAGES.indexOf(st) + 1) + ' \u00B7 JLPT N' + st.lvl + ' \u00B7 Chapter ' + unitCtx.ch + ': ' + esc(chName) + '. By the end of this unit you will be able to ' + esc(unitAbility(les)) + '.</p>' +
+        '<div class="unit-rail">' +
+        '<span class="unit-chip' + (revDone ? " done" : "") + '">' + (revDone ? "✓ " : "") + '1 · Reviews</span>' +
+        '<span class="unit-chip' + (lessonDone || unitCtx.type === "done" ? " done" : "") + '">' + (lessonDone ? "✓ " : "") + '2 · The Lesson</span>' +
+        '<span class="unit-chip' + (spkDone ? " done" : "") + '">' + (spkDone ? "✓ " : "") + '3 · Speaking</span>' +
+        '<span class="unit-chip' + (dlgDone ? " done" : "") + '">' + (dlgDone ? "✓ " : "") + '4 · Dialogue</span></div>';
+      /* 1 · Reviews first */
+      html += '<div class="unit-sec' + (revDone ? " done" : "") + '" id="unit-review"><div class="unit-sec-head"><span class="unit-sec-num">' + (revDone ? "✓" : "1") + '</span><span class="unit-sec-title">Reviews first</span></div>' +
+        (revDone ? '<p class="howto">Your review queue is clear. Everything you once missed has been refreshed, so the new material has your full attention.</p>'
+          : '<p class="howto">' + revN + ' review' + (revN === 1 ? "" : "s") + ' waiting. Reviews come first, while they are warm ups, not tests: you cannot fail them, and they make the new material stick.</p><div class="btn-row"><button class="btn blue" onclick="openReview()">Start reviews</button></div>') + '</div>';
+      /* 2 · The lesson page */
+      html += '<div class="unit-sec' + (lessonDone ? " done" : "") + '" id="unit-lesson"><div class="unit-sec-head"><span class="unit-sec-num">' + (lessonDone ? "✓" : "2") + '</span><span class="unit-sec-title">The lesson</span></div>';
+      if (unitCtx.type === "checkpoint") {
+        var dc = chapterDoneCount(p, unitCtx.ch);
+        html += '<p class="howto">You finished all ' + dc.total + ' lessons of Chapter ' + unitCtx.ch + '. The checkpoint is five questions drawn from the whole chapter. Pass it, four of five or better, and the next chapter opens. This is the mastery gate working as intended.</p>' +
+          '<div class="btn-row"><button class="btn blue" onclick="openCheckpoint(' + unitCtx.ch + ')">Start the checkpoint</button></div>';
+      } else if (unitCtx.type === "done" || !les) {
+        html += '<p class="howto">Every built lesson on the road is complete. What remains is the daily rhythm itself: reviews, speaking, the dialogue, and the stages still in preparation. That is not an ending; that is maintenance of a real skill.</p>';
+      } else {
+        html += '<p class="howto">' + esc(teachIntroFor(les, p)) + '</p>';
+        if (g) {
+          html += '<div class="u-pattern"><div class="u-pat-big">' + esc(g.pat) + '</div>' +
+            (g.form ? '<p>' + esc(g.form) + '</p>' : "") +
+            (g.think ? '<p class="think">' + esc(g.think) + '</p>' : "") +
+            (g.use ? '<p><b>Where you use it:</b> ' + esc(g.use) + '</p>' : "") + '</div>';
+        }
+        les.items.forEach(function (item) { html += unitItemRow(item, les); });
+        html += '<div class="btn-row" style="margin-top:14px">' + (lessonDone
+          ? '<span class="unit-chip done">✓ Lesson complete</span><button class="btn ghost" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Practice it again</button>'
+          : '<button class="btn blue" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Check what you learned</button>') + '</div>' +
+          (lessonDone ? "" : '<p class="howto" style="margin-top:8px">The check is the lesson quiz, now that the page has taught you. Score 80% or more to complete it: the goal is mastery, not just getting through.</p>');
+      }
+      html += '</div>';
+      /* 3 · Speaking */
+      html += '<div class="unit-sec' + (spkDone ? " done" : "") + '" id="unit-speak"><div class="unit-sec-head"><span class="unit-sec-num">' + (spkDone ? "✓" : "3") + '</span><span class="unit-sec-title">Speaking</span></div>' +
+        (spkDone ? '<p class="howto">Speaking is done for today. Three phrases, out loud, scored. Pronunciation sticks when it is daily.</p>'
+          : '<p class="howto">Say today\u2019s three words and phrases out loud. Hear each one, repeat it, and get scored. A little speaking every day is how pronunciation sticks.</p><div class="btn-row"><button class="btn blue" onclick="startSpeakDaily()">Start speaking</button></div>') + '</div>';
+      /* 4 · Dialogue */
+      var lines = unitDialogueLines(les);
+      html += '<div class="unit-sec' + (dlgDone ? " done" : "") + '" id="unit-dialogue"><div class="unit-sec-head"><span class="unit-sec-num">' + (dlgDone ? "✓" : "4") + '</span><span class="unit-sec-title">Dialogue</span></div>' +
+        '<p class="howto">The unit closes with a dialogue, built only from what this unit taught, the way NativShark ends its units. ' + (g && g.use ? esc(g.use) : "Listen to the exchange, then shadow it out loud, line by line.") + '</p>';
+      lines.forEach(function (it, i) {
+        var bSide = i % 2 === 1;
+        html += '<div class="u-dlg-line"><span class="u-spk' + (bSide ? " b" : "") + '">' + (bSide ? "B" : "A") + '</span><div class="u-dlg-body">' +
+          '<div class="u-ex-big" style="font-size:19px">' + esc(it.big) + '</div>' +
+          (it.read ? '<div class="u-ex-read">' + esc(it.read) + '</div>' : "") +
+          '<div class="u-ex-mean">' + esc(it.mean || "") + '</div>' + glossChipsHTML(it.big, p) +
+          '</div>' + unitListenBtn(it.big, p === "bolu" ? "ja-JP" : "en-US") + '</div>';
+      });
+      html += '<div class="btn-row">' + (dlgDone ? '<span class="unit-chip done">✓ Dialogue practiced</span>' : '<button class="btn blue" onclick="unitDialogueDone()">We practiced it</button>') + '</div></div>';
+      /* Waypoint */
+      var tmw = reviewCount(p);
+      var nxAfter = les ? (chapterLessons(p, unitCtx.ch)[unitCtx.idx + 1]) : null;
+      html += '<div class="u-waypoint" id="unit-end"><div class="prompt-label">WAYPOINT</div>' +
+        '<p class="howto" style="color:var(--ink)">You can now ' + esc(unitAbility(les)) + '. Small, real, and yours.</p>' +
+        '<p class="howto">Tomorrow: ' + tmw + ' review' + (tmw === 1 ? "" : "s") + ' waiting' + (nxAfter ? ', then ' + esc(nxAfter.name) : (unitCtx.type === "lesson" ? ', then the Chapter ' + unitCtx.ch + ' checkpoint' : "")) + '. Show up, press Study Now, and the page will be ready.</p>' +
+        '<div class="btn-row"><button class="btn blue" onclick="unitFinish()">Finish today\u2019s studies</button><button class="btn ghost" onclick="unitQuit()">Back to path</button></div></div>';
+      return html;
+    }
+    function renderUnitPage(banner, anchor) {
+      if (!unitCtx) return;
+      stageHTML(unitHTML(banner || ""));
+      if (anchor) setTimeout(function () { var el = document.getElementById(anchor); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+    }
+    function unitReturn(label, detail) {
+      if (label === "Smart Review") unitCtx.reviewDone = true;
+      renderSoloHead(); renderPath();
+      var next = "unit-lesson";
+      if (label === "Today's lesson" || label === "Checkpoint") next = "unit-speak";
+      else if (label === "Speaking practice") next = "unit-dialogue";
+      else if (label === "Smart Review") next = "unit-lesson";
+      renderUnitPage(label + " done" + (detail ? ": " + detail : "") + ".", next);
+    }
+    function unitDialogueDone() {
+      var p = unitCtx.p, plan = dailyPlanLoad(p);
+      plan.phraseDone = true; dailySavePlan(p, plan);
+      renderUnitPage("Dialogue practiced. That exchange is yours now.", "unit-end");
+    }
+    function unitFinish() { unitCtx = null; closeStage(); go("home"); renderDaily(); toast("Today's studies are in. Consistency is the whole method."); }
+    function unitQuit() { unitCtx = null; closeStage(); renderPath(); }
+
+    var dailySess = null;
     function startDailySession() {
       var p = practicePlayer(), plan = dailyPlanLoad(p), ds = dailySteps(p, plan);
       var queue = [];
@@ -5827,12 +6027,7 @@ input,textarea,select{ font-family:inherit; }
       if (dailySess && dailySess.queue[dailySess.i] === "phrase") { stageHTML(dailyAdvanceHtml("Dialogue", "Phrase practiced")); return; }
       dailySessQuit();
     }
-    function dailyGoDialogue() {
-      var p = practicePlayer();
-      go("solo"); if (solo.player !== p) pickProfile(p);
-      if (!dailySess) dailySess = { p: p, queue: ["phrase"], i: 0 };
-      renderDailyDialogue();
-    }
+    function dailyGoDialogue() { openDailyUnit("unit-dialogue"); }
     var _glossCache = {};
     function glossDict(p) {
       if (_glossCache[p]) return _glossCache[p];
@@ -5900,12 +6095,12 @@ input,textarea,select{ font-family:inherit; }
       html += '</div>';
       host.innerHTML = html;
     }
-    function dailyGoLesson() { var p = practicePlayer(), nx = nextLessonFor(p); if (nx.type === "lesson") continueTo(nx.ch, nx.idx); else if (nx.type === "checkpoint") continueTo(nx.ch, null); else continueDone(); }
+    function dailyGoLesson() { openDailyUnit(); }
     function dailyGoReview() { reviewTo(); }
     function dailyGoDrill() { var p = practicePlayer(); if (p === "bolu") { go(weakestScript().def.key); } else { go("solo"); } }
     function dailyPhraseListen() { var p = practicePlayer(), ph = p === "bolu" ? potdJp : potdEn; speak(ph.main, p === "bolu" ? "ja-JP" : "en-US"); }
     function dailyPhraseDone() { var p = practicePlayer(), plan = dailyPlanLoad(p); plan.phraseDone = true; dailySavePlan(p, plan); renderDaily(); toast("Phrase practiced. Nicely done."); }
-    function dailyStudyNow() { startDailySession(); }
+    function dailyStudyNow() { openDailyUnit(); }
     function dailyGoSpeak() { var p = practicePlayer(); go("solo"); if (solo.player !== p) pickProfile(p); startSpeakDaily(); }
 
     /* ==================== DAILY SPEAKING PRACTICE ==================== */
@@ -6106,7 +6301,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function renderSpeakDone() {
       var ss = speakSess; if (!ss) return;
-      if (dailySess && dailySess.queue[dailySess.i] === "speak") { stageHTML(dailyAdvanceHtml("Speaking practice", ss.correct + " of " + ss.items.length + " correct")); return; }
+      if (unitCtx) { unitReturn("Speaking practice", ss.correct + " of " + ss.items.length + " correct"); return; }
       stageHTML(
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 DONE</div>' +
         '<div class="flash-big" style="font-size:30px">' + ss.correct + " of " + ss.items.length + " correct</div>" +
@@ -6363,7 +6558,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
         var vx = cx + R * ax.pct / 100 * Math.cos(rad), vy = cy + R * ax.pct / 100 * Math.sin(rad);
         pts.push(vx.toFixed(1) + "," + vy.toFixed(1));
       });
-      return '<svg viewBox="0 0 260 236" style="width:100%; max-width:300px; display:block; margin:2px auto 0">' + grid +
+      return '<svg viewBox="-14 0 288 236" style="width:100%; max-width:300px; display:block; margin:2px auto 0">' + grid +
         '<polygon points="' + pts.join(" ") + '" fill="' + (foundation ? "rgba(139,132,168,.22)" : "rgba(106,90,224,.30)") + '" stroke="' + (foundation ? "var(--muted)" : "var(--blue)") + '" stroke-width="2" stroke-linejoin="round"/>' + labels + '</svg>';
     }
     function renderJlptCard(p) {
