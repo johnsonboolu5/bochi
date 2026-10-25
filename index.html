@@ -1165,6 +1165,7 @@ input,textarea,select{ font-family:inherit; }
         <button class="side-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="side-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="side-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
+        <button class="side-item" data-nav="saved" onclick="go('saved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3.8h10V20l-5-3.5L7 20z"/></svg><span>Saved</span></button>
         <button class="side-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="side-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
         <button class="side-item" data-nav="calendar" onclick="go('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
@@ -1209,14 +1210,14 @@ input,textarea,select{ font-family:inherit; }
             <div class="romaji" id="potd-jp-romaji"></div>
             <div class="meaning" id="potd-jp-meaning" style="margin-top:6px"></div>
             <div class="example" id="potd-jp-example"></div>
-            <div class="row"><button class="btn blue small" id="potd-jp-practice">We practiced it · +5</button></div>
+            <div class="row"><button class="btn blue small" id="potd-jp-practice">We practiced it · +5</button><button class="save-btn" id="potd-jp-save" onclick="potdSave('jp')" aria-label="Save this phrase"></button></div>
           </div>
           <div class="card potd for-chihiro">
             <div class="who">FOR CHIHIRO · ENGLISH IDIOM</div>
             <div class="phrase"><span id="potd-en-main"></span><button class="speak-btn" id="potd-en-speak" aria-label="Listen to the English idiom"></button></div>
             <div class="meaning" id="potd-en-meaning"></div>
             <div class="example" id="potd-en-example"></div>
-            <div class="row"><button class="btn red small" id="potd-en-practice">We practiced it · +5</button></div>
+            <div class="row"><button class="btn red small" id="potd-en-practice">We practiced it · +5</button><button class="save-btn" id="potd-en-save" onclick="potdSave('en')" aria-label="Save this idiom"></button></div>
           </div>
         </div>
 
@@ -1899,6 +1900,17 @@ input,textarea,select{ font-family:inherit; }
       </section>
 
       <!-- ================= SUMMARY ================= -->
+      <section class="view" id="view-saved">
+        <div class="section-title">
+          <h2>Saved <span class="jp">あとで みる</span></h2>
+          <span class="note">Words and phrases you kept, in lists you make</span>
+        </div>
+        <div class="sv-newrow">
+          <input id="saved-new-name" type="text" placeholder="New list name, like Hard words">
+          <button class="btn blue" onclick="savedNewListFromPage()">Create list</button>
+        </div>
+        <div id="saved-body"></div>
+      </section>
       <section class="view" id="view-stats">
         <div class="game-head">
           <button class="back-link" onclick="go('home')">← Today</button>
@@ -2018,6 +2030,7 @@ input,textarea,select{ font-family:inherit; }
         <button class="menu-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="menu-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="menu-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
+        <button class="menu-item" data-nav="saved" onclick="go('saved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3.8h10V20l-5-3.5L7 20z"/></svg><span>Saved</span></button>
         <button class="menu-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="menu-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
         <button class="menu-item" data-nav="calendar" onclick="go('calendar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
@@ -2070,6 +2083,7 @@ input,textarea,select{ font-family:inherit; }
       <div class="stage-controls" id="stage-flip-controls">
         <button class="btn ghost" onclick="stageNav(-1)">← Prev</button>
         <button class="btn ghost" id="stage-mark" onclick="stageToggleMark()">Mark as memorized</button>
+        <button class="btn ghost" id="stage-save" onclick="openSaveChar()">Save</button>
         <button class="btn blue" onclick="stageFlip()">Flip card</button>
         <button class="btn ghost" onclick="stageNav(1)">Next →</button>
       </div>
@@ -2086,6 +2100,7 @@ input,textarea,select{ font-family:inherit; }
           <button class="btn ghost" onclick="clearDraw()">Clear</button>
           <button class="btn ghost" id="draw-peek">Hold to peek</button>
           <button class="btn ghost" onclick="stageToggleMark()" id="draw-mark">Mark as memorized</button>
+          <button class="btn ghost" id="draw-save" onclick="openSaveChar()">Save</button>
           <button class="btn blue" onclick="drawDone()">Done</button>
           <button class="btn ghost" onclick="stageNav(1)">Next →</button>
         </div>
@@ -2649,6 +2664,7 @@ input,textarea,select{ font-family:inherit; }
       if(view === "summary"){ renderSummary(); }
       if(view === "home"){ renderPlatformHome(); }
       if(view === "stats"){ renderStats(); }
+      if(view === "saved"){ renderSaved(); }
       if(view === "calendar"){ loadCalendarExtras(); }
       if(view === "solo"){ enterSolo(); }
       if(view === "scripts"){ renderScripts(); }
@@ -5851,7 +5867,7 @@ input,textarea,select{ font-family:inherit; }
         '<div class="u-ex-mean">' + esc(item.mean || "") + '</div>' +
         (item.teach ? '<div class="u-ex-teach">' + esc(item.teach) + '</div>' : "") +
         (ex ? '<div class="u-ex-teach">' + esc(ex) + '</div>' : "") + gloss +
-        '</div>' + unitListenBtn(item.big, lang) + '</div>';
+        '</div>' + unitListenBtn(item.big, lang) + unitSaveBtn(item, les.kind) + '</div>';
     }
     function unitDialogueLines(les) {
       var p = unitCtx.p, src = null;
@@ -5860,7 +5876,7 @@ input,textarea,select{ font-family:inherit; }
       return (src || []).slice(0, 6);
     }
     function unitHTML(banner) {
-      unitSpeakItems = [];
+      unitSpeakItems = []; unitSaveReg = [];
       var p = unitCtx.p, plan = dailyPlanLoad(p);
       var les = unitCtx.type === "lesson" ? chapterLessons(p, unitCtx.ch)[unitCtx.idx] : null;
       var st = unitStage();
@@ -5883,6 +5899,7 @@ input,textarea,select{ font-family:inherit; }
         '<span class="unit-chip' + (lessonDone || unitCtx.type === "done" ? " done" : "") + '">' + (lessonDone ? "✓ " : "") + '2 · The Lesson</span>' +
         '<span class="unit-chip' + (spkDone ? " done" : "") + '">' + (spkDone ? "✓ " : "") + '3 · Speaking</span>' +
         '<span class="unit-chip' + (dlgDone ? " done" : "") + '">' + (dlgDone ? "✓ " : "") + '4 · Dialogue</span></div>';
+      if (les) html += '<div class="scene">' + sceneSVG(sceneKindFor(les), les.items && les.items[0] ? les.items[0].big : "") + '</div>';
       /* 1 · Reviews first */
       html += '<div class="unit-sec' + (revDone ? " done" : "") + '" id="unit-review"><div class="unit-sec-head"><span class="unit-sec-num">' + (revDone ? "✓" : "1") + '</span><span class="unit-sec-title">Reviews first</span></div>' +
         (revDone ? '<p class="howto">Your review queue is clear. Everything you once missed has been refreshed, so the new material has your full attention.</p>'
@@ -5918,13 +5935,14 @@ input,textarea,select{ font-family:inherit; }
       var lines = unitDialogueLines(les);
       html += '<div class="unit-sec' + (dlgDone ? " done" : "") + '" id="unit-dialogue"><div class="unit-sec-head"><span class="unit-sec-num">' + (dlgDone ? "✓" : "4") + '</span><span class="unit-sec-title">Dialogue</span></div>' +
         '<p class="howto">The unit closes with a dialogue, built only from what this unit taught, the way NativShark ends its units. ' + (g && g.use ? esc(g.use) : "Listen to the exchange, then shadow it out loud, line by line.") + '</p>';
+      html += '<div class="scene small">' + sceneSVG("chat", lines.length ? lines[0].big : "") + '</div>';
       lines.forEach(function (it, i) {
         var bSide = i % 2 === 1;
         html += '<div class="u-dlg-line"><span class="u-spk' + (bSide ? " b" : "") + '">' + (bSide ? "B" : "A") + '</span><div class="u-dlg-body">' +
           '<div class="u-ex-big" style="font-size:19px">' + esc(it.big) + '</div>' +
           (it.read ? '<div class="u-ex-read">' + esc(it.read) + '</div>' : "") +
           '<div class="u-ex-mean">' + esc(it.mean || "") + '</div>' + glossChipsHTML(it.big, p) +
-          '</div>' + unitListenBtn(it.big, p === "bolu" ? "ja-JP" : "en-US") + '</div>';
+          '</div>' + unitListenBtn(it.big, p === "bolu" ? "ja-JP" : "en-US") + unitSaveBtn(it, "phrase") + '</div>';
       });
       html += '<div class="btn-row">' + (dlgDone ? '<span class="unit-chip done">✓ Dialogue practiced</span>' : '<button class="btn blue" onclick="unitDialogueDone()">We practiced it</button>') + '</div></div>';
       /* Waypoint */
@@ -6924,6 +6942,9 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       card.classList.toggle("known", known);
       $("stage-mark").textContent = known ? "✓ Memorized" : "Mark as memorized";
       var dm = $("draw-mark"); if (dm) dm.textContent = known ? "✓ Memorized" : "Mark as memorized";
+      var svOn = savedHas(practicePlayer(), it.ch, it.read || "");
+      var sv1 = $("stage-save"); if (sv1) sv1.textContent = svOn ? "Saved ✓" : "Save";
+      var sv2 = $("draw-save"); if (sv2) sv2.textContent = svOn ? "Saved ✓" : "Save";
       var sp = $("stage-speak");
       if (sp) { sp.innerHTML = SPEAK_SVG; sp.onclick = function (ev) { if (ev) ev.stopPropagation(); speak(it.ch, "ja-JP"); }; }
       var gd = $("draw-guide"); if (gd) gd.textContent = it.ch;
@@ -7236,7 +7257,54 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
 .topbar{ border-radius:12px; }
 .acct-btn{ border-radius:6px; }
 .ph-btn{ background:var(--blue); color:#fff; border-radius:6px; font-weight:600; }
+.g-ic svg rect{ fill:#E8387A; }
+.g-ic svg path{ stroke:#E8387A; }
+.save-btn{ flex:none; width:36px; height:36px; border:0; border-radius:6px; background:var(--pill); color:var(--muted); display:inline-grid; place-items:center; cursor:pointer; }
+.save-btn svg{ width:18px; height:18px; }
+.save-btn.on{ background:var(--ai-soft); color:var(--blue); }
+.scene{ margin:14px 0 4px; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
+.scene svg{ display:block; width:100%; height:auto; }
+.scene.small{ margin:10px 0; }
+#save-sheet{ position:fixed; inset:0; z-index:320; display:none; align-items:flex-end; justify-content:center; background:rgba(20,20,40,.45); }
+#save-sheet.on{ display:flex; }
+.save-card{ background:var(--surface); width:100%; max-width:460px; border-radius:16px 16px 0 0; padding:20px; max-height:86vh; overflow:auto; }
+@media (min-width:760px){ #save-sheet{ align-items:center; } .save-card{ border-radius:16px; } }
+.save-item-line{ font-size:19px; font-weight:700; margin:2px 0 2px; }
+.save-item-sub{ color:var(--muted); font-size:14px; margin-bottom:12px; }
+.save-list-row{ display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; margin-bottom:8px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font:inherit; font-size:15px; font-weight:600; cursor:pointer; text-align:left; }
+.save-list-row .ck{ margin-left:auto; color:var(--blue); font-weight:800; }
+.save-list-row.on{ border-color:var(--blue); background:var(--ai-soft); }
+.save-newrow{ display:flex; gap:8px; margin:12px 0; }
+.save-newrow input{ flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink); padding:10px 12px; font:inherit; font-size:15px; }
+.sv-newrow{ display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+.sv-newrow input{ flex:1; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink); padding:11px 12px; font:inherit; font-size:15px; }
+.sv-list{ margin-bottom:18px; }
+.sv-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+.sv-head h3{ margin:0; font-size:19px; font-weight:700; }
+.sv-count{ color:var(--muted); font-size:13.5px; font-weight:600; }
+.sv-row{ display:flex; gap:10px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line); }
+.sv-row:last-child{ border-bottom:0; }
+.sv-main{ flex:1; min-width:0; }
+.sv-big{ font-size:19px; font-weight:700; line-height:1.35; }
+.sv-read{ color:var(--muted); font-size:14px; }
+.sv-mean{ color:var(--ink-soft); font-size:14.5px; }
+.sv-x{ flex:none; border:0; background:var(--pill); color:var(--muted); width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:14px; }
+.sv-study{ border:1px solid var(--line); border-radius:12px; padding:22px; text-align:center; margin:10px 0 14px; background:var(--surface); }
+.sv-study .sv-big{ font-size:27px; }
 </style>
+<div id="save-sheet" role="dialog" aria-modal="true">
+  <div class="save-card">
+    <div class="prompt-label">SAVE FOR LATER</div>
+    <div class="save-item-line" id="save-item-line"></div>
+    <div class="save-item-sub" id="save-item-sub"></div>
+    <div id="save-lists"></div>
+    <div class="save-newrow">
+      <input id="save-new-name" type="text" placeholder="New list name">
+      <button class="btn blue small" onclick="saveSheetNew()">Create &amp; save</button>
+    </div>
+    <button class="btn ghost" style="width:100%" onclick="closeSaveSheet()">Done</button>
+  </div>
+</div>
 <div id="gate-sheet" role="dialog" aria-modal="true">
   <div class="gate-card">
     <div class="g-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="#6A5AE0"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="#6A5AE0" stroke-width="2.2"/></svg></div>
@@ -7357,6 +7425,206 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
     scrubWatch(false); restorePartnerName();
     renderWatchLib();
   }
+</script>
+<script>
+/* ================= SAVED LISTS + LESSON SCENES ================= */
+var BMK_PATH = '<path d="M7 3.8h10V20l-5-3.5L7 20z"/>';
+function bmkSVG(on) { return '<svg viewBox="0 0 24 24" fill="' + (on ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">' + BMK_PATH + '</svg>'; }
+
+/* ---------- storage ---------- */
+function savedLoad(p) {
+  try { var d = JSON.parse(localStorage.getItem("bochi-saved-" + p) || "null"); if (d && d.lists && d.items) return d; } catch (e) {}
+  return { lists: [{ id: "main", name: "Saved for later" }], items: [] };
+}
+function savedStore(p, d) { try { localStorage.setItem("bochi-saved-" + p, JSON.stringify(d)); } catch (e) {} }
+function savedHas(p, big, read) { var d = savedLoad(p); return d.items.some(function (it) { return it.big === big && (it.read || "") === (read || ""); }); }
+function savedInList(p, listId, big, read) { var d = savedLoad(p); return d.items.some(function (it) { return it.listId === listId && it.big === big && (it.read || "") === (read || ""); }); }
+function savedLang(p) { return p === "bolu" ? "ja-JP" : "en-US"; }
+
+/* ---------- save sheet ---------- */
+var saveCtx = null;
+function openSaveSheet(item, p, surface) {
+  saveCtx = { item: item, p: p, surface: surface };
+  $("save-item-line").textContent = item.big;
+  $("save-item-sub").textContent = [item.read, item.mean].filter(Boolean).join(" · ");
+  renderSaveSheet();
+  document.getElementById("save-sheet").classList.add("on");
+}
+function renderSaveSheet() {
+  if (!saveCtx) return;
+  var d = savedLoad(saveCtx.p), it = saveCtx.item;
+  $("save-lists").innerHTML = d.lists.map(function (L) {
+    var on = savedInList(saveCtx.p, L.id, it.big, it.read);
+    var n = d.items.filter(function (x) { return x.listId === L.id; }).length;
+    return '<button class="save-list-row' + (on ? " on" : "") + '" onclick="saveToggle(\'' + L.id + '\')"><span>' + esc(L.name) + '</span><span class="sv-count">' + n + '</span>' + (on ? '<span class="ck">✓ Saved</span>' : '<span class="ck" style="color:var(--muted)">Save</span>') + '</button>';
+  }).join("");
+}
+function saveToggle(listId) {
+  if (!saveCtx) return;
+  var d = savedLoad(saveCtx.p), it = saveCtx.item;
+  var idx = d.items.findIndex(function (x) { return x.listId === listId && x.big === it.big && (x.read || "") === (it.read || ""); });
+  if (idx >= 0) d.items.splice(idx, 1);
+  else d.items.push({ listId: listId, big: it.big, read: it.read || "", mean: it.mean || "", kind: it.kind || "", ts: Date.now() });
+  savedStore(saveCtx.p, d);
+  renderSaveSheet(); refreshSaveSurface();
+}
+function saveSheetNew() {
+  var inp = $("save-new-name"); var name = (inp.value || "").trim(); if (!name || !saveCtx) return;
+  var d = savedLoad(saveCtx.p);
+  var id = "l" + Date.now();
+  d.lists.push({ id: id, name: name });
+  var it = saveCtx.item;
+  d.items.push({ listId: id, big: it.big, read: it.read || "", mean: it.mean || "", kind: it.kind || "", ts: Date.now() });
+  savedStore(saveCtx.p, d); inp.value = "";
+  renderSaveSheet(); refreshSaveSurface();
+  toast("Saved to " + name);
+}
+function closeSaveSheet() { document.getElementById("save-sheet").classList.remove("on"); }
+document.getElementById("save-sheet").addEventListener("click", function (e) { if (e.target === this) closeSaveSheet(); });
+function refreshSaveSurface() {
+  if (!saveCtx) return;
+  if (saveCtx.surface === "unit" && typeof renderUnitPage === "function") renderUnitPage();
+  else if (saveCtx.surface === "stage" && typeof stageRender === "function") stageRender();
+  else if (saveCtx.surface === "potd") refreshPotdSaveBtns();
+}
+
+/* ---------- entry points ---------- */
+var unitSaveReg = [];
+function unitSaveBtn(item, kind) {
+  unitSaveReg.push({ big: item.big, read: item.read || "", mean: item.mean || "", kind: kind || "" });
+  var on = unitCtx && savedHas(unitCtx.p, item.big, item.read || "");
+  return '<button class="save-btn' + (on ? " on" : "") + '" onclick="unitSaveOpen(' + (unitSaveReg.length - 1) + ')" aria-label="Save for later">' + bmkSVG(on) + '</button>';
+}
+function unitSaveOpen(i) { var it = unitSaveReg[i]; if (it && unitCtx) openSaveSheet(it, unitCtx.p, "unit"); }
+function potdSave(w) {
+  if (w === "jp") openSaveSheet({ big: potdJp.main, read: potdJp.romaji, mean: potdJp.mean, kind: "phrase" }, "bolu", "potd");
+  else openSaveSheet({ big: potdEn.main, read: "", mean: potdEn.mean, kind: "phrase" }, "chihiro", "potd");
+}
+function refreshPotdSaveBtns() {
+  var j = $("potd-jp-save"), e = $("potd-en-save");
+  if (j) { var onJ = savedHas("bolu", potdJp.main, potdJp.romaji); j.className = "save-btn" + (onJ ? " on" : ""); j.innerHTML = bmkSVG(onJ); }
+  if (e) { var onE = savedHas("chihiro", potdEn.main, ""); e.className = "save-btn" + (onE ? " on" : ""); e.innerHTML = bmkSVG(onE); }
+}
+function openSaveChar() {
+  var list = SCRIPT_FLAT[stageState.key] || []; var it = list[stageState.idx]; if (!it) return;
+  openSaveSheet({ big: it.ch, read: it.read || "", mean: it.mean || "", kind: "char" }, practicePlayer(), "stage");
+}
+
+/* ---------- Saved page ---------- */
+var savedStudy = null;
+function renderSaved() {
+  var body = $("saved-body"); if (!body) return;
+  var p = practicePlayer(); var d = savedLoad(p);
+  if (savedStudy && !d.lists.some(function (L) { return L.id === savedStudy.listId; })) savedStudy = null;
+  var html = "";
+  d.lists.forEach(function (L) {
+    var items = d.items.filter(function (x) { return x.listId === L.id; });
+    html += '<div class="card sv-list"><div class="sv-head"><h3>' + esc(L.name) + '</h3><span class="sv-count">' + items.length + ' saved</span>' +
+      (items.length ? '<button class="btn blue small" onclick="savedStudyOpen(\'' + L.id + '\')">Review these</button>' : "") +
+      (L.id !== "main" ? '<button class="btn ghost small" onclick="savedDeleteList(\'' + L.id + '\')">Delete list</button>' : "") + '</div>';
+    if (savedStudy && savedStudy.listId === L.id && items.length) html += savedStudyHTML(items);
+    if (!items.length) html += '<p class="howto" style="margin:4px 0 2px">Nothing here yet. Tap the bookmark on any word, phrase, or character to keep it in this list.</p>';
+    items.forEach(function (it, ii) {
+      html += '<div class="sv-row"><div class="sv-main"><div class="sv-big">' + esc(it.big) + '</div>' +
+        (it.read ? '<div class="sv-read">' + esc(it.read) + '</div>' : "") +
+        (it.mean ? '<div class="sv-mean">' + esc(it.mean) + '</div>' : "") + '</div>' +
+        '<button class="btn ghost small" onclick="savedListen(\'' + L.id + '\', ' + ii + ')">Listen</button>' +
+        '<button class="sv-x" onclick="savedRemoveItem(\'' + L.id + '\', ' + ii + ')" aria-label="Remove">✕</button></div>';
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function savedListItems(p, listId) { return savedLoad(p).items.filter(function (x) { return x.listId === listId; }); }
+function savedListen(listId, ii) { var p = practicePlayer(); var it = savedListItems(p, listId)[ii]; if (it) speak(it.big, savedLang(p)); }
+function savedRemoveItem(listId, ii) {
+  var p = practicePlayer(); var d = savedLoad(p);
+  var seen = -1;
+  d.items = d.items.filter(function (x) { if (x.listId !== listId) return true; seen++; return seen !== ii; });
+  savedStore(p, d); renderSaved();
+}
+function savedDeleteList(listId) {
+  var p = practicePlayer(); var d = savedLoad(p);
+  d.lists = d.lists.filter(function (L) { return L.id !== listId; });
+  d.items = d.items.filter(function (x) { return x.listId !== listId; });
+  if (savedStudy && savedStudy.listId === listId) savedStudy = null;
+  savedStore(p, d); renderSaved(); toast("List deleted");
+}
+function savedNewListFromPage() {
+  var inp = $("saved-new-name"); var name = (inp.value || "").trim(); if (!name) return;
+  var p = practicePlayer(); var d = savedLoad(p);
+  d.lists.push({ id: "l" + Date.now(), name: name });
+  savedStore(p, d); inp.value = ""; renderSaved(); toast("List created: " + name);
+}
+function savedStudyOpen(listId) { savedStudy = { listId: listId, idx: 0, revealed: false }; renderSaved(); }
+function savedStudyHTML(items) {
+  var it = items[Math.min(savedStudy.idx, items.length - 1)];
+  return '<div class="sv-study"><div class="prompt-label">REVIEW · ' + (savedStudy.idx + 1) + ' OF ' + items.length + '</div>' +
+    '<div class="sv-big">' + esc(it.big) + '</div>' +
+    (savedStudy.revealed ? '<div class="sv-read">' + esc(it.read || "") + '</div><div class="sv-mean">' + esc(it.mean || "") + '</div>'
+      : '<p class="howto">Say it out loud first, then check yourself.</p>') +
+    '<div class="btn-row" style="justify-content:center">' +
+    '<button class="btn ghost" onclick="savedStudyNav(-1)">Prev</button>' +
+    (savedStudy.revealed ? '<button class="btn ghost" onclick="savedStudyListen()">Listen</button>' : '<button class="btn blue" onclick="savedStudyReveal()">Show reading &amp; meaning</button>') +
+    '<button class="btn ghost" onclick="savedStudyNav(1)">Next</button>' +
+    '<button class="btn ghost" onclick="savedStudyClose()">Close</button></div></div>';
+}
+function savedStudyNav(dlt) { var items = savedListItems(practicePlayer(), savedStudy.listId); savedStudy.idx = (savedStudy.idx + dlt + items.length) % items.length; savedStudy.revealed = false; renderSaved(); }
+function savedStudyReveal() { savedStudy.revealed = true; renderSaved(); }
+function savedStudyListen() { var items = savedListItems(practicePlayer(), savedStudy.listId); var it = items[savedStudy.idx]; if (it) speak(it.big, savedLang(practicePlayer())); }
+function savedStudyClose() { savedStudy = null; renderSaved(); }
+
+/* ---------- lesson scenes (flat anime style) ---------- */
+function scChar(x, hair, clothes, wave) {
+  return '<g transform="translate(' + x + ' 58)">' +
+    '<rect x="-13" y="36" width="26" height="36" rx="9" fill="' + clothes + '"/>' +
+    (wave ? '<path d="M12 42 q11 -7 13 -19" stroke="#FFDFC9" stroke-width="5" fill="none" stroke-linecap="round"/>' : '') +
+    '<circle cx="0" cy="17" r="14" fill="#FFDFC9"/>' +
+    '<path d="M-14 17 a14 14 0 0 1 28 0 z" fill="' + hair + '"/>' +
+    '<circle cx="-5" cy="18" r="1.6" fill="#2B2E4A"/><circle cx="5" cy="18" r="1.6" fill="#2B2E4A"/>' +
+    '<path d="M-3.5 24 q3.5 3 7 0" stroke="#2B2E4A" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>';
+}
+function scBubble(text) {
+  if (!text) return "";
+  var t = String(text).slice(0, 14);
+  return '<g transform="translate(198 14)"><rect width="112" height="30" rx="9" fill="#FFFFFF" stroke="#E3E6EC"/>' +
+    '<path d="M20 29 l-5 9 l15 -9 z" fill="#FFFFFF"/>' +
+    '<text x="56" y="20" text-anchor="middle" font-size="' + (t.length > 8 ? 10.5 : 12.5) + '" font-weight="700" fill="#2B2E4A">' + esc(t) + '</text></g>';
+}
+var SCENE_BG = { greet: "#FFF4E0", chat: "#FDE9F1", station: "#E8F0FE", food: "#FDF0E2", school: "#E7F4EC", home: "#E9EAF6", nature: "#EAF6EC", shop: "#FDE9F1" };
+function sceneSVG(kind, bubble) {
+  var props = "";
+  if (kind === "greet") props = '<circle cx="34" cy="24" r="12" fill="#F8C555"/><g stroke="#F8C555" stroke-width="2.5" stroke-linecap="round"><path d="M34 5 v5"/><path d="M15 24 h5"/><path d="M48 24 h5"/><path d="M20 10 l3.5 3.5"/><path d="M48 10 l-3.5 3.5"/></g>';
+  if (kind === "station") props = '<rect x="168" y="26" width="146" height="54" rx="10" fill="#6196CC"/><rect x="168" y="54" width="146" height="8" fill="#E8387A"/><rect x="182" y="36" width="22" height="14" rx="2" fill="#FFFFFF"/><rect x="212" y="36" width="22" height="14" rx="2" fill="#FFFFFF"/><rect x="242" y="36" width="22" height="14" rx="2" fill="#FFFFFF"/><rect x="272" y="36" width="22" height="14" rx="2" fill="#FFFFFF"/><rect x="20" y="26" width="36" height="24" rx="4" fill="#FFFFFF" stroke="#E3E6EC"/><text x="38" y="43" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2E4A">駅</text><rect x="35" y="50" width="5" height="66" fill="#C9CEDA"/>';
+  if (kind === "food") props = '<circle cx="160" cy="18" r="8" fill="#F8C555"/><rect x="158" y="0" width="3" height="10" fill="#C9CEDA"/><rect x="92" y="102" width="136" height="9" rx="3" fill="#8A5A3B"/><path d="M196 88 a15 11 0 0 0 30 0 z" fill="#FFFFFF" stroke="#E3E6EC"/><path d="M204 78 q3 -5 0 -9 M214 78 q3 -5 0 -9" stroke="#C9CEDA" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  if (kind === "school") props = '<rect x="158" y="14" width="148" height="64" rx="6" fill="#2F4A4A"/><text x="232" y="58" text-anchor="middle" font-size="27" fill="#FFFFFF">あ い う</text><rect x="96" y="104" width="128" height="8" rx="3" fill="#B08968"/>';
+  if (kind === "home") props = '<rect x="204" y="12" width="88" height="62" rx="6" fill="#282844"/><circle cx="262" cy="30" r="8" fill="#F8C555"/><circle cx="224" cy="26" r="1.8" fill="#FFFFFF"/><circle cx="238" cy="48" r="1.8" fill="#FFFFFF"/><circle cx="276" cy="52" r="1.8" fill="#FFFFFF"/><rect x="22" y="98" width="94" height="24" rx="10" fill="#6C6785"/><rect x="22" y="88" width="94" height="14" rx="7" fill="#8B87A3"/>';
+  if (kind === "nature") props = '<path d="M0 120 L66 60 L118 120 Z" fill="#B7DCC0"/><path d="M84 120 L168 42 L252 120 Z" fill="#9CCFA9"/><circle cx="282" cy="48" r="19" fill="#F6B8D0"/><circle cx="267" cy="58" r="12" fill="#F6B8D0"/><rect x="279" y="60" width="5" height="36" fill="#8A5A3B"/>';
+  if (kind === "shop") props = '<path d="M168 30 h146 l-9 17 h-128 z" fill="#E8387A"/><path d="M196 30 h16 l-3 17 h-14 z M240 30 h16 l-3 17 h-14 z M284 30 h16 l-3 17 h-14 z" fill="#FFFFFF" opacity=".55"/><rect x="220" y="47" width="46" height="71" fill="#FFFFFF" stroke="#E3E6EC"/>';
+  if (kind === "chat") props = '<rect x="112" y="100" width="96" height="8" rx="3" fill="#B08968"/><rect x="146" y="88" width="10" height="12" rx="2" fill="#FFFFFF" stroke="#E3E6EC"/><rect x="168" y="88" width="10" height="12" rx="2" fill="#FFFFFF" stroke="#E3E6EC"/>';
+  return '<svg viewBox="0 0 320 140" role="img" aria-label="Lesson scene">' +
+    '<rect width="320" height="140" fill="' + (SCENE_BG[kind] || "#EFF1F5") + '"/>' +
+    '<rect y="118" width="320" height="22" fill="rgba(43,46,74,.06)"/>' + props +
+    scChar(72, "#2B2E4A", "#E8387A", kind === "greet") + scChar(128, "#6C4A2F", "#45B97C", false) +
+    scBubble(bubble) + '</svg>';
+}
+function sceneKindFor(les) {
+  var t = ((les && les.name) || "").toLowerCase();
+  if (/greet|hello|aisatsu/.test(t)) return "greet";
+  if (/food|eat|drink|restaurant|meal|hungry/.test(t)) return "food";
+  if (/travel|transport|station|train|trip|go |going|places/.test(t)) return "station";
+  if (/shop|buy|market|money|price|store/.test(t)) return "shop";
+  if (/weather|season|nature|spring|summer|autumn|winter|rain/.test(t)) return "nature";
+  if (/home|family|daily|house|life/.test(t)) return "home";
+  if (/school|study|class|work|job|number|time|abilit/.test(t)) return "school";
+  return "chat";
+}
+
+/* guests: saving and the Saved page are member use */
+gateWrap("unitSaveOpen", "study"); gateWrap("potdSave", "study"); gateWrap("openSaveChar", "cards");
+var _goSavedV = go;
+go = function (v) { if (!authState.account && v === "saved") { requireAuth(v); return; } return _goSavedV(v); };
+refreshPotdSaveBtns();
 </script>
 </body>
 </html>
