@@ -2098,13 +2098,15 @@ input,textarea,select{ font-family:inherit; }
           <button class="btn ghost" onclick="replayStrokeAnim()">↻ Stroke order</button>
           <button class="btn ghost" id="draw-guide-btn" onclick="toggleDrawGuide()">Hide guide</button>
           <button class="btn ghost" onclick="clearDraw()">Clear</button>
+          <button class="btn ghost" onclick="checkDraw()">✓ Check</button>
           <button class="btn ghost" id="draw-peek">Hold to peek</button>
           <button class="btn ghost" onclick="stageToggleMark()" id="draw-mark">Mark as memorized</button>
           <button class="btn ghost" id="draw-save" onclick="openSaveChar()">Save</button>
           <button class="btn blue" onclick="drawDone()">Done</button>
           <button class="btn ghost" onclick="stageNav(1)">Next →</button>
         </div>
-        <p class="stage-note">Watch the stroke order first, then trace the character with your finger, stroke by stroke. Hide the guide when you are ready to write it from memory.</p>
+        <div class="draw-verdict" id="draw-verdict"></div>
+        <p class="stage-note">Watch the stroke order first, then trace the character with your finger, stroke by stroke. Each stroke is checked as you draw it: green means right, red means try that stroke again. Hide the guide when you are ready to write it from memory.</p>
         <p class="stage-note" style="opacity:.65">Stroke order data: KanjiVG (kanjivg.tagaini.net), CC BY-SA 3.0.</p>
       </div>
       <p class="stage-note" id="stage-flip-note">Swipe or use the arrows to move between cards. Tap the card to flip it.</p>
@@ -5785,7 +5787,7 @@ input,textarea,select{ font-family:inherit; }
       } else {
         steps.push({ id: "drill", title: "Word practice", detail: "A few minutes in your English sets keeps them fresh.", done: ((te.m || 0) - plan.m0) >= 4 || ((te.l || 0) - plan.l0) >= 1, fn: "dailyGoDrill", btn: "Practice" });
       }
-      steps.push({ id: "speak", title: "Speaking practice", detail: "Say today's 3 words and phrases out loud. Hear each one, repeat it, and get scored.", done: (plan.speakDone || 0) >= 3, fn: "dailyGoSpeak", btn: "Speak" });
+      steps.push({ id: "speak", title: "Speaking practice", detail: "Say today's 3 words and phrases out loud. Hear each one, record your voice saying it, done. No scoring.", done: (plan.speakDone || 0) >= 3, fn: "dailyGoSpeak", btn: "Speak" });
       steps.push({ id: "phrase", title: "Phrase of the Day", detail: "", done: !!plan.phraseDone, fn: "", btn: "" });
       return { steps: steps, nx: nx };
     }
@@ -5930,7 +5932,7 @@ input,textarea,select{ font-family:inherit; }
       /* 3 · Speaking */
       html += '<div class="unit-sec' + (spkDone ? " done" : "") + '" id="unit-speak"><div class="unit-sec-head"><span class="unit-sec-num">' + (spkDone ? "✓" : "3") + '</span><span class="unit-sec-title">Speaking</span></div>' +
         (spkDone ? '<p class="howto">Speaking is done for today. Three phrases, out loud, scored. Pronunciation sticks when it is daily.</p>'
-          : '<p class="howto">Say today\u2019s three words and phrases out loud. Hear each one, repeat it, and get scored. A little speaking every day is how pronunciation sticks.</p><div class="btn-row"><button class="btn blue" onclick="startSpeakDaily()">Start speaking</button></div>') + '</div>';
+          : '<p class="howto">Say today\u2019s three words and phrases out loud. Hear each one, record your voice saying it, and that step is done. No scoring and no correction: a little speaking every day is how it sticks.</p><div class="btn-row"><button class="btn blue" onclick="startSpeakDaily()">Start speaking</button></div>') + '</div>';
       /* 4 · Dialogue */
       var lines = unitDialogueLines(les);
       html += '<div class="unit-sec' + (dlgDone ? " done" : "") + '" id="unit-dialogue"><div class="unit-sec-head"><span class="unit-sec-num">' + (dlgDone ? "✓" : "4") + '</span><span class="unit-sec-title">Dialogue</span></div>' +
@@ -6182,7 +6184,7 @@ input,textarea,select{ font-family:inherit; }
       ss.logged = false; ss.best = 0; ss.attempts = 0;
       stageHTML(
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 ' + (ss.i + 1) + ' OF ' + ss.items.length + '</div>' +
-        '<p class="howto" style="text-align:center; margin:8px auto 0">Listen, then say it out loud. You are scored on what the mic hears.</p>' +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">Listen, then record yourself saying it. Recording is all it takes.</p>' +
         '<div class="flash-big">' + esc(it.big) + '</div>' +
         '<div class="flash-sub">' + esc(it.read) + '</div>' +
         '<div class="prompt-label" style="text-align:center; margin-top:6px">' + esc(it.mean.toUpperCase()) + '</div>' +
@@ -6198,51 +6200,19 @@ input,textarea,select{ font-family:inherit; }
     }
     function renderSpeakZone() {
       var zone = $("spk-zone"); if (!zone || !speakSess) return;
-      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SR) {
-        zone.innerHTML = '<button class="btn blue" id="spk-mic" style="font-size:16px; padding:14px 26px; border-radius:99px">Tap and say it</button><div class="small" style="margin-top:8px">Your browser listens once and scores what it hears.</div>';
-        $("spk-mic").addEventListener("click", speakListen);
-      } else if (window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        zone.innerHTML = '<button class="btn blue" id="spk-rec" style="font-size:16px; padding:14px 26px; border-radius:99px">Record yourself</button><div class="small" style="margin-top:8px">This browser cannot score speech, so record, compare with the model above, and mark yourself honestly.</div><div id="spk-rec-out" style="margin-top:10px"></div>';
+      if (window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        zone.innerHTML = '<button class="btn blue" id="spk-rec" style="font-size:16px; padding:14px 26px">\u25CF Record your voice</button><div class="small" style="margin-top:8px">Tap record, say the word or phrase, then tap stop the moment you finish. It also stops on its own after a short pause. No scoring, no correction.</div>';
         $("spk-rec").addEventListener("click", speakRecordToggle);
       } else {
-        zone.innerHTML = '<div class="small">This browser cannot record or listen. Say it out loud, then mark yourself.</div><div class="btn-row" style="justify-content:center; margin-top:10px"><button class="btn blue" id="spk-self-ok">I said it right \u00B7 +5</button><button class="btn ghost" id="spk-self-no">Not yet</button></div>';
-        $("spk-self-ok").addEventListener("click", function () { speakVerdict(1, "", true); });
-        $("spk-self-no").addEventListener("click", function () { speakVerdict(0, "", true); });
+        zone.innerHTML = '<div class="small">This browser cannot record. Say it out loud, then tap done.</div><div class="btn-row" style="justify-content:center; margin-top:10px"><button class="btn blue" id="spk-self-ok">I said it out loud \u00B7 +5</button></div>';
+        $("spk-self-ok").addEventListener("click", function () { speakRecorded(""); });
       }
     }
-    function speakListen() {
-      var ss = speakSess; if (!ss) return;
-      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      var it = ss.items[ss.i], p = ss.p;
-      var fb = $("spk-feedback"), mic = $("spk-mic");
-      try {
-        if (speakRecog) { try { speakRecog.abort(); } catch (e) {} }
-        var r = new SR(); speakRecog = r;
-        r.lang = p === "bolu" ? "ja-JP" : "en-US";
-        r.interimResults = false; r.maxAlternatives = 3;
-        if (mic) { mic.disabled = true; mic.textContent = "Listening\u2026 say it now"; }
-        fb.textContent = ""; fb.className = "feedback"; fb.style.color = "";
-        r.onresult = function (ev) {
-          var best = 0, heard = "";
-          for (var i = 0; i < ev.results[0].length; i++) {
-            var alt = ev.results[0][i].transcript, sc = speakScore(alt, it, p);
-            if (sc > best) { best = sc; heard = alt; }
-          }
-          speakVerdict(best, heard, false);
-        };
-        r.onerror = function (ev) {
-          if (mic) { mic.disabled = false; mic.textContent = "Tap and say it"; }
-          if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { fb.textContent = "The microphone is blocked for this site. Allow it in the browser, then tap again."; fb.className = "feedback bad"; }
-          else if (ev.error !== "aborted" && ev.error !== "no-speech") { fb.textContent = "That did not come through. Tap and try again."; fb.className = "feedback bad"; }
-          else if (ev.error === "no-speech") { fb.textContent = "Nothing heard. Tap and say it a little louder."; fb.className = "feedback bad"; }
-        };
-        r.onend = function () { var m2 = $("spk-mic"); if (m2 && m2.disabled && m2.textContent.indexOf("Listening") === 0) { m2.disabled = false; m2.textContent = "Tap and say it"; } };
-        r.start();
-      } catch (e) {
-        fb.textContent = "Listening did not start. Try again.";
-        fb.className = "feedback bad";
-      }
+    var spkTimer = null, spkSilence = null, spkAudioCtx = null;
+    function spkRecCleanup() {
+      if (spkTimer) { clearInterval(spkTimer); spkTimer = null; }
+      if (spkSilence) { clearInterval(spkSilence); spkSilence = null; }
+      if (spkAudioCtx) { try { spkAudioCtx.close(); } catch (e) {} spkAudioCtx = null; }
     }
     function speakRecordToggle() {
       var btn = $("spk-rec"); if (!btn) return;
@@ -6253,51 +6223,52 @@ input,textarea,select{ font-family:inherit; }
         spkMedia = mr;
         mr.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
         mr.onstop = function () {
+          spkRecCleanup();
           stream.getTracks().forEach(function (t) { t.stop(); });
           var url = URL.createObjectURL(new Blob(chunks, { type: mr.mimeType || "audio/webm" }));
-          var out = $("spk-rec-out");
-          if (out) {
-            out.innerHTML = '<audio controls src="' + url + '" style="width:100%; max-width:340px"></audio>' +
-              '<div class="btn-row" style="justify-content:center; margin-top:10px"><button class="btn blue" id="spk-self-ok">I said it right \u00B7 +5</button><button class="btn ghost" id="spk-self-no">Not yet</button></div>' +
-              '<div class="small" style="margin-top:6px">Play your take, compare with Listen above, then mark it.</div>';
-            $("spk-self-ok").addEventListener("click", function () { speakVerdict(1, "", true); });
-            $("spk-self-no").addEventListener("click", function () { speakVerdict(0, "", true); });
-          }
-          var b2 = $("spk-rec"); if (b2) { b2.disabled = false; b2.textContent = "Record again"; }
+          speakRecorded(url);
         };
         mr.start();
-        btn.textContent = "Stop recording";
+        btn.classList.add("recording");
+        var t0 = Date.now();
+        btn.textContent = "\u25A0 Stop recording \u00B7 0:00";
+        spkTimer = setInterval(function () {
+          var sec = Math.floor((Date.now() - t0) / 1000);
+          btn.textContent = "\u25A0 Stop recording \u00B7 " + Math.floor(sec / 60) + ":" + ("0" + (sec % 60)).slice(-2);
+          if (sec >= 15 && spkMedia && spkMedia.state === "recording") spkMedia.stop();
+        }, 250);
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) {
+            var actx = new AC(), an = actx.createAnalyser(); an.fftSize = 512;
+            actx.createMediaStreamSource(stream).connect(an);
+            var sbuf = new Uint8Array(an.fftSize), lastSound = Date.now();
+            spkAudioCtx = actx;
+            spkSilence = setInterval(function () {
+              an.getByteTimeDomainData(sbuf);
+              var sum = 0; for (var i = 0; i < sbuf.length; i++) { var v = (sbuf[i] - 128) / 128; sum += v * v; }
+              if (Math.sqrt(sum / sbuf.length) > 0.02) lastSound = Date.now();
+              if (Date.now() - lastSound > 1600 && Date.now() - t0 > 900 && spkMedia && spkMedia.state === "recording") spkMedia.stop();
+            }, 200);
+          }
+        } catch (e) {}
+        var fb = $("spk-feedback"); if (fb) { fb.textContent = "Recording\u2026 say it now, then tap Stop."; fb.className = "feedback"; fb.style.color = ""; }
       }).catch(function () {
-        var fb = $("spk-feedback"); if (fb) { fb.textContent = "The microphone is blocked for this site. Allow it to record your practice."; fb.className = "feedback bad"; }
+        var zone = $("spk-zone");
+        if (zone) {
+          zone.innerHTML = '<div class="small">The microphone is blocked for this site, so recording is off. Say it out loud, then tap done.</div><div class="btn-row" style="justify-content:center; margin-top:10px"><button class="btn blue" id="spk-self-ok">I said it out loud \u00B7 +5</button></div>';
+          $("spk-self-ok").addEventListener("click", function () { speakRecorded(""); });
+        }
       });
     }
-    function speakVerdict(score, heard, selfMarked) {
+    function speakRecorded(url) {
       var ss = speakSess; if (!ss) return;
       var it = ss.items[ss.i];
-      ss.attempts++;
-      if (score > ss.best) ss.best = score;
       var fb = $("spk-feedback"), act = $("spk-actions"); if (!fb || !act) return;
-      var correct = score >= 0.92, close = !correct && score >= 0.6;
-      if (correct) {
-        fb.innerHTML = "Correct! +5 Learning Points" + (heard ? " \u00B7 It heard: " + esc(heard) : "") + '<br><span style="font-weight:600">' + esc(it.big) + " (" + esc(it.read) + ") = " + esc(it.mean) + "</span>";
-        fb.className = "feedback good"; fb.style.color = "";
-      } else if (close) {
-        fb.innerHTML = "Close. It heard: " + esc(heard || "\u2026") + '<br><span style="font-weight:600">Aim for: ' + esc(it.big) + " (" + esc(it.read) + ") = " + esc(it.mean) + ". Listen once more and retry, or move on.</span>";
-        fb.className = "feedback"; fb.style.color = "#D9930D";
-      } else {
-        fb.innerHTML = (selfMarked ? "Marked. " : "Not quite" + (heard ? ". It heard: " + esc(heard) : "") + ". ") + '<span style="font-weight:600">Correct form: ' + esc(it.big) + " (" + esc(it.read) + ") = " + esc(it.mean) + "</span>";
-        fb.className = "feedback bad"; fb.style.color = "";
-      }
+      fb.innerHTML = "Recorded. +5 Learning Points" + '<br><span style="font-weight:600">' + esc(it.big) + " (" + esc(it.read) + ") = " + esc(it.mean) + "</span>" +
+        (url ? '<div style="margin-top:10px"><audio controls src="' + url + '" style="width:100%; max-width:340px"></audio><div class="small">Your take, if you want to hear yourself against the model.</div></div>' : "");
+      fb.className = "feedback good"; fb.style.color = "";
       act.innerHTML = "";
-      if (!correct) {
-        var rt = document.createElement("button");
-        rt.className = "btn ghost"; rt.textContent = "Try again";
-        rt.addEventListener("click", function () {
-          fb.textContent = ""; fb.className = "feedback"; fb.style.color = ""; act.innerHTML = "";
-          var z = $("spk-zone"); if (z) z.style.display = "block";
-        });
-        act.appendChild(rt);
-      }
       var nx = document.createElement("button");
       nx.className = "btn blue"; nx.textContent = ss.i + 1 >= ss.items.length ? "Finish" : "Next";
       nx.addEventListener("click", speakNext);
@@ -6309,7 +6280,7 @@ input,textarea,select{ font-family:inherit; }
       var it = ss.items[ss.i], p = ss.p;
       if (!ss.logged) {
         ss.logged = true;
-        var ok = ss.best >= 0.92;
+        var ok = true;
         logAnswer("speak", it.ch || null, ok, p);
         if (ok) { ss.correct++; ss.earned += 5; awardSoloXP(5); }
         var plan = dailyPlanLoad(p);
@@ -6320,10 +6291,10 @@ input,textarea,select{ font-family:inherit; }
     }
     function renderSpeakDone() {
       var ss = speakSess; if (!ss) return;
-      if (unitCtx) { unitReturn("Speaking practice", ss.correct + " of " + ss.items.length + " correct"); return; }
+      if (unitCtx) { unitReturn("Speaking practice", ss.correct + " of " + ss.items.length + " recorded"); return; }
       stageHTML(
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 DONE</div>' +
-        '<div class="flash-big" style="font-size:30px">' + ss.correct + " of " + ss.items.length + " correct</div>" +
+        '<div class="flash-big" style="font-size:30px">' + ss.correct + " of " + ss.items.length + " spoken aloud</div>" +
         '<p class="howto" style="text-align:center; margin:8px auto 0">' + (ss.earned ? "+" + ss.earned + " Learning Points. " : "") + "Speaking a little every day is how pronunciation sticks. Today\u2019s speaking step is complete.</p>" +
         '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="go(\'home\'); renderDaily();">Back to Today</button></div>'
       );
@@ -6949,7 +6920,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       if (sp) { sp.innerHTML = SPEAK_SVG; sp.onclick = function (ev) { if (ev) ev.stopPropagation(); speak(it.ch, "ja-JP"); }; }
       var gd = $("draw-guide"); if (gd) gd.textContent = it.ch;
       drawCounted = false;
-      if (stageMode === "draw") { sizeDrawCanvas(); clearDraw(); playStrokeAnim(it.ch); }
+      if (stageMode === "draw") { sizeDrawCanvas(); clearDraw(); buildDrawCheck(it.ch); playStrokeAnim(it.ch); }
     }
     var lastSwipeAt = 0;
     function stageFlip() { if (Date.now() - lastSwipeAt < 400) return; stageState.flipped = !stageState.flipped; var c = $("stage-card"); if (c) c.classList.toggle("flipped", stageState.flipped); }
@@ -7005,7 +6976,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       $("stage-flip-controls").style.display = isDraw ? "none" : "";
       $("stage-flip-note").style.display = isDraw ? "none" : "";
       $("stage-draw").hidden = !isDraw;
-      if (isDraw) { sizeDrawCanvas(); clearDraw(); drawCounted = false; var _l = SCRIPT_FLAT[stageState.key] || []; var _it = _l[stageState.idx]; if (_it) playStrokeAnim(_it.ch); }
+      if (isDraw) { sizeDrawCanvas(); clearDraw(); drawCounted = false; var _l = SCRIPT_FLAT[stageState.key] || []; var _it = _l[stageState.idx]; if (_it) { buildDrawCheck(_it.ch); playStrokeAnim(_it.ch); } }
     }
     function sizeDrawCanvas() {
       var c = $("draw-canvas"); if (!c) return;
@@ -7024,7 +6995,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       var c = $("draw-canvas"); var r = c.getBoundingClientRect();
       return { x: ev.clientX - r.left, y: ev.clientY - r.top };
     }
-    function clearDraw() { if (drawCtx) { var c = $("draw-canvas"); drawCtx.clearRect(0, 0, c.width, c.height); } }
+    function clearDraw() { if (drawCtx) { var c = $("draw-canvas"); drawCtx.clearRect(0, 0, c.width, c.height); } drawStrokes = []; drawExpectedIdx = 0; drawCur = null; drawVerdict("", ""); }
     function toggleDrawGuide() {
       drawGuideOn = !drawGuideOn;
       $("draw-guide").classList.toggle("off", !drawGuideOn);
@@ -7045,6 +7016,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
         drawDown = true;
         try { c.setPointerCapture(ev.pointerId); } catch (e) {}
         drawLast = drawPoint(ev);
+        drawCur = [drawLast];
         drawCtx.beginPath();
         drawCtx.moveTo(drawLast.x, drawLast.y);
         drawCtx.lineTo(drawLast.x + 0.1, drawLast.y + 0.1);
@@ -7059,9 +7031,10 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
         drawCtx.lineTo(p.x, p.y);
         drawCtx.stroke();
         drawLast = p;
+        if (drawCur) drawCur.push(p);
       });
       ["pointerup", "pointercancel", "pointerleave"].forEach(function (t) {
-        c.addEventListener(t, function () { drawDown = false; });
+        c.addEventListener(t, function () { if (drawDown) { drawDown = false; finishDrawStroke(); } });
       });
       var peek = $("draw-peek");
       if (peek) {
@@ -7257,6 +7230,15 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
 .topbar{ border-radius:12px; }
 .acct-btn{ border-radius:6px; }
 .ph-btn{ background:var(--blue); color:#fff; border-radius:6px; font-weight:600; }
+#spk-rec.recording{ background:var(--red) !important; animation:recPulse 1.1s ease-in-out infinite; }
+@keyframes recPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(214,69,91,.45);} 50%{ box-shadow:0 0 0 9px rgba(214,69,91,0);} }
+.draw-verdict{ min-height:26px; margin-top:10px; text-align:center; font-size:15.5px; font-weight:700; color:var(--ink-soft); }
+.draw-verdict.ok{ color:var(--green); }
+.draw-verdict.bad{ color:var(--red); }
+.draw-wrap.shake{ animation:drShake .4s ease; }
+@keyframes drShake{ 0%,100%{ transform:translateX(0);} 20%{ transform:translateX(-7px);} 45%{ transform:translateX(6px);} 70%{ transform:translateX(-4px);} 88%{ transform:translateX(3px);} }
+.draw-wrap.pulse-ok{ animation:drPulse .8s ease; }
+@keyframes drPulse{ 0%{ box-shadow:0 0 0 0 rgba(69,185,124,.0);} 30%{ box-shadow:0 0 0 5px rgba(69,185,124,.55);} 100%{ box-shadow:0 0 0 0 rgba(69,185,124,0);} }
 .g-ic svg rect{ fill:#E8387A; }
 .g-ic svg path{ stroke:#E8387A; }
 .save-btn{ flex:none; width:36px; height:36px; border:0; border-radius:6px; background:var(--pill); color:var(--muted); display:inline-grid; place-items:center; cursor:pointer; }
@@ -7625,6 +7607,131 @@ gateWrap("unitSaveOpen", "study"); gateWrap("potdSave", "study"); gateWrap("open
 var _goSavedV = go;
 go = function (v) { if (!authState.account && v === "saved") { requireAuth(v); return; } return _goSavedV(v); };
 refreshPotdSaveBtns();
+</script>
+<script>
+/* ================= DRAW CHECKER: right and wrong signals, stroke by stroke ================= */
+var drawStrokes = [], drawCur = null, drawExpected = [], drawSegs = [], drawExpectedIdx = 0;
+var _kvgPathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+function sampleKvgPath(d) {
+  _kvgPathEl.setAttribute("d", d);
+  var L = 0; try { L = _kvgPathEl.getTotalLength(); } catch (e) { return []; }
+  var n = Math.max(8, Math.min(42, Math.round(L / 3.5))), pts = [];
+  for (var i = 0; i <= n; i++) { var pt = _kvgPathEl.getPointAtLength(L * i / n); pts.push({ x: pt.x, y: pt.y }); }
+  return pts;
+}
+function drawTokenColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function drawVerdict(msg, cls) { var v = $("draw-verdict"); if (!v) return; v.textContent = msg; v.className = "draw-verdict" + (cls ? " " + cls : ""); }
+function buildDrawCheck(chStr) {
+  drawStrokes = []; drawExpectedIdx = 0; drawCur = null; drawExpected = []; drawSegs = [];
+  var chars = [...String(chStr || "")].filter(function (c) { return STROKES[c]; });
+  var host = $("stroke-anim"), wrap = $("draw-wrap");
+  if (host && wrap && chars.length) {
+    var wasHidden = host.hidden;
+    host.innerHTML = chars.map(strokeAnimSvg).join("");
+    host.style.visibility = "hidden"; host.hidden = false;
+    var wr = wrap.getBoundingClientRect();
+    host.querySelectorAll("svg").forEach(function (svg, i) { var r = svg.getBoundingClientRect(); drawSegs.push({ ch: chars[i], x: r.left - wr.left, y: r.top - wr.top, w: r.width || 1, h: r.height || 1 }); });
+    host.style.visibility = ""; host.hidden = wasHidden;
+  }
+  chars.forEach(function (ch, ci) { (STROKES[ch] || []).forEach(function (d) { drawExpected.push({ seg: ci, ch: ch, pts: sampleKvgPath(d) }); }); });
+  drawVerdict(chars.length ? "Draw it stroke by stroke. Each stroke is checked as you draw it." : "", "");
+}
+function segForPoint(px, py) { var best = 0, bd = 1e12; drawSegs.forEach(function (sg, i) { var d = Math.abs(px - (sg.x + sg.w / 2)) + Math.abs(py - (sg.y + sg.h / 2)); if (d < bd) { bd = d; best = i; } }); return best; }
+function toKvg(pts, seg) { return pts.map(function (pt) { return { x: (pt.x - seg.x) / seg.w * 109, y: (pt.y - seg.y) / seg.h * 109 }; }); }
+function ptSegDist(pt, a, b) { var dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy; var t = L2 ? Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / L2)) : 0; var x = a.x + t * dx, y = a.y + t * dy; return Math.hypot(pt.x - x, pt.y - y); }
+function polyDist(pt, poly) { if (poly.length === 1) return Math.hypot(pt.x - poly[0].x, pt.y - poly[0].y); var m = 1e12; for (var i = 0; i < poly.length - 1; i++) m = Math.min(m, ptSegDist(pt, poly[i], poly[i + 1])); return m; }
+function evalStroke(u, exp) {
+  var e = exp.pts; if (!e.length || !u.length) return { ok: false, hint: "Draw the full stroke." };
+  var expLen = 0, i; for (i = 1; i < e.length; i++) expLen += Math.hypot(e[i].x - e[i - 1].x, e[i].y - e[i - 1].y);
+  if (expLen < 12) {
+    var ec = e[Math.floor(e.length / 2)], uc = u[Math.floor(u.length / 2)];
+    return { ok: Math.hypot(ec.x - uc.x, ec.y - uc.y) < 22, hint: "That stroke is a short tap. Place it right on its spot." };
+  }
+  var startD = Math.hypot(u[0].x - e[0].x, u[0].y - e[0].y);
+  var endD = Math.hypot(u[u.length - 1].x - e[e.length - 1].x, u[u.length - 1].y - e[e.length - 1].y);
+  var hit = 0; e.forEach(function (pt) { if (polyDist(pt, u) < 17) hit++; });
+  var cov = hit / e.length;
+  if (startD < 25 && endD < 25 && cov >= 0.5) return { ok: true, hint: "" };
+  if (startD >= 25) return { ok: false, hint: "Start that stroke where the animation starts it." };
+  if (endD >= 25) return { ok: false, hint: "That stroke ends somewhere else. Watch where it finishes." };
+  return { ok: false, hint: "Follow the shape of the stroke more closely." };
+}
+function drawRenderAll() {
+  if (!drawCtx) return;
+  var c = $("draw-canvas");
+  var ink = drawTokenColor("--ink") || "#FFFFFF", okC = drawTokenColor("--green") || "#45B97C", badC = drawTokenColor("--red") || "#D6455B";
+  drawCtx.clearRect(0, 0, c.width, c.height);
+  drawStrokes.forEach(function (st) {
+    drawCtx.strokeStyle = st.status === "ok" ? okC : (st.status === "bad" || st.status === "extra" ? badC : ink);
+    drawCtx.beginPath();
+    st.pts.forEach(function (pt, i) { if (i === 0) drawCtx.moveTo(pt.x, pt.y); else drawCtx.lineTo(pt.x, pt.y); });
+    drawCtx.stroke();
+  });
+  drawCtx.strokeStyle = ink;
+}
+function finishDrawStroke() {
+  var pts = drawCur; drawCur = null;
+  if (!pts || !pts.length || !drawExpected.length) return;
+  if (pts.length === 1) pts = [pts[0], pts[0]];
+  var exp = drawExpected[drawExpectedIdx];
+  if (!exp) { drawStrokes.push({ pts: pts, status: "extra" }); drawRenderAll(); drawVerdict("That is the whole character already. Clear if you want another try.", ""); return; }
+  var rec = { pts: pts, status: "pending" };
+  drawStrokes.push(rec);
+  if (segForPoint(pts[0].x, pts[0].y) !== exp.seg) { rec.status = "bad"; drawRenderAll(); drawBad(rec, "Wrong character part: this stroke comes from the other character. Draw this one first."); return; }
+  var res = evalStroke(toKvg(pts, drawSegs[exp.seg]), exp);
+  if (res.ok) {
+    rec.status = "ok"; drawExpectedIdx++;
+    drawRenderAll();
+    if (drawExpectedIdx >= drawExpected.length) completeDraw();
+    else drawVerdict("\u2713 Stroke " + drawExpectedIdx + " of " + drawExpected.length + " \u2014 right. Keep going.", "ok");
+  } else { rec.status = "bad"; drawRenderAll(); drawBad(rec, res.hint); }
+}
+function drawBad(rec, hint) {
+  var wrap = $("draw-wrap"); if (wrap) { wrap.classList.remove("shake"); void wrap.offsetWidth; wrap.classList.add("shake"); }
+  drawVerdict("\u2717 " + hint, "bad");
+  flashExpectedStroke();
+  setTimeout(function () { var i = drawStrokes.indexOf(rec); if (i >= 0 && rec.status === "bad") { drawStrokes.splice(i, 1); drawRenderAll(); } }, 950);
+}
+function flashExpectedStroke() {
+  var host = $("stroke-anim"); if (!host || !drawSegs.length) return;
+  var target = drawExpected[drawExpectedIdx]; if (!target) return;
+  var my = ++strokeAnimToken, gi = -1;
+  host.innerHTML = drawSegs.map(function (sg) {
+    var ds = STROKES[sg.ch] || [];
+    return '<svg viewBox="0 0 109 109">' + ds.map(function (d) { gi++; return '<path d="' + d + '"' + (gi === drawExpectedIdx ? ' class="fx-target"' : ' opacity="0.14"') + '/>'; }).join("") + '</svg>';
+  }).join("");
+  host.classList.remove("done"); host.hidden = false;
+  var tp = host.querySelector(".fx-target");
+  if (tp) {
+    var L = 300; try { L = tp.getTotalLength(); } catch (e) {}
+    tp.style.strokeDasharray = L; tp.style.strokeDashoffset = L;
+    tp.style.stroke = drawTokenColor("--blue") || "#E8387A";
+    requestAnimationFrame(function () { tp.style.transition = "stroke-dashoffset .6s ease-in-out"; tp.style.strokeDashoffset = "0"; });
+  }
+  setTimeout(function () { if (my !== strokeAnimToken) return; host.classList.add("done"); setTimeout(function () { if (my === strokeAnimToken) host.hidden = true; }, 480); }, 1200);
+}
+function completeDraw() {
+  var wrap = $("draw-wrap"); if (wrap) { wrap.classList.remove("pulse-ok"); void wrap.offsetWidth; wrap.classList.add("pulse-ok"); }
+  var list = SCRIPT_FLAT[stageState.key] || []; var it = list[stageState.idx];
+  drawVerdict("\u2713 You wrote " + (it ? it.ch : "it") + ". That is exactly right.", "ok");
+}
+function checkDraw() {
+  if (!drawExpected.length) { drawVerdict("Nothing to check this card against.", ""); return; }
+  if (!drawStrokes.length) { drawVerdict("Draw it first, then check.", ""); return; }
+  var idx = 0, okCount = 0;
+  drawStrokes.forEach(function (st) {
+    if (st.status === "extra") return;
+    var exp = drawExpected[idx];
+    if (!exp) { st.status = "extra"; return; }
+    var res = segForPoint(st.pts[0].x, st.pts[0].y) === exp.seg ? evalStroke(toKvg(st.pts, drawSegs[exp.seg]), exp) : { ok: false };
+    st.status = res.ok ? "ok" : "bad";
+    if (res.ok) { okCount++; idx++; }
+  });
+  drawExpectedIdx = idx;
+  drawRenderAll();
+  if (idx >= drawExpected.length) completeDraw();
+  else drawVerdict(okCount + " of " + drawExpected.length + " strokes right. The red ones are off: draw them again, or Clear and rewrite.", okCount ? "" : "bad");
+}
 </script>
 </body>
 </html>
