@@ -1933,6 +1933,7 @@ input,textarea,select{ font-family:inherit; }
         </div>
         <p class="howto">Your shared library. After a call, save the recording here and both of you can watch it any time. If Loom recorded your session, add its link below and it lives in that day's meeting space. A Meet recording saved to Google Drive works the same way. Shorter clips can be uploaded directly, and session summaries can be saved here too, so the words stay with the video.</p>
         <div id="rec-folder"></div>
+        <div class="card" id="takes-card"><div class="kicker">MY VOICE RECORDINGS</div><h3 style="margin:4px 0 6px">Saved speaking takes</h3><p style="margin:0 0 10px; color:var(--ink-soft)">Takes you saved from speaking practice live here, so you can hear your own progress any time.</p><div id="takes-box"><p style="color:var(--muted); font-weight:600; font-size:14px; margin:0">Loading\u2026</p></div></div>
         <div class="card">
           <div class="kicker">ADD TO THE LIBRARY · ついか</div>
           <div class="auth-field">
@@ -4193,7 +4194,7 @@ input,textarea,select{ font-family:inherit; }
       if(sl.ti === 0){
         html += '<div class="prompt-label" style="text-align:center; margin-top:12px">TEACH · ' + (sl.ti + 1) + " OF " + total + "</div>" +
           '<div class="big-word" style="text-align:center; margin-top:10px">' + esc(les.name) + "</div>" +
-          '<p class="teach-text">' + esc(teachIntroFor(les, p)) + "</p>";
+          '<p class="teach-text">' + esc(teachIntroFor(les, p)) + "</p>" + teachGrammarHTML(les, p);
       } else {
         var item = les.items[sl.ti - 1];
         var ex = les.kind === "char" ? charExampleLine(item, p) : wordExampleLine(item, p);
@@ -4319,6 +4320,7 @@ input,textarea,select{ font-family:inherit; }
         bumpPractice("l", 1);
         if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
       }
+      studyLogAdd(p, sl.ch, sl.idx, sl.les.name);
       scheduleSave();
       if (unitCtx) { unitReturn("Today's lesson", got + " of " + total + " correct"); return; }
       var rc = reviewChapterCount(p, sl.ch);
@@ -4353,7 +4355,7 @@ input,textarea,select{ font-family:inherit; }
         stageHTML(lessonHead() +
           '<div class="prompt-label" style="text-align:center; margin-top:12px">TEACH</div>' +
           '<div class="big-word" style="text-align:center; margin-top:10px">' + esc(les.name) + "</div>" +
-          '<p class="teach-text">' + esc(teachIntroFor(les, p)) + "</p>" +
+          '<p class="teach-text">' + esc(teachIntroFor(les, p)) + "</p>" + teachGrammarHTML(les, p) +
           '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="phraseTeachGo()">See the Phrases</button><button class="btn ghost" onclick="phraseStartQuiz()">Skip to Quiz</button></div>');
         return;
       }
@@ -5082,6 +5084,7 @@ input,textarea,select{ font-family:inherit; }
       }).catch(function () {});
     }
     function renderRecordings() {
+      renderTakes();
       var box = $("rec-list"); if (!box) return;
       if (!recState.items.length) {
         box.innerHTML = '<div class="card"><h3 style="margin:4px 0 6px">No meeting spaces yet</h3><p style="margin:0; color:var(--ink-soft)">After your next call, add its recording above and a space for that day will appear here with everything together.</p></div>';
@@ -5779,14 +5782,45 @@ input,textarea,select{ font-family:inherit; }
       SCRIPT_DEFS.forEach(function (d) { if (!scriptUnlocked(d.key)) return; var pc = scriptPct(d.key); if (pc < bestPct) { bestPct = pc; best = d; } });
       return { def: best, pct: bestPct };
     }
+    function studyLogLoad(p) { try { return JSON.parse(localStorage.getItem("bochi-studylog-" + p) || "[]"); } catch (e) { return []; } }
+    function studyLogAdd(p, ch, idx, name) {
+      var log = studyLogLoad(p), today = practiceDateKey(), id = lessonId(ch, idx);
+      log = log.filter(function (e) { return !(e.d === today && e.id === id); });
+      log.push({ d: today, id: id, ch: ch, idx: idx, name: name });
+      if (log.length > 30) log = log.slice(log.length - 30);
+      try { localStorage.setItem("bochi-studylog-" + p, JSON.stringify(log)); } catch (e) {}
+    }
+    function studiedToday(p) { var t = practiceDateKey(), log = studyLogLoad(p); for (var i = log.length - 1; i >= 0; i--) if (log[i].d === t) return log[i]; return null; }
+    function yesterdayBundle(p) {
+      var t = practiceDateKey(), log = studyLogLoad(p), date = null;
+      for (var i = log.length - 1; i >= 0; i--) { if (log[i].d < t) { date = log[i].d; break; } }
+      if (!date) return null;
+      var list = log.filter(function (e) { return e.d === date; });
+      return { date: date, list: list, key: list.map(function (e) { return e.id; }).join(",") };
+    }
+    function dailyLessonFor(p) {
+      var seen = {}; studyLogLoad(p).forEach(function (e) { seen[e.id] = true; });
+      for (var ch = 1; ch <= CONTENT_CHAPTERS; ch++) {
+        if (!chapterUnlocked(p, ch)) continue;
+        var lessons = chapterLessons(p, ch);
+        for (var i = 0; i < lessons.length; i++) {
+          var id = lessonId(ch, i);
+          if (!state.lessons[p][id] && !seen[id]) return { type: "lesson", ch: ch, idx: i, les: lessons[i] };
+        }
+        if (!state.checkpoints[p][ch]) return { type: "checkpoint", ch: ch };
+      }
+      return { type: "done" };
+    }
     function dailySteps(p, plan) {
       var steps = [];
-      var nx = nextLessonFor(p);
-      if (nx.type === "lesson") steps.push({ id: "lesson", title: "Today's lesson", detail: "Chapter " + nx.ch + " · " + nx.les.name, done: !!state.lessons[p][lessonId(nx.ch, nx.idx)], fn: "dailyGoLesson", btn: "Start" });
-      else if (nx.type === "checkpoint") steps.push({ id: "lesson", title: "Chapter checkpoint", detail: "Chapter " + nx.ch + " checkpoint. Pass it to open the next chapter.", done: !!state.checkpoints[p][nx.ch], fn: "dailyGoLesson", btn: "Start" });
+      var nx = dailyLessonFor(p);
+      var stToday = studiedToday(p);
+      if (nx.type === "lesson") steps.push({ id: "lesson", title: "Today's lesson", detail: stToday ? "Studied today: Chapter " + stToday.ch + " \u00B7 " + stToday.name : "Chapter " + nx.ch + " \u00B7 " + nx.les.name, done: !!stToday, fn: "dailyGoLesson", btn: "Start" });
+      else if (nx.type === "checkpoint") steps.push({ id: "lesson", title: "Chapter checkpoint", detail: "Chapter " + nx.ch + " checkpoint. Pass it to open the next chapter.", done: !!state.checkpoints[p][nx.ch] || !!stToday, fn: "dailyGoLesson", btn: "Start" });
       else steps.push({ id: "lesson", title: "Journey complete", detail: "Every chapter is done. Replay any lesson to stay sharp.", done: true, fn: "continueDone", btn: "Open" });
-      var due = reviewCount(p), target = Math.min(8, plan.revStart), cleared = Math.max(0, plan.revStart - due);
-      steps.push({ id: "review", title: "Smart Review", detail: plan.revStart === 0 ? "Queue is clear, nothing waiting." : cleared + " of " + target + " cleared · " + due + " waiting", done: plan.revStart === 0 || cleared >= target, fn: "dailyGoReview", btn: "Review" });
+      var yb = yesterdayBundle(p);
+      if (!yb) steps.push({ id: "review", title: "Yesterday's review", detail: "Nothing to review yet. What you study today becomes tomorrow's review.", done: true, fn: "", btn: "" });
+      else steps.push({ id: "review", title: "Yesterday's review", detail: yb.list.map(function (e) { return "Chapter " + e.ch + " \u00B7 " + e.name; }).join(" + ") + ": yesterday's lesson, reviewed while it is still warm.", done: plan.yReview === yb.key, fn: "dailyGoReview", btn: "Review" });
       var t = practiceTarget(), te = t[practiceDateKey()] || { m: 0, c: 0, l: 0 };
       if (p === "bolu") {
         var w = weakestScript();
@@ -5800,7 +5834,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function dailyStepHtml(st, p) {
       var glyph = { lesson: "\u672C", review: "\u5FA9", drill: "\u5B57", speak: "\u58F0", phrase: "\u8A71", checkpoint: "\u7AE0" }[st.id] || "\u2022";
-      var kind = { lesson: "LESSON", review: "REVIEWS FIRST", drill: "WRITING DRILL", speak: "SPEAKING", phrase: "DIALOGUE", checkpoint: "CHECKPOINT" }[st.id] || "";
+      var kind = { lesson: "LESSON", review: "YESTERDAY\u2019S REVIEW", drill: "WRITING DRILL", speak: "SPEAKING", phrase: "DIALOGUE", checkpoint: "CHECKPOINT" }[st.id] || "";
       var act;
       if (st.done) act = '<span style="font-weight:800; color:#2F9E6E">Done</span>';
       else if (st.id === "phrase") act = '<button class="btn ghost small" onclick="dailyPhraseListen()">Listen</button><button class="btn blue small" onclick="dailyGoDialogue()">Practice</button>';
@@ -5850,7 +5884,7 @@ input,textarea,select{ font-family:inherit; }
     function openDailyUnit(anchor) {
       var p = practicePlayer();
       go("solo"); if (solo.player !== p) pickProfile(p);
-      var nx = nextLessonFor(p);
+      var nx = dailyLessonFor(p);
       unitCtx = { p: p, ch: nx.ch || 1, idx: nx.idx, type: nx.type, reviewDone: false };
       renderUnitPage("", anchor || "unit-top");
     }
@@ -5891,8 +5925,9 @@ input,textarea,select{ font-family:inherit; }
       var st = unitStage();
       var g = unitGuide(les);
       var lessonDone = les ? !!state.lessons[p][lessonId(unitCtx.ch, unitCtx.idx)] : false;
-      var revN = reviewCount(p);
-      var revDone = unitCtx.reviewDone || revN === 0;
+      var lessonStudied = les ? studyLogLoad(p).some(function (e) { return e.id === lessonId(unitCtx.ch, unitCtx.idx); }) : false;
+      var ysUnit = yesterdayBundle(p);
+      var revDone = unitCtx.reviewDone || !ysUnit || plan.yReview === ysUnit.key;
       var spkDone = (plan.speakDone || 0) >= 3;
       var dlgDone = !!plan.phraseDone;
       var dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -5905,16 +5940,17 @@ input,textarea,select{ font-family:inherit; }
         '<p class="howto" style="margin-top:6px">Stage ' + (STAGES.indexOf(st) + 1) + ' \u00B7 JLPT N' + st.lvl + ' \u00B7 Chapter ' + unitCtx.ch + ': ' + esc(chName) + '. By the end of this unit you will be able to ' + esc(unitAbility(les)) + '.</p>' +
         '<div class="unit-rail">' +
         '<span class="unit-chip' + (revDone ? " done" : "") + '">' + (revDone ? "✓ " : "") + '1 · Reviews</span>' +
-        '<span class="unit-chip' + (lessonDone || unitCtx.type === "done" ? " done" : "") + '">' + (lessonDone ? "✓ " : "") + '2 · The Lesson</span>' +
+        '<span class="unit-chip' + (lessonDone || lessonStudied || unitCtx.type === "done" ? " done" : "") + '">' + (lessonDone || lessonStudied ? "✓ " : "") + '2 · The Lesson</span>' +
         '<span class="unit-chip' + (spkDone ? " done" : "") + '">' + (spkDone ? "✓ " : "") + '3 · Speaking</span>' +
         '<span class="unit-chip' + (dlgDone ? " done" : "") + '">' + (dlgDone ? "✓ " : "") + '4 · Dialogue</span></div>';
       if (les) html += '<div class="scene">' + sceneSVG(sceneKindFor(les), les.items && les.items[0] ? les.items[0].big : "") + '</div>';
       /* 1 · Reviews first */
       html += '<div class="unit-sec' + (revDone ? " done" : "") + '" id="unit-review"><div class="unit-sec-head"><span class="unit-sec-num">' + (revDone ? "✓" : "1") + '</span><span class="unit-sec-title">Reviews first</span></div>' +
-        (revDone ? '<p class="howto">Your review queue is clear. Everything you once missed has been refreshed, so the new material has your full attention.</p>'
-          : '<p class="howto">' + revN + ' review' + (revN === 1 ? "" : "s") + ' waiting. Reviews come first, while they are warm ups, not tests: you cannot fail them, and they make the new material stick.</p><div class="btn-row"><button class="btn blue" onclick="openReview()">Start reviews</button></div>') + '</div>';
+        (!ysUnit ? '<p class="howto">Reviews cover only what you studied yesterday, and there is nothing from yesterday yet. Finish today\u2019s lesson and it becomes tomorrow\u2019s review.</p>'
+          : revDone ? '<p class="howto">Yesterday\u2019s lesson is reviewed and refreshed: ' + esc(ysUnit.list.map(function (e) { return e.name; }).join(" + ")) + '. Now the new material has your full attention.</p>'
+          : '<p class="howto">Yesterday you studied ' + ysUnit.list.map(function (e) { return "Chapter " + e.ch + " \u00B7 " + esc(e.name); }).join(" and ") + '. Review it first, while it is still warm: the same words, phrases and grammar, one day later. That one day gap is what makes it stick.</p><div class="btn-row"><button class="btn blue" onclick="startYReview()">Review yesterday\u2019s lesson</button></div>') + '</div>';
       /* 2 · The lesson page */
-      html += '<div class="unit-sec' + (lessonDone ? " done" : "") + '" id="unit-lesson"><div class="unit-sec-head"><span class="unit-sec-num">' + (lessonDone ? "✓" : "2") + '</span><span class="unit-sec-title">The lesson</span></div>';
+      html += '<div class="unit-sec' + (lessonDone || lessonStudied ? " done" : "") + '" id="unit-lesson"><div class="unit-sec-head"><span class="unit-sec-num">' + (lessonDone ? "✓" : "2") + '</span><span class="unit-sec-title">The lesson</span></div>';
       if (unitCtx.type === "checkpoint") {
         var dc = chapterDoneCount(p, unitCtx.ch);
         html += '<p class="howto">You finished all ' + dc.total + ' lessons of Chapter ' + unitCtx.ch + '. The checkpoint is five questions drawn from the whole chapter. Pass it, four of five or better, and the next chapter opens. This is the mastery gate working as intended.</p>' +
@@ -5929,16 +5965,20 @@ input,textarea,select{ font-family:inherit; }
             (g.think ? '<p class="think">' + esc(g.think) + '</p>' : "") +
             (g.use ? '<p><b>Where you use it:</b> ' + esc(g.use) + '</p>' : "") + '</div>';
         }
+        html += unitGrammarHTML(les, p);
+        if (grammarPointsFor(les, p).length) html += '<div class="unit-sec-head" style="margin-top:22px"><span class="unit-sec-title" style="font-size:19px">' + (les.kind === "phrase" ? "The phrases" : "The words") + '</span></div>';
         les.items.forEach(function (item) { html += unitItemRow(item, les); });
         html += '<div class="btn-row" style="margin-top:14px">' + (lessonDone
-          ? '<span class="unit-chip done">✓ Lesson complete</span><button class="btn ghost" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Practice it again</button>'
+          ? '<span class="unit-chip done">\u2713 Lesson complete</span><button class="btn ghost" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Practice it again</button>'
+          : lessonStudied
+          ? '<span class="unit-chip done">\u2713 Studied</span><button class="btn ghost" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Practice it again</button>'
           : '<button class="btn blue" onclick="openLesson(' + unitCtx.ch + ', ' + unitCtx.idx + ')">Check what you learned</button>') + '</div>' +
-          (lessonDone ? "" : '<p class="howto" style="margin-top:8px">The check is the lesson quiz, now that the page has taught you. Score 80% or more to complete it: the goal is mastery, not just getting through.</p>');
+          (lessonDone ? "" : lessonStudied ? '<p class="howto" style="margin-top:8px">You studied this lesson today, so today\u2019s lesson step is complete. Scoring 80% or more on the check also completes its node on your path.</p>' : '<p class="howto" style="margin-top:8px">The check is the lesson quiz, now that the page has taught you. Finishing it completes today\u2019s lesson, whatever the score. Scoring 80% or more also completes its node on your path: mastery still matters, it just no longer holds your day hostage.</p>');
       }
       html += '</div>';
       /* 3 · Speaking */
       html += '<div class="unit-sec' + (spkDone ? " done" : "") + '" id="unit-speak"><div class="unit-sec-head"><span class="unit-sec-num">' + (spkDone ? "✓" : "3") + '</span><span class="unit-sec-title">Speaking</span></div>' +
-        (spkDone ? '<p class="howto">Speaking is done for today. Three phrases, out loud, scored. Pronunciation sticks when it is daily.</p>'
+        (spkDone ? '<p class="howto">Speaking is done for today: three phrases, out loud and recorded. Pronunciation sticks when it is daily.</p>'
           : '<p class="howto">Say today\u2019s three words and phrases out loud. Hear each one, record your voice saying it, and that step is done. No scoring and no correction: a little speaking every day is how it sticks.</p><div class="btn-row"><button class="btn blue" onclick="startSpeakDaily()">Start speaking</button></div>') + '</div>';
       /* 4 · Dialogue */
       var lines = unitDialogueLines(les);
@@ -5959,7 +5999,7 @@ input,textarea,select{ font-family:inherit; }
       var nxAfter = les ? (chapterLessons(p, unitCtx.ch)[unitCtx.idx + 1]) : null;
       html += '<div class="u-waypoint" id="unit-end"><div class="prompt-label">WAYPOINT</div>' +
         '<p class="howto" style="color:var(--ink)">You can now ' + esc(unitAbility(les)) + '. Small, real, and yours.</p>' +
-        '<p class="howto">Tomorrow: ' + tmw + ' review' + (tmw === 1 ? "" : "s") + ' waiting' + (nxAfter ? ', then ' + esc(nxAfter.name) : (unitCtx.type === "lesson" ? ', then the Chapter ' + unitCtx.ch + ' checkpoint' : "")) + '. Show up, press Study Now, and the page will be ready.</p>' +
+        '<p class="howto">Tomorrow opens with a review of this lesson, then ' + (nxAfter ? esc(nxAfter.name) : (unitCtx.type === "lesson" ? 'the Chapter ' + unitCtx.ch + ' checkpoint' : "the next lesson")) + '. Show up, press Study Now, and the page will be ready.</p>' +
         '<div class="btn-row"><button class="btn blue" onclick="unitFinish()">Finish today\u2019s studies</button><button class="btn ghost" onclick="unitQuit()">Back to path</button></div></div>';
       return html;
     }
@@ -5969,12 +6009,12 @@ input,textarea,select{ font-family:inherit; }
       if (anchor) setTimeout(function () { var el = document.getElementById(anchor); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
     }
     function unitReturn(label, detail) {
-      if (label === "Smart Review") unitCtx.reviewDone = true;
+      if (label === "Smart Review" || label === "Yesterday's review") unitCtx.reviewDone = true;
       renderSoloHead(); renderPath();
       var next = "unit-lesson";
       if (label === "Today's lesson" || label === "Checkpoint") next = "unit-speak";
       else if (label === "Speaking practice") next = "unit-dialogue";
-      else if (label === "Smart Review") next = "unit-lesson";
+      else if (label === "Smart Review" || label === "Yesterday's review") next = "unit-lesson";
       renderUnitPage(label + " done" + (detail ? ": " + detail : "") + ".", next);
     }
     function unitDialogueDone() {
@@ -6092,9 +6132,9 @@ input,textarea,select{ font-family:inherit; }
       return glossChipsHTML(jp, p);
     }
     function dailyForecastHTML(p) {
-      var n = reviewCount(p);
-      var line = n === 0 ? "Tomorrow starts clean: no reviews waiting." : n < 10 ? "A light review day tomorrow. Room to learn new material." : "A fuller review day tomorrow. Clearing a few extra today keeps it light.";
-      return '<div class="d-forecast"><b style="color:var(--ink)">Tomorrow\u2019s reviews: ' + n + ' waiting.</b> ' + line + '</div>' +
+      var st = studiedToday(p), dl = dailyLessonFor(p);
+      var what = st ? "Chapter " + st.ch + " \u00B7 " + st.name : (dl.type === "lesson" ? "Chapter " + dl.ch + " \u00B7 " + dl.les.name : "your most recent lesson");
+      return '<div class="d-forecast"><b style="color:var(--ink)">Tomorrow\u2019s review: ' + esc(what) + '.</b> Reviews only ever cover what you studied the day before.</div>' +
         '<div class="d-extra"><span style="font-size:11px; font-weight:800; letter-spacing:1.2px; color:var(--muted)">EXTRA PRACTICE</span>' +
         '<button class="btn ghost small" onclick="go(\'play\')">Play a game</button>' +
         '<button class="btn ghost small" onclick="go(\'watch\')">Watch a video</button>' +
@@ -6124,7 +6164,7 @@ input,textarea,select{ font-family:inherit; }
       host.innerHTML = html;
     }
     function dailyGoLesson() { openDailyUnit(); }
-    function dailyGoReview() { reviewTo(); }
+    function dailyGoReview() { var p = practicePlayer(); if (!yesterdayBundle(p)) { toast("Nothing to review yet. Today's lesson becomes tomorrow's review."); return; } go("solo"); if (solo.player !== p) pickProfile(p); startYReview(); }
     function dailyGoDrill() { var p = practicePlayer(); if (p === "bolu") { go(weakestScript().def.key); } else { go("solo"); } }
     function dailyPhraseListen() { var p = practicePlayer(), ph = p === "bolu" ? potdJp : potdEn; speak(ph.main, p === "bolu" ? "ja-JP" : "en-US"); }
     function dailyPhraseDone() { var p = practicePlayer(), plan = dailyPlanLoad(p); plan.phraseDone = true; dailySavePlan(p, plan); renderDaily(); toast("Phrase practiced. Nicely done."); }
@@ -6188,7 +6228,7 @@ input,textarea,select{ font-family:inherit; }
     function renderSpeakItem() {
       var ss = speakSess; if (!ss) return;
       var it = ss.items[ss.i], p = ss.p;
-      ss.logged = false; ss.best = 0; ss.attempts = 0;
+      ss.logged = false; ss.best = 0; ss.attempts = 0; spkLastTake = null;
       stageHTML(
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 ' + (ss.i + 1) + ' OF ' + ss.items.length + '</div>' +
         '<p class="howto" style="text-align:center; margin:8px auto 0">Listen, then record yourself saying it. Recording is all it takes.</p>' +
@@ -6216,6 +6256,7 @@ input,textarea,select{ font-family:inherit; }
       }
     }
     var spkTimer = null, spkSilence = null, spkAudioCtx = null;
+    var spkLastTake = null;
     function spkRecCleanup() {
       if (spkTimer) { clearInterval(spkTimer); spkTimer = null; }
       if (spkSilence) { clearInterval(spkSilence); spkSilence = null; }
@@ -6232,7 +6273,10 @@ input,textarea,select{ font-family:inherit; }
         mr.onstop = function () {
           spkRecCleanup();
           stream.getTracks().forEach(function (t) { t.stop(); });
-          var url = URL.createObjectURL(new Blob(chunks, { type: mr.mimeType || "audio/webm" }));
+          var takeBlob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
+          var url = URL.createObjectURL(takeBlob);
+          var _tk = speakSess ? speakSess.items[speakSess.i] : null;
+          spkLastTake = _tk ? { blob: takeBlob, big: _tk.big, read: _tk.read || "", mean: _tk.mean || "" } : null;
           speakRecorded(url);
         };
         mr.start();
@@ -6280,6 +6324,12 @@ input,textarea,select{ font-family:inherit; }
       nx.className = "btn blue"; nx.textContent = ss.i + 1 >= ss.items.length ? "Finish" : "Next";
       nx.addEventListener("click", speakNext);
       act.appendChild(nx);
+      if (url && spkLastTake) {
+        var sv = document.createElement("button");
+        sv.className = "btn ghost"; sv.textContent = "Save this take";
+        sv.addEventListener("click", function () { saveTake(sv); });
+        act.appendChild(sv);
+      }
       var zone = $("spk-zone"); if (zone) zone.style.display = "none";
     }
     function speakNext() {
@@ -6303,7 +6353,7 @@ input,textarea,select{ font-family:inherit; }
         '<div class="prompt-label" style="text-align:center">SPEAKING PRACTICE \u00B7 DONE</div>' +
         '<div class="flash-big" style="font-size:30px">' + ss.correct + " of " + ss.items.length + " spoken aloud</div>" +
         '<p class="howto" style="text-align:center; margin:8px auto 0">' + (ss.earned ? "+" + ss.earned + " Learning Points. " : "") + "Speaking a little every day is how pronunciation sticks. Today\u2019s speaking step is complete.</p>" +
-        '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="go(\'home\'); renderDaily();">Back to Today</button></div>'
+        '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="go(\'home\'); renderDaily();">Back to Today</button><button class="btn ghost" onclick="go(\'recordings\')">My recordings</button></div>'
       );
       speakSess = null;
     }
@@ -7251,6 +7301,14 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
 .topbar{ border-radius:12px; }
 .acct-btn{ border-radius:6px; }
 .ph-btn{ background:var(--blue); color:#fff; border-radius:6px; font-weight:600; }
+.take-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); flex-wrap:wrap; }
+.take-main{ flex:1 1 180px; min-width:150px; }
+.take-big{ font-size:19px; font-weight:700; }
+.take-sub{ color:var(--ink-soft); font-size:14px; }
+.take-when{ color:var(--muted); font-size:12.5px; font-weight:600; }
+.u-gpoint h4{ font-size:17.5px; margin:20px 0 4px; }
+.u-gpoint > p{ color:var(--ink-soft); line-height:1.65; margin:5px 0; }
+.u-gnote{ font-size:14px; color:var(--muted) !important; }
 #spk-rec.recording{ background:var(--red) !important; animation:recPulse 1.1s ease-in-out infinite; }
 @keyframes recPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(214,69,91,.45);} 50%{ box-shadow:0 0 0 9px rgba(214,69,91,0);} }
 .draw-verdict{ min-height:26px; margin-top:10px; text-align:center; font-size:15.5px; font-weight:700; color:var(--ink-soft); }
@@ -7348,7 +7406,7 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
   gateWrap("startHiragana", "game"); gateWrap("startDuel", "game"); gateWrap("startTranslate", "game"); gateWrap("startCulture", "game"); gateWrap("startWatchQuiz", "game"); gateWrap("startShadow", "game");
   gateWrap("meetInstant", "call");
   gateWrap("nextTopic", "activity"); gateWrap("rouletteDone", "activity"); gateWrap("finishSession", "activity"); gateWrap("resetSession", "activity"); gateWrap("addStorySentence", "activity");
-  gateWrap("dailyStudyNow", "study");
+  gateWrap("dailyStudyNow", "study"); gateWrap("startYReview", "study"); gateWrap("dailyGoReview", "study");
   gateWrap("meetBook", "booking"); gateWrap("addSession", "booking"); gateWrap("sessDelete", "booking"); gateWrap("saveNotifyPrefs", "booking"); gateWrap("addRecording", "booking");
   /* outbound Loom links + the Recordings view are member use too */
   document.addEventListener("click", function(e){
@@ -7752,6 +7810,159 @@ function checkDraw() {
   drawRenderAll();
   if (idx >= drawExpected.length) completeDraw();
   else drawVerdict(okCount + " of " + drawExpected.length + " strokes right. The red ones are off: draw them again, or Clear and rewrite.", okCount ? "" : "bad");
+}
+</script>
+<script>
+/* ================= YESTERDAY'S REVIEW ================= */
+var yrevSess = null;
+function startYReview() {
+  var p = solo.player || practicePlayer();
+  var yb = yesterdayBundle(p);
+  if (!yb) { toast("Nothing to review yet. Today's lesson becomes tomorrow's review."); return; }
+  var items = [], guides = [];
+  yb.list.forEach(function (e) {
+    var les = chapterLessons(p, e.ch)[e.idx];
+    if (!les) return;
+    var g = (PATTERN_GUIDE[p] || {})[les.name];
+    if (g) guides.push(g);
+    les.items.forEach(function (it) { items.push(it); });
+  });
+  items = items.slice(0, 8);
+  if (!items.length) { toast("That lesson has nothing to review."); return; }
+  yrevSess = { p: p, yb: yb, items: items, guides: guides, i: -1, got: 0, revealed: false };
+  renderYReview();
+}
+function renderYReview() {
+  var ss = yrevSess; if (!ss) return;
+  var p = ss.p;
+  if (ss.i < 0) {
+    var names = ss.yb.list.map(function (e) { return "Chapter " + e.ch + " \u00B7 " + esc(e.name); }).join(" + ");
+    stageHTML(
+      '<div class="prompt-label" style="text-align:center">YESTERDAY\u2019S REVIEW</div>' +
+      '<div class="flash-big" style="font-size:26px">' + names + '</div>' +
+      '<p class="howto" style="text-align:center; margin:8px auto 0">Studied yesterday, reviewed today: one day later is exactly when review works best. ' + ss.items.length + ' items.</p>' +
+      ss.guides.map(function (g) { return '<div class="u-pattern" style="margin-top:14px"><div class="u-pat-big">' + esc(g.pat) + '</div>' + (g.form ? '<p>' + esc(g.form) + '</p>' : '') + '</div>'; }).join("") +
+      '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="yrevNext()">Start the review</button></div>'
+    );
+    return;
+  }
+  if (ss.i >= ss.items.length) { yrevFinish(); return; }
+  var it = ss.items[ss.i];
+  stageHTML(
+    '<div class="prompt-label" style="text-align:center">YESTERDAY\u2019S REVIEW \u00B7 ' + (ss.i + 1) + ' OF ' + ss.items.length + '</div>' +
+    '<div class="flash-big">' + esc(it.big) + '</div>' +
+    '<div class="flash-sub">' + esc(it.read || "") + '</div>' +
+    '<div style="text-align:center; margin-top:12px"><button class="btn ghost" id="yr-listen">Listen</button></div>' +
+    '<div style="text-align:center; margin-top:16px">' +
+    (ss.revealed
+      ? '<div class="flash-sub" style="font-size:19px; color:var(--ink)">' + esc(it.mean || "") + '</div><div class="btn-row" style="justify-content:center; margin-top:14px"><button class="btn blue" id="yr-got">Got it</button><button class="btn ghost" id="yr-missed">Still learning</button></div>'
+      : '<button class="btn blue" id="yr-show">Show the meaning</button>') +
+    '</div>'
+  );
+  $("yr-listen").addEventListener("click", function () { speak(it.big, p === "bolu" ? "ja-JP" : "en-US"); });
+  if (ss.revealed) {
+    $("yr-got").addEventListener("click", function () { yrevGrade(true); });
+    $("yr-missed").addEventListener("click", function () { yrevGrade(false); });
+  } else {
+    $("yr-show").addEventListener("click", function () { ss.revealed = true; renderYReview(); });
+  }
+}
+function yrevNext() { var ss = yrevSess; if (!ss) return; ss.i = 0; ss.revealed = false; renderYReview(); }
+function yrevGrade(ok) {
+  var ss = yrevSess; if (!ss) return;
+  var it = ss.items[ss.i];
+  if (ok) ss.got++;
+  logAnswer("review", ss.yb.list[0].ch, ok, ss.p);
+  if (!ok) addReview(ss.p, { front: it.big, sub: it.read || "", answer: it.mean || "", pool: "means", teach: it.big + " (" + (it.read || "") + ") = " + (it.mean || ""), ch: ss.yb.list[0].ch });
+  ss.i++; ss.revealed = false; renderYReview();
+}
+function yrevFinish() {
+  var ss = yrevSess; if (!ss) return;
+  var plan = dailyPlanLoad(ss.p);
+  plan.yReview = ss.yb.key; dailySavePlan(ss.p, plan);
+  var got = ss.got, n = ss.items.length;
+  yrevSess = null;
+  if (unitCtx) { unitReturn("Yesterday's review", got + " of " + n + " solid"); return; }
+  stageHTML(
+    '<div class="prompt-label" style="text-align:center">YESTERDAY\u2019S REVIEW \u00B7 DONE</div>' +
+    '<div class="flash-big" style="font-size:29px">' + got + " of " + n + " solid</div>" +
+    '<p class="howto" style="text-align:center; margin:8px auto 0">Yesterday\u2019s lesson, refreshed a day later. Anything still shaky waits in Smart Review for whenever you want it. It is never owed, and it never blocks your day.</p>' +
+    '<div class="btn-row" style="justify-content:center; margin-top:16px"><button class="btn blue" onclick="go(\'home\'); renderDaily();">Back to Today</button></div>'
+  );
+}
+
+/* ================= SAVED VOICE TAKES (IndexedDB) ================= */
+function takesOpen() {
+  return new Promise(function (res, rej) {
+    var rq = indexedDB.open("bochi-takes", 1);
+    rq.onupgradeneeded = function () { rq.result.createObjectStore("takes", { keyPath: "id", autoIncrement: true }); };
+    rq.onsuccess = function () { res(rq.result); };
+    rq.onerror = function () { rej(rq.error); };
+  });
+}
+function saveTake(btn) {
+  if (!spkLastTake) return;
+  var rec = { p: practicePlayer(), big: spkLastTake.big, read: spkLastTake.read, mean: spkLastTake.mean, ts: Date.now(), blob: spkLastTake.blob };
+  takesOpen().then(function (db) {
+    var tx = db.transaction("takes", "readwrite");
+    tx.objectStore("takes").add(rec);
+    tx.oncomplete = function () { if (btn) { btn.textContent = "Saved \u2713"; btn.disabled = true; } toast("Take saved. It lives under Recordings, in My voice recordings."); };
+    tx.onerror = function () { toast("That take could not be saved on this device."); };
+  }).catch(function () { toast("Recording storage is not available in this browser."); });
+}
+var takeURLs = [];
+function renderTakes() {
+  var box = $("takes-box"); if (!box) return;
+  var p = practicePlayer();
+  takesOpen().then(function (db) {
+    var rq = db.transaction("takes", "readonly").objectStore("takes").getAll();
+    rq.onsuccess = function () {
+      takeURLs.forEach(function (u) { URL.revokeObjectURL(u); }); takeURLs = [];
+      var mine = (rq.result || []).filter(function (t) { return t.p === p; }).sort(function (a, b) { return b.ts - a.ts; });
+      if (!mine.length) { box.innerHTML = '<p style="color:var(--muted); font-weight:600; font-size:14px; margin:0">No saved takes yet. In speaking practice, record a phrase and tap Save this take.</p>'; return; }
+      box.innerHTML = mine.map(function (t) {
+        var u = URL.createObjectURL(t.blob); takeURLs.push(u);
+        var when = new Date(t.ts).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        return '<div class="take-row"><div class="take-main"><div class="take-big">' + esc(t.big) + '</div><div class="take-sub">' + esc(t.read || "") + (t.mean ? " \u00B7 " + esc(t.mean) : "") + '</div><div class="take-when">' + when + '</div></div><audio controls src="' + u + '" style="max-width:210px; flex:0 1 auto"></audio><button class="btn ghost small" onclick="deleteTake(' + t.id + ')">Delete</button></div>';
+      }).join("");
+    };
+    rq.onerror = function () { box.innerHTML = '<p style="color:var(--muted); font-weight:600; font-size:14px; margin:0">Takes are unavailable in this browser.</p>'; };
+  }).catch(function () { box.innerHTML = '<p style="color:var(--muted); font-weight:600; font-size:14px; margin:0">Takes are unavailable in this browser.</p>'; });
+}
+function deleteTake(id) {
+  takesOpen().then(function (db) {
+    var tx = db.transaction("takes", "readwrite");
+    tx.objectStore("takes").delete(id);
+    tx.oncomplete = function () { renderTakes(); };
+  }).catch(function () {});
+}
+
+var GRAMMAR = {"bolu":{"phrase:Greetings":[{"h":"Greetings carry the time of day inside them","body":"Japanese does not have one word for hello that works all day. The greeting itself tells the time: おはよう in the morning, こんにちは in the afternoon, こんばんは in the evening. Choosing the right one is the grammar here: match the greeting to the hour and you are already speaking correctly.","form":"Morning: おはよう (ございます) · Day: こんにちは · Evening: こんばんは","ex":[["おはようございます","ohayou gozaimasu","Good morning (polite)"],["こんばんは","konbanwa","Good evening"]],"note":"こんにちは and こんばんは end in the particle は, said wa, not ha. おはよう takes ございます to become polite; friends just say おはよう."},{"h":"Thanks and leave-taking","body":"ありがとう is thanks between friends; add ございます for anyone you should be polite to, and どうも is a light, quick thanks for small things. For goodbye, じゃあね is the everyday word. さようなら is heavier: it suits a long parting, not the end of a normal day.","form":"ありがとう (ございます) = thank you · じゃあね = see you","ex":[["ありがとうございます","arigatou gozaimasu","Thank you very much"],["じゃあね","jaa ne","See you, bye for now"]]}],"phrase:Introductions":[{"h":"The pattern 〜は〜です: topic, then fact","body":"The most important sentence shape in Japanese. Put what the sentence is about first, mark it with the particle は (written ha, said wa), then say what it is, and close with です. The verb comes last, always: Japanese sentences are built back to front compared with English.","form":"X は Y です = X is Y","ex":[["わたしは Boru です","watashi wa Boru desu","I am Boru"],["わたしは アメリカじんです","watashi wa Amerikajin desu","I am American"]],"note":"です is the polite copula, the equals sign of the sentence. Drop it among close friends and the sentence still stands: わたしは Boru."},{"h":"はじめまして and よろしく: the ritual around the pattern","body":"An introduction is a small ceremony. Open with はじめまして (first time meeting you), give your name with the pattern, and close with よろしくおねがいします, which asks the other person to treat you well. The grammar is simple; knowing the order is the skill.","form":"はじめまして → name は 〜です → よろしくおねがいします","ex":[["はじめまして","hajimemashite","Nice to meet you (first meeting)"],["よろしくおねがいします","yoroshiku onegaishimasu","Please treat me well"]]}],"phrase:Everyday Phrases":[{"h":"すみません does three jobs","body":"すみません is sorry, excuse me, and a soft thank you, all in one. Use it to apologize lightly, to get someone's attention, and when someone goes out of their way for you. It comes from すむ, to settle: the feeling is that your debt is not settled.","form":"すみません = sorry · excuse me · thank you (for the trouble)","ex":[["すみません、えきはどこですか","sumimasen, eki wa doko desu ka","Excuse me, where is the station?"],["すみません、ありがとうございます","sumimasen, arigatou gozaimasu","Sorry for the trouble, thank you"]],"note":"For a real apology use ごめんなさい with family and friends, and keep すみません for the public world."},{"h":"おねがいします and ください: two ways to ask","body":"When you ask for a thing, close with おねがいします: これをおねがいします, this one, please. When you ask someone to do an action, the shape is verb in its て form plus ください. Things take おねがいします; actions take ください.","form":"thing を おねがいします · verb-て ください","ex":[["これをおねがいします","kore o onegaishimasu","This one, please"],["ちょっとまってください","chotto matte kudasai","Please wait a moment"]]}],"phrase:Sentences":[{"h":"Word order: topic first, verb last","body":"A Japanese sentence runs topic, then the details, then the verb at the very end. Particles do the work English does with word order: は marks the topic, を marks the thing the verb acts on, に marks a place or time target, へ marks direction. Learn to hear the particles and the sentence unpacks itself.","form":"Topic は · object を · place に · verb","ex":[["わたしは まいあさ コーヒーを のみます","watashi wa maiasa koohii o nomimasu","I drink coffee every morning"],["あした とうきょうに いきます","ashita Toukyou ni ikimasu","I am going to Tokyo tomorrow"]],"note":"Time words usually come early, right after the topic. The verb still waits at the end."},{"h":"です and ます: the polite engine, and its past","body":"Polite sentences end in です for nouns and adjectives, and in ます for verbs. Both have a past form: です becomes でした, ます becomes ました. Negative is just as regular: じゃありません for nouns, ません for verbs. Four endings carry almost everything you say politely.","form":"Present: です / ます · Past: でした / ました · Negative: じゃありません / ません","ex":[["きのうは あつかったです","kinou wa atsukatta desu","It was hot yesterday"],["きのう えいがを みました","kinou eiga o mimashita","I watched a movie yesterday"]]}],"phrase:Conversation":[{"h":"Questions: add か, keep everything else","body":"A statement becomes a question by adding か at the end. Nothing moves, nothing inverts. Answer the way the question was built: はい or いいえ, then the sentence itself, because the topic is usually dropped once both sides know it.","form":"statement + か = question","ex":[["これは なんですか","kore wa nan desu ka","What is this?"],["コーヒーを のみますか","koohii o nomimasu ka","Would you like coffee? (Do you drink coffee?)"]],"note":"In casual speech か often drops and the voice just rises at the end, like English."},{"h":"Question words sit where the answer will sit","body":"なん (what), どこ (where), いつ (when), だれ (who), and いくら (how much) go in the sentence where the missing piece belongs, not at the front. You are building the answer's shape with a hole in it.","form":"Topic は · question word · verb か","ex":[["たんじょうびは いつですか","tanjoubi wa itsu desu ka","When is your birthday?"],["それは いくらですか","sore wa ikura desu ka","How much is that?"]]}],"phrase:Confident Exchange":[{"h":"Softeners: ちょっと and 〜てもいいですか","body":"Confident speakers cushion their sentences. ちょっと (a little) softens a refusal or a problem: ちょっとむずかしいです is the classic gentle no. And permission has a fixed shape: verb in the て form plus もいいですか, may I.","form":"verb-て もいいですか = may I ...?","ex":[["ここに すわってもいいですか","koko ni suwatte mo ii desu ka","May I sit here?"],["ちょっと わかりません","chotto wakarimasen","I am not quite sure (soft)"]],"note":"ちょっと said alone, with a pause, can mean no all by itself. Context carries it."},{"h":"Reactions keep a conversation alive","body":"Japanese conversation runs on small reactions: そうですか (is that so), そうですね (it is, is it not), なるほど (now I see). They are grammar too: they tell the speaker you are following, and they buy you a second to think.","form":"そうですか · そうですね · なるほど · ほんとうですか","ex":[["そうですか、よかったです","sou desu ka, yokatta desu","Is that so? That is good"],["なるほど、わかりました","naruhodo, wakarimashita","I see, understood"]]}],"phrase:Requests with the Te-Form":[{"h":"Building the て form: the verb groups","body":"Every request, permission, and favor runs through the て form, so its shapes matter. う verbs: う・つ・る become って, む・ぶ・ぬ become んで, く becomes いて, ぐ becomes いで, す becomes して. る verbs simply drop る and add て. Two verbs are irregular: する becomes して, くる becomes きて. And いく is the famous exception: いって, not いいて.","form":"う/つ/る→って · む/ぶ/ぬ→んで · く→いて · ぐ→いで · す→して · る→て","ex":[["かく → かいて","kaku, kaite","to write, in the te form"],["のむ → のんで","nomu, nonde","to drink, in the te form"]],"note":"The same shapes, with the vowel changed, give you the past tense later. Learn them once, use them everywhere."},{"h":"〜てください and softer ways to ask","body":"て form plus ください is the standard polite request. To soften it further, turn it into a question with くださいませんか, or use the negative request ないでください to ask someone not to do something: the ない form plus でください.","form":"verb-て ください · verb-て くださいませんか · verb-ないで ください","ex":[["ゆっくり はなしてください","yukkuri hanashite kudasai","Please speak slowly"],["まどを しめないでください","mado o shimenaide kudasai","Please do not close the window"]]}],"phrase:Experiences with the Ta-Form":[{"h":"The た form: the て form's twin","body":"Take every て form you know and change the final て to た, で to だ. かいて becomes かいた, のんで becomes のんだ. That is the plain past tense, used with friends, inside sentences, and inside the experience pattern on this page.","form":"〜て → 〜た · 〜で → 〜だ","ex":[["いく → いった","iku, itta","to go, plain past"],["たべる → たべた","taberu, tabeta","to eat, plain past"]],"note":"いく is irregular here too: いった. It matches its て form いって exactly."},{"h":"〜たことがあります: talking about experience","body":"Plain past plus ことがあります says you have done something at least once: the fact of it exists. The negative is ことがありません, and adding も after the verb says not even once: いちども いったことがありません.","form":"verb-た ことがあります = I have done it before","ex":[["すしを たべたことがあります","sushi o tabeta koto ga arimasu","I have eaten sushi before"],["にほんに いったことがありません","Nihon ni itta koto ga arimasen","I have never been to Japan"]]}],"phrase:Thoughts with To":[{"h":"〜と思います: wrapping a thought in と","body":"To say what you think, put a plain sentence in front of と and add おもいます. The sentence inside must be plain form, not polite: あめがふるとおもいます, I think it will rain. と works like quotation marks around the thought.","form":"plain sentence + と おもいます","ex":[["あしたは はれると おもいます","ashita wa hareru to omoimasu","I think it will be sunny tomorrow"],["これは いいと おもいます","kore wa ii to omoimasu","I think this is good"]],"note":"For your own strong plans, とおもいます softens into intention too: いこうとおもいます, I am thinking of going."},{"h":"〜と言いました: reporting what someone said","body":"The same と frame reports speech: quote the plain sentence, add と, and close with いいました (said) or ききました (asked). Japanese reports the words as they were said, without shifting tenses the way English does.","form":"quote + と いいました / ききました","ex":[["かれは あした くると いいました","kare wa ashita kuru to iimashita","He said he would come tomorrow"],["えきは どこかと ききました","eki wa doko ka to kikimashita","I asked where the station was"]]}],"phrase:If and Giving":[{"h":"〜たら: if and when in one form","body":"Take the た form and add ら: いったら, たべたら. It covers both if and when, because Japanese lets context decide whether the thing is certain. After the たら clause, say what follows: an invitation, a plan, a result.","form":"verb-た + ら · noun/adj + だったら","ex":[["あめが ふったら、いえに います","ame ga futtara, ie ni imasu","If it rains, I will stay home"],["やすかったら、かいます","yasukattara, kaimasu","If it is cheap, I will buy it"]],"note":"The main clause after たら can be a request or invitation, which the stricter ば form does not allow. That makes たら the everyday choice."},{"h":"あげる, くれる, もらう: giving has a direction","body":"English give points both ways; Japanese verbs point. あげる gives away from you, くれる gives toward you or your circle, もらう is receiving. The giver takes が or は, the receiver takes に. With the て form, they describe favors: かしてあげる, I will lend it for you.","form":"giver は receiver に thing を あげる / くれる · receiver は giver に/から もらう","ex":[["ともだちに ほんを あげました","tomodachi ni hon o agemashita","I gave my friend a book"],["せんせいが ほんを くれました","sensei ga hon o kuremashita","My teacher gave me a book"]]}],"phrase:Potential and Plans":[{"h":"〜ことができます and the potential form","body":"Dictionary form plus ことができます is the long way to say can. The short potential form: る verbs swap る for られる, and う verbs shift their last sound to the え row and add る: よむ becomes よめる. The thing you can act on takes が, not を.","form":"verb (dictionary) + ことができます · よむ → よめる · たべる → たべられる","ex":[["にほんごが はなせます","nihongo ga hanasemasu","I can speak Japanese"],["さしみを たべることが できます","sashimi o taberu koto ga dekimasu","I can eat sashimi"]],"note":"できる itself is the potential of する, which is why する verbs work as noun plus できる: うんてんできる."},{"h":"Plans: つもり, よてい, and たい","body":"Three shades of future. つもり is your own intention: dictionary form plus つもりです. よてい is a plan already on the schedule, set by you or others. たい, attached to the verb stem, is what you want to do right in your heart: いきたい, I want to go.","form":"dictionary + つもり (intend) · dictionary + よてい (scheduled) · stem + たい (want to)","ex":[["らいねん にほんに いく つもりです","rainen Nihon ni iku tsumori desu","I intend to go to Japan next year"],["あたらしい くるまが かいたいです","atarashii kuruma ga kaitai desu","I want to buy a new car"]]}],"phrase:Let's and Must":[{"h":"〜ましょう: the inviting ending","body":"Drop ます and add ましょう to invite: いきましょう, let us go. As a question, ましょうか offers help or suggests: てつだいましょうか, shall I help. On announcements you will also hear the plain volitional: いこう, let us go, between friends.","form":"verb stem + ましょう (let us) · stem + ましょうか (shall we / shall I)","ex":[["いっしょに いきましょう","issho ni ikimashou","Let us go together"],["やすみましょうか","yasumimashou ka","Shall we take a break?"]],"note":"ましょう is warm and inclusive. You are inside the plan you are proposing."},{"h":"Must: 〜なければなりません, and must not: 〜てはいけません","body":"Must is built from a double negative: take the ない form, drop the い, add ければなりません, if you do not do it, it will not do. The spoken shortcut is なきゃ. For rules of prohibition, the shape is て form plus はいけません: you must not.","form":"verb-ない (drop い) + ければなりません · verb-て はいけません","ex":[["くすりを のまなければなりません","kusuri o nomanakereba narimasen","I must take my medicine"],["ここで たばこを すっては いけません","koko de tabako o sutte wa ikemasen","You must not smoke here"]]}],"word:Greetings and Numbers":[{"h":"Counting: numbers change shape next to things","body":"Japanese counts with counters, and the number often changes sound to fit: one person is ひとり, two people ふたり, then さんにん, よにん. Things use つ for general objects up to ten: ひとつ, ふたつ, みっつ. The plain numbers いち, に, さん are the base; the counter decides the costume.","form":"People: ひとり · ふたり · さんにん · よにん · ごにん · Things: ひとつ · ふたつ · みっつ · よっつ","ex":[["みっつ ください","mittsu kudasai","Three of them, please"],["よにん です","yonin desu","We are four (people)"]],"note":"Four and seven prefer their softer sounds with counters: よん and なな over し and しち."}],"word:Food and Family":[{"h":"Your family and other people's families have different words","body":"Japanese splits family words by whose family it is. Your own mother is はは to outsiders, but someone else's mother is おかあさん. Your own father is ちち; theirs is おとうさん. Using the humble word for your own family and the honorific for theirs is built into the vocabulary itself.","form":"Mine: はは (mother) · ちち (father) · Yours/theirs: おかあさん · おとうさん","ex":[["ははは りょうりが じょうずです","haha wa ryouri ga jouzu desu","My mother is a good cook"],["おかあさんは おげんきですか","okaasan wa ogenki desu ka","How is your mother?"]]}],"word:Travel and Work":[{"h":"Movement verbs split by destination logic: いく, くる, かえる","body":"いく is going away from where you stand, くる is coming toward you, and かえる is returning to your base: home, your country, your hotel. The destination takes に or へ, and the vehicle takes で after the particle にのる pattern: でんしゃで いく, go by train.","form":"place に/へ いく · vehicle で いく","ex":[["でんしゃで かいしゃに いきます","densha de kaisha ni ikimasu","I go to the office by train"],["ほてるに かえります","hoteru ni kaerimasu","I will go back to the hotel"]]}],"word:Feelings and Ideas":[{"h":"Feelings are adjectives, and they carry their own past","body":"Words like うれしい (happy), かなしい (sad), たのしい (fun) are い adjectives: they bend like verbs. Past is かったです, negative is くないです. な adjectives like しずか and げんき stay still and take な before a noun, だ or です at the end.","form":"い-adj: 〜い → 〜かった (past) · 〜くない (negative) · な-adj + な + noun","ex":[["きのうは たのしかったです","kinou wa tanoshikatta desu","Yesterday was fun"],["しずかな へや","shizuka na heya","a quiet room"]]}],"word:Everyday Mix":[{"h":"Time words anchor the sentence, and they do not take に","body":"Absolute time words like きょう, あした, まいにち, せんしゅう sit right after the topic with no particle, while clock times and days of the week take に: しちじに おきます. Relative words float free; exact points get pinned with に.","form":"Relative time: no particle · Exact time: time + に","ex":[["まいにち しちじに おきます","mainichi shichiji ni okimasu","I get up at seven every day"],["あした あいましょう","ashita aimashou","Let us meet tomorrow"]]}],"word:News Words":[{"h":"News Japanese loves noun plus する","body":"Headlines and reports are built from heavy nouns made into verbs with する: かいぎする is not standard, but けっていする (to decide), はっぴょうする (to announce), and ぞうかする (to increase) are everywhere. Learn the noun and you own the verb, the headline, and the article's skeleton.","form":"noun + する = to do that noun","ex":[["せいふが はっぴょうしました","seifu ga happyou shimashita","The government announced it"],["かかくが ぞうかしています","kakaku ga zouka shite imasu","Prices are increasing"]]}],"word:Everyday Verbs":[{"h":"The two verb families, and how to spot them","body":"る verbs end in える or いる sounds and conjugate by dropping る: taberu, tabemasu, tabetai. う verbs are everything else and shift their final sound: kaku becomes kakimasu, kakitai, kakanai. The famous traps are kiku-type verbs ending in iru/eru sounds that are really う verbs, like かえる (to return) and はいる (to enter).","form":"る-verb: drop る + endings · う-verb: shift the final row","ex":[["かえる → かえります","kaeru, kaerimasu","to return (a u-verb in disguise)"],["みる → みます","miru, mimasu","to see (a true ru-verb)"]]}],"word:Travel and Transport":[{"h":"のる and おりる: vehicles take に, and the place you leave takes を","body":"Boarding is vehicle に のる. Getting off flips the logic: the vehicle or station you leave takes を: でんしゃを おりる. Transfers are のりかえる, and a ride that takes time uses かかる: ここから えきまで じゅっぷん かかります.","form":"vehicle に のる · place/vehicle を おりる · time が かかる","ex":[["つぎの えきで でんしゃを おります","tsugi no eki de densha o orimasu","I get off the train at the next station"],["ここから くうこうまで いちじかん かかります","koko kara kuukou made ichijikan kakarimasu","It takes an hour from here to the airport"]]}],"word:Feelings and Opinions":[{"h":"好き and きらい take が, and opinions take と思う","body":"Likes and dislikes are adjectives, not verbs, so their target takes が: すしが すきです. Degrees stack in front: だいすき, すこしすき, あまりすきじゃありません (with the negative). Opinions reuse the thought frame from the phrase lessons: plain sentence plus と おもいます.","form":"thing が すき / きらい / じょうず / へた","ex":[["おんがくが だいすきです","ongaku ga daisuki desu","I love music"],["あついと おもいます","atsui to omoimasu","I think it is hot"]]}],"word:Home and Daily Life":[{"h":"Daily routine verbs pair with their objects: を is the glue","body":"Routines are object plus verb, locked together: かおを あらう (wash your face), はを みがく (brush your teeth), シャワーを あびる (take a shower, where あびる means to bathe in it). Learn the pairs as units and the whole morning runs itself.","form":"object を verb, learned as one chunk","ex":[["まいあさ かおを あらいます","maiasa kao o araimasu","I wash my face every morning"],["シャワーを あびて、しごとに いきます","shawaa o abite, shigoto ni ikimasu","I shower, then go to work"]]}],"word:Abilities and Activities":[{"h":"できる and じょうず: skill has two doors","body":"ことができる and the potential form say what you can do; じょうず says you are good at it, へた says you are not (use へた about yourself, carefully about others). Sports and instruments take が: ピアノが ひけます for playing piano, with ひく as the instrument verb.","form":"skill が できる / じょうず · instrument を/が ひく","ex":[["ピアノが ひけます","piano ga hikemasu","I can play the piano"],["うんてんが じょうずです","unten ga jouzu desu","I am good at driving (humble about oneself is unusual; say it of others)"]]}],"word:Work and School":[{"h":"Work words run on する and the お/ご politeness ladder","body":"Office Japanese is noun plus する: かいぎ (meeting), しゅっちょう (business trip), ざんぎょう (overtime). In keigo, other people's actions rise (なさる, ごらんになる) and yours lower (いたす, まいる). You do not need full keigo yet; knowing the ladder exists explains half the words in a workplace.","form":"noun + する verbs · others up, self down","ex":[["あした しゅっちょうします","ashita shucchou shimasu","I have a business trip tomorrow"],["ざんぎょうが おおいです","zangyou ga ooi desu","There is a lot of overtime"]]}]},"chihiro":{"phrase:Greetings":[{"h":"English greetings change with the relationship, not the clock","body":"Japanese greetings turn on the time of day; English ones turn on how well you know the person. Hello is safe everywhere, hi is friendly, and hey is for people close to you. Good morning, afternoon, and evening exist, but good night is only a goodbye, never a greeting on arrival.","form":"hello (safe) · hi (friendly) · hey (close) · good night = goodbye only","ex":[["Good morning, how are you?","gud morning, hau aa yuu","A polite morning greeting"],["Hey, long time no see","hei, rongu taimu noo shii","For a friend you have not seen in a while"]]}],"phrase:Introductions":[{"h":"I am, my name is, this is: three frames, one job","body":"English introductions run on three frames: I am plus a name or a job, my name is for the name alone, and this is for presenting someone else. The verb be changes with the person: I am, you are, he or she is. That little verb is the engine of the whole first meeting.","form":"I am ... · my name is ... · this is ... (he/she is, you are)","ex":[["I am Chihiro, from Japan","ai amu Chihiro, furomu Japan","Name and origin in one frame"],["This is my friend, Boru","dhis izu mai furendo, Boru","Presenting someone else"]]}],"phrase:Everyday Idioms":[{"h":"Idioms are pictures, not definitions","body":"An idiom means something its words do not say: a piece of cake is an easy thing, not dessert. Learn each idiom inside the moment it is used, picture and all, and it will come back when the moment does. Translating word by word is the one method that never works.","form":"idiom = a fixed picture with a fixed meaning","ex":[["That test was a piece of cake","zatto tesuto wazu a piisu obu keiku","The test was easy"],["Let us call it a day","retto asu kooru itto a dei","Let us stop working for today"]]}],"phrase:Sentences":[{"h":"Subject, verb, object: the order is the grammar","body":"English sentences run in a fixed order: who, does what, to what. The verb changes shape with the subject: I go, but she goes. That final s on third person verbs is small, constant, and the first thing listeners notice when it is missing.","form":"Subject + verb(+s for he/she/it) + object","ex":[["She reads the news every morning","shii riizu za nyuusu evurii mooning","Third person verb takes s"],["They play soccer on Sundays","zei purei sakkaa on sandeizu","Plural subject, plain verb"]]}],"phrase:Conversation":[{"h":"Questions flip the verb, and short answers mirror them","body":"Yes or no questions open with do, does, or a be verb, and the short answer repeats that same helper: Do you like it? Yes, I do. Question word questions keep the flip after the question word: Where do you live. The short answer is not lazy; it is how English sounds natural.","form":"Do/does + subject + verb? · Yes, I do / No, I do not","ex":[["Does she speak English?","dazu shii supiiku Ingurisshu","Third person question with does"],["Yes, she does","iesu, shii dazu","The short answer mirrors the question"]]}],"phrase:Confident Idioms":[{"h":"Reactions are the music of conversation","body":"Fluent conversation is half reaction: really, no way, that is great, I see. These small phrases carry your listening the way aizuchi does in Japanese. Drop one at the end of the other person's sentence and the talk keeps its rhythm.","form":"really? · no way · that is great · I see · exactly","ex":[["No way, that is amazing","noo wei, zatto izu ameizingu","Surprise and pleasure together"],["I see what you mean","ai shii watto yuu miin","Understanding, said warmly"]]}],"phrase:Requests":[{"h":"Could you: the polite request machine","body":"Could you plus the plain verb asks for almost anything politely: the could carries the softness, so the verb stays in its base form. Add please at the end for a final cushion, and never could you please to a close friend without sounding like a formal letter.","form":"Could you + base verb (+ please)?","ex":[["Could you say that again, please?","kuddo yuu sei zatto agein, puriizu","The everyday classroom and office request"],["Could you help me with this?","kuddo yuu herupu mii wizu dhisu","Asking for help politely"]]}],"phrase:Experiences":[{"h":"Have plus the past participle: experience up to now","body":"For experience, English reaches back and pulls it into the present: have or has plus the participle. Been is the participle of go and be, tried of try, seen of see. Ever asks about any time before now, never closes the door: I have never been.","form":"have/has + participle · ever (questions) · never (none)","ex":[["I have been to Osaka twice","ai habu biin tu Osaka tuwaisu","Experience with a count"],["Have you ever tried natto?","habu yuu ebaa toraido natto","Asking about any time in a life"]]}],"phrase:Thoughts":[{"h":"I think plus a full sentence","body":"Opinions wear a frame: I think, then a complete sentence that could stand alone. The word that can join them or vanish: I think that it will rain, I think it will rain. For gentle disagreement, the frame does the softening: I think so too, or I do not think so.","form":"I think (that) + full sentence","ex":[["I think it will rain tomorrow","ai shinku itto wiru rein tumoroo","An opinion about the weather"],["I do not think so","ai duu notto shinku soo","A gentle no"]]}],"phrase:If and Giving":[{"h":"If plus present, will plus result","body":"For real future conditions, English splits the sentence: the if part stays in the present, the result takes will. If it rains, we will stay home. Putting will inside the if part is the classic mistake; the if clause is a photograph of the condition, not the future.","form":"If + present ..., will + verb","ex":[["If you are hungry, I will cook","ifu yuu aa hangurii, ai wiru kukku","Condition now, result in the future"],["If we leave now, we will be on time","ifu wii riibu nau, wii wiru bii on taimu","A plan with a condition"]]}],"phrase:Can and Plans":[{"h":"Can is ability, be going to is a plan already moving","body":"Can plus the base verb states what is possible now: I can swim. Be going to states a decision made before this moment: I am going to study tonight. Will is for decisions born in the moment of speaking: I will get the door.","form":"can + verb (ability) · be going to + verb (decided plan) · will (decided now)","ex":[["She can speak three languages","shii kan supiiku surii ranguijizu","Ability"],["We are going to watch a movie tonight","wii aa goingu tu wocchu a muubii tunaito","A plan already decided"]]}],"phrase:Must and Let's":[{"h":"Must is a rule, let's is an open hand","body":"Must plus the base verb states duty with no choice inside it: you must wear a seatbelt. Its softer cousins are have to for outside rules and should for advice. Let's always includes the speaker: let's go means you and I, together, which is why it sounds warm.","form":"must / have to + verb (duty) · should (advice) · let's + verb (together)","ex":[["You must show your passport","yuu masuto shoo yua pasupooto","A hard rule"],["Let's practice again tomorrow","rettsu purakutisu agein tumoroo","An invitation that includes you both"]]}]}};
+/* ================= GRAMMAR (taught on the unit page and in lessons) ================= */
+function grammarPointsFor(les, p) {
+  if (!les || typeof GRAMMAR === "undefined") return [];
+  var G = GRAMMAR[p] || {};
+  return G[les.kind + ":" + les.name] || [];
+}
+function unitGrammarHTML(les, p) {
+  var pts = grammarPointsFor(les, p); if (!pts.length) return "";
+  var html = '<div class="unit-sec-head" style="margin-top:24px"><span class="unit-sec-title" style="font-size:19px">Grammar</span></div>';
+  pts.forEach(function (pt) {
+    html += '<div class="u-gpoint"><h4>' + esc(pt.h) + '</h4><p>' + esc(pt.body) + '</p>' +
+      (pt.form ? '<div class="u-pattern"><div class="u-pat-big" style="font-size:17px">' + esc(pt.form) + '</div></div>' : '') +
+      (pt.ex || []).map(function (e) { return unitItemRow({ big: e[0], read: e[1], mean: e[2] }, les); }).join("") +
+      (pt.note ? '<p class="u-gnote">' + esc(pt.note) + '</p>' : '') + '</div>';
+  });
+  return html;
+}
+function teachGrammarHTML(les, p) {
+  var pts = grammarPointsFor(les, p); if (!pts.length) return "";
+  return pts.map(function (pt) {
+    return '<div class="u-gpoint" style="max-width:580px; margin:6px auto 0; text-align:left"><h4>' + esc(pt.h) + '</h4><p>' + esc(pt.body) + '</p>' +
+      (pt.form ? '<p><b>' + esc(pt.form) + '</b></p>' : '') +
+      (pt.ex || []).map(function (e) { return '<p>' + esc(e[0]) + ' (' + esc(e[1]) + ') \u00B7 ' + esc(e[2]) + '</p>'; }).join("") +
+      (pt.note ? '<p class="u-gnote">' + esc(pt.note) + '</p>' : '') + '</div>';
+  }).join("");
 }
 </script>
 </body>
