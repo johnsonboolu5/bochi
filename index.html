@@ -1242,11 +1242,15 @@ input,textarea,select{ font-family:inherit; }
       <section class="view" id="view-play">
          <div class="game-head">
            <div>
-             <div class="kicker">PLAY TOGETHER · いっしょに あそぶ</div>
+             <div class="kicker" id="play-kicker">PLAY TOGETHER · いっしょに あそぶ</div>
              <h2>Play <span class="jp">ゲーム</span></h2>
            </div>
          </div>
-         <p class="howto">This is the arena. Face off in duels and battles, or run the full session plan together. Everything you earn here still feeds your journeys.</p>
+         <p class="howto" id="play-intro">This is the arena. Face off in duels and battles, or run the full session plan together. Everything you earn here still feeds your journeys.</p>
+<div class="play-toggle" role="group" aria-label="Play mode">
+           <button type="button" id="pm-together" class="on" onclick="setPlaySolo(false)">Play Together</button>
+           <button type="button" id="pm-solo" onclick="setPlaySolo(true)">Play Solo</button>
+         </div>
 <section class="scoreboard" aria-label="Scoreboard">
         <div class="player bolu" id="card-bolu">
           <div class="player-top">
@@ -1278,7 +1282,7 @@ input,textarea,select{ font-family:inherit; }
           <div class="turn-tag">YOUR TURN · あなたの番</div>
         </div>
       </section>
-         <div class="card schedule-card" style="margin-top:14px">
+         <div class="card schedule-card" id="session-card" style="margin-top:14px">
            <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 6.5h11M8.5 12h11M8.5 17.5h11"/><circle cx="4.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.1" fill="currentColor" stroke="none"/></svg></div>
            <div class="sc-body">
              <h3>Run the Session Plan</h3>
@@ -1286,13 +1290,55 @@ input,textarea,select{ font-family:inherit; }
            </div>
            <button class="btn blue" onclick="go('session')">Start the Plan</button>
          </div>
+<div class="card schedule-card" id="solo-rush-card" style="margin-top:14px; display:none">
+           <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg></div>
+           <div class="sc-body">
+             <h3>Kana Rush</h3>
+             <p>Sixty seconds of pure reading speed. Hiragana and katakana mixed, streaks pay bonuses, misses cost time. Solo only: beat your best.</p>
+           </div>
+           <button class="btn blue" onclick="go('rush'); rushStartPaint()">Play Solo</button>
+         </div>
 <div class="section-title" id="modes-title">
           <h2>Game Modes <span class="jp">ゲーム</span></h2>
           <span class="note">Pick any mode, or run the full session plan</span>
         </div>
         <div class="modes-grid" id="modes-grid"></div>
        </section>
-       <!-- ================= SESSION PLAN ================= -->
+       <!-- ================= KANA RUSH (SOLO) ================= -->
+      <section class="view" id="view-rush">
+        <div class="game-head">
+          <button class="back-link" onclick="go('play')">← All modes</button>
+          <h2>Kana Rush <span class="jp">かなラッシュ</span></h2>
+          <span class="badge-turn bolu">SOLO</span>
+        </div>
+        <p class="howto">Sixty seconds. A kana appears, you tap how it reads. Correct: <b>+10</b>, and streaks of 5 or more pay <b>+15</b>, then <b>+20</b>. Wrong: <b>−3 seconds</b>, and the kana joins your review queue. Beat your best.</p>
+        <div class="card stage" id="rush-stage">
+          <div id="rush-start">
+            <div class="big-word" style="text-align:center">あ</div>
+            <p class="howto" style="text-align:center">Hiragana and katakana, mixed. How many can you read in one minute?</p>
+            <div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="startRush()">Start the Rush</button></div>
+            <p class="howto" id="rush-best-line" style="text-align:center"></p>
+          </div>
+          <div id="rush-play" style="display:none">
+            <div class="prompt-label"><span id="rush-count">SCORE 0</span> · <span id="rush-clock">60</span>s · <span id="rush-streak">STREAK 0</span></div>
+            <div style="height:6px; background:var(--surface-2); border-radius:99px; margin:10px 0 4px; overflow:hidden"><div id="rush-bar" style="height:100%; width:100%; background:var(--blue); border-radius:99px"></div></div>
+            <div class="big-word" id="rush-kana" style="text-align:center"></div>
+            <div class="options" id="rush-options"></div>
+            <div class="feedback" id="rush-feedback"></div>
+          </div>
+          <div id="rush-end" style="display:none">
+            <div class="prompt-label">TIME UP · しゅうりょう</div>
+            <div class="big-word" id="rush-result" style="text-align:center"></div>
+            <p class="howto" id="rush-result-sub" style="text-align:center"></p>
+            <div class="btn-row" style="justify-content:center">
+              <button class="btn blue" onclick="startRush()">Play Again</button>
+              <button class="btn ghost" onclick="go('play')">Back to Modes</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SESSION PLAN ================= -->
       <section class="view" id="view-session">
         <div class="game-head">
           <div>
@@ -2698,13 +2744,14 @@ input,textarea,select{ font-family:inherit; }
       MODES.forEach(function(m){
         var b = document.createElement("button");
         b.className = "mode-card";
+        b.dataset.mode = m.id;
         b.innerHTML =
           '<span class="mode-ico ' + m.color + '">' + m.icon + '</span>' +
           '<h3>' + m.title + '<span class="jp">' + m.jp + '</span></h3>' +
           '<p>' + m.desc + '</p>' +
           '<span class="mode-meta">' + m.tags.map(function(t){ return '<span class="tag ' + t[1] + '">' + t[0] + '</span>'; }).join("") + '</span>' +
           ((m.id === "shadow" || m.id === "roulette" || m.id === "story") ? '<span class="mode-path" id="pathline-' + m.id + '"></span>' : '');
-        b.addEventListener("click", function(){ go(m.id); });
+        b.addEventListener("click", function(){ launchMode(m.id); });
         g.appendChild(b);
       });
     }
@@ -2720,7 +2767,7 @@ input,textarea,select{ font-family:inherit; }
           '<span class="feat-title">' + m.title + '</span>' +
           '<span class="feat-desc">' + m.desc + '</span>' +
           '<span class="feat-get">PLAY</span></span>';
-        b.addEventListener("click", function(){ go(m.id); });
+        b.addEventListener("click", function(){ launchMode(m.id); });
         row.appendChild(b);
       });
     }
@@ -2965,8 +3012,10 @@ input,textarea,select{ font-family:inherit; }
     }
 
     /* ==================== WORD DUEL ==================== */
+    var playSolo = false;
+    try { playSolo = localStorage.getItem("bochi-playsolo") === "1"; } catch (e) {}
     var duel = { order:[], idx:0, lock:false, results:[], wins:{bolu:0, chihiro:0}, pool:null };
-    function duelPlayer(){ return duel.idx % 2 === 0 ? "bolu" : "chihiro"; }
+    function duelPlayer(){ if (playSolo) return practicePlayer(); return duel.idx % 2 === 0 ? "bolu" : "chihiro"; }
     function startDuel(){
       var boost = duelBoost.slice(0, 3);
       var band = bandFor(effTier("duel"));
@@ -3048,10 +3097,16 @@ input,textarea,select{ font-family:inherit; }
           $("duel-play").style.display = "none";
           $("duel-end").style.display = "block";
           var b = duel.wins.bolu, c = duel.wins.chihiro;
-          $("duel-result").textContent = b === c ? "It is a tie, " + b + " to " + c + "!" : (b > c ? "Boru-san wins " + b + " to " + c + "!" : "Chihiro wins " + c + " to " + b + "!");
-          $("duel-result-sub").textContent = b === c
-            ? "Dead even. The rematch decides it, and the loser of the duel picks the story starter in the cool down."
-            : "Great battle. The loser picks the first story starter in the cool down, house rules.";
+          if (playSolo) {
+            var dw = duel.wins[practicePlayer()];
+            $("duel-result").textContent = "Solo duel: " + dw + " of 12 correct";
+            $("duel-result-sub").textContent = dw >= 9 ? "Sharp. Duel-winning form, no opponent required." : dw >= 6 ? "A solid solo run. Run it back and chase 9." : "Good reps. Run it back and beat " + dw + ".";
+          } else {
+            $("duel-result").textContent = b === c ? "It is a tie, " + b + " to " + c + "!" : (b > c ? "Boru-san wins " + b + " to " + c + "!" : "Chihiro wins " + c + " to " + b + "!");
+            $("duel-result-sub").textContent = b === c
+              ? "Dead even. The rematch decides it, and the loser of the duel picks the story starter in the cool down."
+              : "Great battle. The loser picks the first story starter in the cool down, house rules.";
+          }
         } else { renderDuel(); }
       }, ok ? 800 : 1600);
     }
@@ -3062,6 +3117,7 @@ input,textarea,select{ font-family:inherit; }
     function startTranslate(){
       var bandT = bandFor(effTier("translate"));
       tr.deck = shuffle(SENTENCES.filter(function(s, i){ return (SENTENCES_TIER[i] || 2) <= bandT; }));
+      if (playSolo) { var tsp = practicePlayer(); tr.deck = tr.deck.filter(function (sd) { return (sd.dir === "jp") === (tsp === "bolu"); }); }
       if(tr.deck.length < 4) tr.deck = shuffle(SENTENCES);
       tr.idx = 0; tr.results = [];
       renderTranslate();
@@ -3071,7 +3127,7 @@ input,textarea,select{ font-family:inherit; }
       var p = trPlayer(card);
       setTurn(p);
       $("translate-turn").className = "badge-turn " + p;
-      $("translate-turn").textContent = playerName(p) + " translates · " + (p === "bolu" ? "Chihiro" : "Boru-san") + " judges";
+      $("translate-turn").textContent = playerName(p) + " translates · " + (playSolo ? "you" : (p === "bolu" ? "Chihiro" : "Boru-san")) + (playSolo ? " judge" : " judges");
       $("translate-dir").textContent = card.dir === "jp"
         ? "JAPANESE → ENGLISH · にほんご から えいご (" + (tr.idx+1) + " OF " + tr.deck.length + ")"
         : "ENGLISH → JAPANESE · えいご から にほんご (" + (tr.idx+1) + " OF " + tr.deck.length + ")";
@@ -3183,7 +3239,7 @@ input,textarea,select{ font-family:inherit; }
 
     /* ==================== CULTURE QUIZ ==================== */
     var cult = { qs:[], idx:0, lock:false, results:[], wins:{bolu:0, chihiro:0} };
-    function cultPlayer(){ return cult.idx % 2 === 0 ? "bolu" : "chihiro"; }
+    function cultPlayer(){ if (playSolo) return practicePlayer(); return cult.idx % 2 === 0 ? "bolu" : "chihiro"; }
     function startCulture(){
       cult.qs = sample(CULTURE, 10);
       cult.idx = 0; cult.lock = false; cult.results = []; cult.wins = {bolu:0, chihiro:0};
@@ -3242,8 +3298,14 @@ input,textarea,select{ font-family:inherit; }
         $("culture-play").style.display = "none";
         $("culture-end").style.display = "block";
         var b = cult.wins.bolu, c = cult.wins.chihiro;
-        $("culture-result").textContent = b === c ? "Quiz tie, " + b + " to " + c : (b > c ? "Boru-san takes the quiz, " + b + " to " + c : "Chihiro takes the quiz, " + c + " to " + b);
-        $("culture-result-sub").textContent = "Ten questions, three countries, zero mercy. Talk about the fun facts for a minute, they are the best part.";
+        if (playSolo) {
+          var cw = cult.wins[practicePlayer()];
+          $("culture-result").textContent = "Solo quiz: " + cw + " of 10 correct";
+          $("culture-result-sub").textContent = "Ten questions, three countries. The fun facts are the best part: sit with them for a minute.";
+        } else {
+          $("culture-result").textContent = b === c ? "Quiz tie, " + b + " to " + c : (b > c ? "Boru-san takes the quiz, " + b + " to " + c : "Chihiro takes the quiz, " + c + " to " + b);
+          $("culture-result-sub").textContent = "Ten questions, three countries, zero mercy. Talk about the fun facts for a minute, they are the best part.";
+        }
       } else { renderCulture(); }
     }
 
@@ -3298,7 +3360,7 @@ input,textarea,select{ font-family:inherit; }
       {q:"What do the two small dakuten strokes do to さ (sa)?", opts:["Turn it into ざ (za)","Make it silent","Double the vowel","Turn it into た (ta)"], a:0, fact:"Dakuten voice the sound: さ sa becomes ざ za, and か ka becomes が ga."}
     ];
     var wq = { idx:0, lock:false, results:[], wins:{bolu:0, chihiro:0} };
-    function watchPlayer(){ return wq.idx % 2 === 0 ? "bolu" : "chihiro"; }
+    function watchPlayer(){ if (playSolo) return practicePlayer(); return wq.idx % 2 === 0 ? "bolu" : "chihiro"; }
     /* ===== Watch library (topic tabs) ===== */
     const WATCH_LIB = [
       { key:"writing", title:"Writing: Hiragana & Katakana", short:"Writing: Kana", jp:"かきかた", why:"<b>Finish the kana first.</b> Everything else in the library gets easier once reading is automatic. Start with the hiragana finisher, then its katakana twin.", videos:[
@@ -3453,7 +3515,8 @@ input,textarea,select{ font-family:inherit; }
         $("watch-play").style.display = "none";
         $("watch-end").style.display = "block";
         var b = wq.wins.bolu, c = wq.wins.chihiro;
-        $("watch-result").textContent = b === c ? "Lightning tie, " + b + " to " + c : (b > c ? "Boru-san takes the lightning round, " + b + " to " + c : "Chihiro takes the lightning round, " + c + " to " + b);
+        if (playSolo) { $("watch-result").textContent = "Solo lightning: " + wq.wins[practicePlayer()] + " of 3 correct"; }
+        else { $("watch-result").textContent = b === c ? "Lightning tie, " + b + " to " + c : (b > c ? "Boru-san takes the lightning round, " + b + " to " + c : "Chihiro takes the lightning round, " + c + " to " + b); }
         $("watch-result-sub").textContent = "Three questions straight from the video. Rewatch any part you missed, then come back and sweep it.";
       } else { renderWatch(); }
     }
@@ -7376,6 +7439,10 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
 .topbar{ border-radius:12px; }
 .acct-btn{ border-radius:6px; }
 .ph-btn{ background:var(--blue); color:#fff; border-radius:6px; font-weight:600; }
+.play-toggle{ display:flex; gap:6px; background:var(--surface-2); border:1px solid var(--line); padding:5px; border-radius:999px; margin:14px 0 6px; }
+.play-toggle button{ flex:1; border:0; background:transparent; font:inherit; font-weight:700; font-size:15px; padding:9px 10px; border-radius:999px; cursor:pointer; color:var(--ink-soft); }
+.play-toggle button.on{ background:var(--blue); color:#fff; }
+.mode-card.together-only{ opacity:.5; }
 .kanji-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px; margin-top:12px; }
 .kanji-card{ background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:14px 12px; text-align:center; }
 .kanji-big{ font-size:38px; font-weight:800; line-height:1.1; }
@@ -8159,6 +8226,138 @@ function playDialogue() {
   })();
 }
 function stopDialogue() { dlgPlaying = false; if ("speechSynthesis" in window) speechSynthesis.cancel(); var b = $("dlg-play"); if (b) b.textContent = "Play the whole dialogue"; }
+</script>
+<script>
+/* ================= SOLO PLAY + KANA RUSH ================= */
+function launchMode(id) {
+  if (playSolo) {
+    var togetherOnly = { roulette: "Conversation Roulette", story: "Story Chain", phrases: "Phrase Exchange", shadow: "Shadow Battle" };
+    if (togetherOnly[id]) { toast(togetherOnly[id] + " needs two voices. Switch to Play Together for that one."); return; }
+    if (id === "hiragana" && practicePlayer() === "chihiro") { toast("Hiragana Hero is Boru-san's game. Your solo arena: Word Duel, Translate Challenge, Culture Quiz, and the Watch quiz."); return; }
+  }
+  go(id);
+}
+function setPlaySolo(on) {
+  playSolo = !!on;
+  try { localStorage.setItem("bochi-playsolo", playSolo ? "1" : "0"); } catch (e) {}
+  var k = $("play-kicker"); if (k) k.textContent = playSolo ? "PLAY SOLO \u00B7 \u3072\u3068\u308A\u3067 \u3042\u305D\u3076" : "PLAY TOGETHER \u00B7 \u3044\u3063\u3057\u3087\u306B \u3042\u305D\u3076";
+  var intro = $("play-intro");
+  if (intro) intro.textContent = playSolo
+    ? "Your arena, on your time. Solo runs of the duel, quiz, translate, and watch games, with every point feeding your journey, plus Kana Rush when you want pure speed."
+    : "This is the arena. Face off in duels and battles, or run the full session plan together. Everything you earn here still feeds your journeys.";
+  var bt = $("pm-together"), bs = $("pm-solo");
+  if (bt) bt.classList.toggle("on", !playSolo);
+  if (bs) bs.classList.toggle("on", playSolo);
+  var sc = $("session-card"); if (sc) sc.style.display = playSolo ? "none" : "";
+  var rc = $("solo-rush-card"); if (rc) rc.style.display = (playSolo && practicePlayer() === "bolu") ? "" : "none";
+  var note = document.querySelector("#modes-title .note");
+  if (note) note.textContent = playSolo ? "Solo runs: every point is yours" : "Pick any mode, or run the full session plan";
+  var gated = { roulette: 1, story: 1, phrases: 1, shadow: 1 };
+  document.querySelectorAll("#modes-grid .mode-card").forEach(function (card) {
+    card.classList.toggle("together-only", !!(playSolo && gated[card.dataset.mode]));
+  });
+}
+/* ---------- Kana Rush ---------- */
+var rush = { on: false, score: 0, streak: 0, bestStreak: 0, cor: 0, ans: 0, leftMs: 0, last: 0, timer: null, cur: null, lock: false, p: "bolu" };
+function rushBestKey() { return "bochi-rush-best-" + rush.p; }
+function rushPoolAll() {
+  var out = [], seen = {};
+  ["hira", "kata"].forEach(function (k) {
+    (SCRIPT_FLAT[k] || []).forEach(function (e) { if (e.ch && e.read && !seen[e.ch]) { seen[e.ch] = 1; out.push({ ch: e.ch, read: e.read }); } });
+  });
+  return out;
+}
+function rushStartPaint() {
+  rush.p = practicePlayer();
+  var best = 0; try { best = +localStorage.getItem(rushBestKey()) || 0; } catch (e) {}
+  var el = $("rush-best-line");
+  if (el) el.textContent = best > 0 ? "Your best: " + best + " points." : "No runs yet. Set the first best.";
+}
+function startRush() {
+  rush.p = practicePlayer();
+  rush.on = true; rush.score = 0; rush.streak = 0; rush.bestStreak = 0; rush.cor = 0; rush.ans = 0; rush.leftMs = 60000; rush.lock = false;
+  $("rush-start").style.display = "none";
+  $("rush-end").style.display = "none";
+  $("rush-play").style.display = "block";
+  $("rush-feedback").textContent = "";
+  rush.last = Date.now();
+  if (rush.timer) clearInterval(rush.timer);
+  rush.timer = setInterval(rushTick, 200);
+  rushNext(); rushPaint();
+}
+function rushTick() {
+  if (!rush.on) return;
+  var now = Date.now();
+  if (document.visibilityState === "visible") rush.leftMs -= (now - rush.last);
+  rush.last = now;
+  if (rush.leftMs <= 0) { rush.leftMs = 0; rushPaint(); endRush(); return; }
+  rushPaint();
+}
+function rushPaint() {
+  var c = $("rush-count"); if (c) c.textContent = "SCORE " + rush.score;
+  var cl = $("rush-clock"); if (cl) cl.textContent = Math.ceil(rush.leftMs / 1000);
+  var st = $("rush-streak"); if (st) st.textContent = "STREAK " + rush.streak;
+  var bar = $("rush-bar"); if (bar) bar.style.width = Math.max(0, rush.leftMs / 600) + "%";
+}
+function rushNext() {
+  var pool = rushPoolAll();
+  var cur = pool[Math.floor(Math.random() * pool.length)];
+  if (rush.cur && pool.length > 1) { var guard = 0; while (cur.ch === rush.cur.ch && guard++ < 8) cur = pool[Math.floor(Math.random() * pool.length)]; }
+  rush.cur = cur;
+  $("rush-kana").textContent = cur.ch;
+  var others = sample(pool.filter(function (e) { return e.read !== cur.read; }), 3);
+  var opts = shuffle([cur].concat(others));
+  var box = $("rush-options"); box.innerHTML = "";
+  opts.forEach(function (o) {
+    var b = document.createElement("button");
+    b.className = "opt"; b.textContent = o.read;
+    b.addEventListener("click", function () { answerRush(b, o.read === cur.read); });
+    box.appendChild(b);
+  });
+  rush.lock = false;
+}
+function answerRush(btn, ok) {
+  if (!rush.on || rush.lock) return;
+  rush.lock = true; rush.ans++;
+  var p = rush.p, cur = rush.cur;
+  markAsked(p, ok);
+  logAnswer("game", null, ok, p);
+  var fb = $("rush-feedback");
+  if (ok) {
+    rush.cor++; rush.streak++; rush.bestStreak = Math.max(rush.bestStreak, rush.streak);
+    var pts = 10 + (rush.streak >= 5 ? 5 : 0) + (rush.streak >= 10 ? 5 : 0);
+    rush.score += pts;
+    addScore(p, pts, $("rush-stage"));
+    learnWord(cur.ch + " \u00B7 " + cur.read);
+    btn.classList.add("correct");
+    fb.textContent = "Correct! +" + pts + (rush.streak >= 5 ? " \u00B7 streak bonus" : "");
+    fb.className = "feedback good";
+  } else {
+    rush.streak = 0;
+    rush.leftMs = Math.max(0, rush.leftMs - 3000);
+    btn.classList.add("wrong");
+    fb.textContent = cur.ch + " reads " + cur.read + ". \u22123 seconds.";
+    fb.className = "feedback bad";
+    addReview(p, { front: cur.ch, sub: "", answer: cur.read, pool: "reads", teach: cur.ch + " reads " + cur.read + ".", ch: 0 });
+  }
+  rushPaint();
+  setTimeout(function () { if (rush.on) { fb.textContent = ""; rushNext(); } }, ok ? 240 : 700);
+}
+function endRush() {
+  rush.on = false;
+  if (rush.timer) { clearInterval(rush.timer); rush.timer = null; }
+  $("rush-play").style.display = "none";
+  $("rush-end").style.display = "block";
+  var best = 0; try { best = +localStorage.getItem(rushBestKey()) || 0; } catch (e) {}
+  var isBest = rush.score > best;
+  if (isBest) { best = rush.score; try { localStorage.setItem(rushBestKey(), String(best)); } catch (e) {} }
+  $("rush-result").textContent = rush.score + " points";
+  $("rush-result-sub").textContent = rush.cor + " of " + rush.ans + " read correctly \u00B7 best streak " + rush.bestStreak + " \u00B7 " + (isBest ? "NEW PERSONAL BEST!" : "your best is " + best + ".");
+  if (rush.cor > 0) bumpPractice("c", rush.cor);
+  if (isBest && rush.score > 0 && typeof confettiBurst === "function") confettiBurst(window.innerWidth / 2, 200);
+}
+gateWrap("startRush", "game");
+setPlaySolo(playSolo);
 </script>
 </body>
 </html>
