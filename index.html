@@ -6060,7 +6060,16 @@ input,textarea,select{ font-family:inherit; }
       plan.phraseDone = true; dailySavePlan(p, plan);
       renderUnitPage("Dialogue practiced. That exchange is yours now.", "unit-end");
     }
-    function unitFinish() { unitCtx = null; closeStage(); go("home"); renderDaily(); toast("Today's studies are in. Consistency is the whole method."); }
+    function unitFinish() {
+      if (unitCtx && unitCtx.type === "lesson") {
+        var ul = chapterLessons(unitCtx.p, unitCtx.ch)[unitCtx.idx];
+        if (ul) studyLogAdd(unitCtx.p, unitCtx.ch, unitCtx.idx, ul.name);
+      }
+      var fp = practicePlayer(), fplan = dailyPlanLoad(fp);
+      fplan.finished = true; dailySavePlan(fp, fplan);
+      unitCtx = null; closeStage(); go("home"); renderDaily();
+      toast("Today's studies are in. Consistency is the whole method.");
+    }
     function unitQuit() { unitCtx = null; closeStage(); go("solo"); renderPath(); }
 
     var dailySess = null;
@@ -6184,13 +6193,13 @@ input,textarea,select{ font-family:inherit; }
       var plan = dailyPlanLoad(p);
       var ds = dailySteps(p, plan), steps = ds.steps;
       var doneN = steps.filter(function (s) { return s.done; }).length;
-      var allDone = doneN === steps.length;
+      var allDone = doneN === steps.length || !!plan.finished;
       var dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       var lang = p === "bolu" ? "Japanese" : "English";
       var html = '<div class="daily-card"><div class="daily-top"><div>' +
         '<div class="daily-kick">TODAY’S STUDIES · ' + esc(dateStr.toUpperCase()) + '</div>' +
         '<div class="daily-title">' + (allDone ? "All done for today" : "Your daily " + lang + " session") + '</div>' +
-        '<div class="daily-sub">' + (allDone ? "Come back tomorrow for the next one. Day streak: " + practiceStreak() + "." : "About 10 minutes, " + steps.length + " short steps, built from where you are in the path. " + doneN + " of " + steps.length + " done.") + '</div></div>' +
+        '<div class="daily-sub">' + (allDone ? (plan.finished && doneN < steps.length ? "You closed today's studies with " + doneN + " of " + steps.length + " steps done. Come back tomorrow for the next one. Day streak: " + practiceStreak() + "." : "Come back tomorrow for the next one. Day streak: " + practiceStreak() + ".") : "About 10 minutes, " + steps.length + " short steps, built from where you are in the path. " + doneN + " of " + steps.length + " done.") + '</div></div>' +
         (allDone ? '<span class="daily-done-pill">✓ COMPLETE</span>' : '<button class="ph-btn" onclick="dailyStudyNow()">Study Now</button>') + '</div>';
       steps.forEach(function (s) { html += dailyStepHtml(s, p); });
       html += dailyForecastHTML(p);
