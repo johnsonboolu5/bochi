@@ -141,6 +141,12 @@ input,textarea,select{ font-family:inherit; }
 .pday.today .pbar{ background:var(--shu); }
 .pday span{ display:block; margin-top:6px; font-size:10.5px; font-weight:700; color:var(--muted); }
 .pday.today span{ color:var(--ink); }
+.pday{ appearance:none; background:none; border:0; padding:0; font:inherit; cursor:pointer; }
+.pday.sel .pbar-track{ outline:2px solid var(--blue); outline-offset:2px; }
+.pday.sel span{ color:var(--ink); }
+.pweek-nav{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; }
+.pweek-nav .pwn-label{ font-size:13px; font-weight:700; color:var(--ink-soft); }
+.pweek-nav button:disabled{ opacity:.35; cursor:default; }
 .topbar-right{ margin-left:auto; display:flex; gap:4px; flex-wrap:wrap; background:var(--pill); border-radius:999px; padding:3px; }
 .chip-btn{
   border:none; background:transparent; color:var(--ink-soft);
@@ -6876,33 +6882,61 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       var so = s.src[source] || (s.src[source] = { a: 0, c: 0 }); so.a++; if (ok) so.c++;
       persistStats(p);
     }
+    var practiceWeekOffset = 0, practiceSelKey = null;
+    function practiceFmtDay(key) {
+      var parts = String(key).split("-");
+      var d = new Date(+parts[0], (+parts[1] || 1) - 1, +parts[2] || 1);
+      return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    }
+    function practiceKeyDaysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return practiceDateKey(d); }
+    function practicePick(key) { practiceSelKey = key; renderPractice(); }
+    function practiceWeekNav(delta) {
+      practiceWeekOffset = Math.max(0, practiceWeekOffset + delta);
+      var t = practiceTarget(), pick = null;
+      for (var i = 0; i < 7; i++) { var k = practiceKeyDaysAgo(practiceWeekOffset * 7 + i); if (practiceDayDone(t[k])) { pick = k; break; } }
+      practiceSelKey = pick || practiceKeyDaysAgo(practiceWeekOffset * 7);
+      renderPractice();
+    }
+    function practiceAverages(t) {
+      var tot = 0, days = 0, best = null;
+      for (var k in t) { var e = t[k]; if (e && (e.m || 0) > 0) { tot += e.m; days++; if (!best || e.m > best.m) best = { k: k, m: e.m }; } }
+      return { avg: days ? Math.round(tot / days) : 0, days: days, best: best };
+    }
     function renderPractice() {
       var streak = practiceStreak();
       var hs = $("ph-p-streak"); if (hs) hs.textContent = streak;
       var box = $("practice-card"); if (!box) return;
-      var t = practiceTarget(), today = practiceEntry();
+      var t = practiceTarget(), todayKey = practiceDateKey();
+      if (!practiceSelKey) practiceSelKey = todayKey;
+      var sel = t[practiceSelKey] || { m: 0, c: 0, l: 0 };
+      var selIsToday = practiceSelKey === todayKey;
       var days = [];
       for (var i = 6; i >= 0; i--) {
-        var d = new Date(); d.setDate(d.getDate() - i);
+        var d = new Date(); d.setDate(d.getDate() - i - practiceWeekOffset * 7);
         var k = practiceDateKey(d), e = t[k];
-        days.push({ label: "SMTWTFS"[d.getDay()], mins: e ? (e.m || 0) : 0, done: practiceDayDone(e), today: i === 0 });
+        days.push({ key: k, label: "SMTWTFS"[d.getDay()], mins: e ? (e.m || 0) : 0, done: practiceDayDone(e), today: k === todayKey, sel: k === practiceSelKey });
       }
       var maxM = 30;
       days.forEach(function (x) { if (x.mins > maxM) maxM = x.mins; });
       var bars = days.map(function (x) {
         var h = x.done ? Math.max(14, Math.round(x.mins / maxM * 100)) : 4;
-        return '<div class="pday' + (x.today ? " today" : "") + '"><div class="pbar-track"><div class="pbar" style="height:' + h + '%"></div></div><span>' + x.label + '</span></div>';
+        return '<button type="button" class="pday' + (x.today ? " today" : "") + (x.sel ? " sel" : "") + '" onclick="practicePick(\'' + x.key + '\')" aria-label="' + practiceFmtDay(x.key) + '"><div class="pbar-track"><div class="pbar" style="height:' + h + '%"></div></div><span>' + x.label + '</span></button>';
       }).join("");
+      var weekMins = days.reduce(function (a, x) { return a + x.mins; }, 0);
+      var av = practiceAverages(t);
+      var rangeLabel = practiceFmtDay(days[0].key) + " \u2013 " + practiceFmtDay(days[6].key);
       box.innerHTML = '<div class="card practice-card">' +
         '<div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap">' +
-          '<div><div class="kicker">DAILY PRACTICE · まいにち</div>' +
+          '<div><div class="kicker">DAILY PRACTICE \u00B7 \u307E\u3044\u306B\u3061</div>' +
           '<h3 style="margin:6px 0 2px; font-size:24px; font-weight:800">' + streak + ' day streak</h3>' +
-          '<p style="margin:0; color:var(--muted); font-size:13.5px; font-weight:600">' + practiceTotalDays() + ' days practiced in total · showing up is the whole method</p></div>' +
-          '<div class="ptoday"><div class="pt-n">' + (today.m || 0) + ' min</div><div class="pt-l">today</div>' +
-          '<div class="pt-s">' + (today.c || 0) + ' cards · ' + (today.l || 0) + ' lessons</div></div>' +
+          '<p style="margin:0; color:var(--muted); font-size:13.5px; font-weight:600">' + practiceTotalDays() + ' days practiced in total \u00B7 showing up is the whole method</p></div>' +
+          '<div class="ptoday"><div class="pt-n">' + (sel.m || 0) + ' min</div><div class="pt-l">' + (selIsToday ? "today" : practiceFmtDay(practiceSelKey)) + '</div>' +
+          '<div class="pt-s">' + (sel.c || 0) + ' cards \u00B7 ' + (sel.l || 0) + ' lessons</div></div>' +
         '</div>' +
+        '<div class="pweek-nav"><button type="button" class="btn ghost small" onclick="practiceWeekNav(1)">\u2190 Older</button><span class="pwn-label">' + rangeLabel + '</span><button type="button" class="btn ghost small" onclick="practiceWeekNav(-1)"' + (practiceWeekOffset === 0 ? " disabled" : "") + '>Newer \u2192</button></div>' +
         '<div class="pweek">' + bars + '</div>' +
-        '<p style="margin:10px 0 0; color:var(--muted); font-size:12.5px; font-weight:600">Time counts while you are in Learn, Scripts, or a card. Marking a card, drawing one, or finishing a lesson also counts for the day.</p>' +
+        '<p style="margin:10px 0 0; color:var(--muted); font-size:12.5px; font-weight:600">Tap any day to see its time. Average on practiced days: <b style="color:var(--ink-soft)">' + av.avg + ' min</b>' + (av.best ? ' \u00B7 Best day: ' + av.best.m + ' min (' + practiceFmtDay(av.best.k) + ')' : '') + ' \u00B7 This week: ' + weekMins + ' min total.</p>' +
+        '<p style="margin:6px 0 0; color:var(--muted); font-size:12.5px; font-weight:600">Time counts while you are in Learn, Scripts, or a card. Marking a card, drawing one, or finishing a lesson also counts for the day.</p>' +
         '<button class="practice-more" onclick="go(\'stats\')">See full progress: mastery, time, accuracy, meetings \u2192</button>' +
       '</div>';
     }
