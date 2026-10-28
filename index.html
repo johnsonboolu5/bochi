@@ -7204,14 +7204,14 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       var nums = [...host.querySelectorAll(".sa-num")];
       var arrows = [...host.querySelectorAll(".sa-arrow")];
       paths.forEach(function (pth) { var L = 300; try { L = pth.getTotalLength(); } catch (e) {} pth.dataset.len = L; pth.style.strokeDasharray = L; pth.style.strokeDashoffset = L; pth.style.opacity = "0.22"; });
-      var t = 300;
+      var t = 500;
       paths.forEach(function (pth, i) {
         var L = parseFloat(pth.dataset.len) || 300;
-        var dur = Math.min(700, Math.max(150, L * 2.6));
+        var dur = Math.min(1300, Math.max(400, L * 5.2));
         setTimeout(function () { if (my !== strokeAnimToken) return; if (nums[i]) nums[i].classList.add("on"); pth.style.transition = "stroke-dashoffset " + dur + "ms ease-in-out, opacity .2s ease"; pth.style.opacity = "1"; pth.style.strokeDashoffset = "0"; }, t);
         setTimeout(function () { if (my !== strokeAnimToken) return; if (arrows[i]) arrows[i].classList.add("on"); }, t + Math.round(dur * 0.8));
         setTimeout(function () { if (my !== strokeAnimToken) return; if (nums[i]) nums[i].classList.remove("on"); }, t + dur + 100);
-        t += dur + 70;
+        t += dur + 160;
       });
       setTimeout(function () { if (my !== strokeAnimToken) return; host.classList.add("done"); }, t + 500);
     }
@@ -8008,7 +8008,7 @@ function flashExpectedStroke() {
     var L = 300; try { L = tp.getTotalLength(); } catch (e) {}
     tp.style.strokeDasharray = L; tp.style.strokeDashoffset = L;
     tp.style.stroke = drawTokenColor("--blue") || "#E8387A";
-    requestAnimationFrame(function () { tp.style.transition = "stroke-dashoffset .6s ease-in-out"; tp.style.strokeDashoffset = "0"; });
+    requestAnimationFrame(function () { tp.style.transition = "stroke-dashoffset 1s ease-in-out"; tp.style.strokeDashoffset = "0"; });
   }
   setTimeout(function () { if (my !== strokeAnimToken) return; host.classList.add("done"); setTimeout(function () { if (my === strokeAnimToken) host.hidden = true; }, 480); }, 1200);
 }
