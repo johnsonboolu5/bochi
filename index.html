@@ -628,7 +628,7 @@ input,textarea,select{ font-family:inherit; }
 .u-waypoint{ background:var(--surface-2); border:1.5px dashed var(--line-strong); border-radius:18px; padding:18px; margin-top:22px; }
 .stroke-anim{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:5%; z-index:3; pointer-events:none; opacity:1; transition:opacity .45s ease; }
 .stroke-anim[hidden]{ display:none; }
-.stroke-anim svg{ height:94%; max-width:94%; }
+.stroke-anim svg{ width:100%; height:100%; }
 .stroke-anim path{ fill:none; stroke:var(--ink); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }
 .stroke-anim.done{ opacity:.16; }
 .stroke-anim .sa-num{ opacity:.92; }
@@ -1099,7 +1099,7 @@ input,textarea,select{ font-family:inherit; }
 .stage-backhint{ font-size:12.5px; color:var(--muted); font-weight:600; line-height:1.45; }
 .stage-draw{ width:100%; max-width:430px; margin-top:10px; display:flex; flex-direction:column; align-items:center; }
 .stage-draw[hidden]{ display:none; }
-.draw-wrap{ position:relative; width:100%; height:min(58vh, 540px); min-height:340px; border-radius:26px; background:linear-gradient(170deg, var(--surface) 40%, var(--ai-soft)); border:1px solid var(--line); box-shadow:0 18px 44px rgba(20,12,50,.16), 7px 7px 0 -3px var(--surface2), 13px 13px 0 -5px var(--ai-soft); overflow:hidden; }
+.draw-wrap{ position:relative; width:100%; aspect-ratio:1/1; max-height:min(74vh, 540px); margin-inline:auto; border-radius:26px; background:linear-gradient(170deg, var(--surface) 40%, var(--ai-soft)); border:1px solid var(--line); box-shadow:0 18px 44px rgba(20,12,50,.16), 7px 7px 0 -3px var(--surface2), 13px 13px 0 -5px var(--ai-soft); overflow:hidden; }
 .draw-guide{ position:absolute; inset:0; display:grid; place-items:center; font-size:min(56vw, 240px); font-weight:700; line-height:1; color:var(--blue); opacity:.16; pointer-events:none; user-select:none; -webkit-user-select:none; }
 .draw-guide.off{ display:none; }
 .draw-guide.peek{ opacity:.85; }
@@ -1178,6 +1178,10 @@ input,textarea,select{ font-family:inherit; }
         <button class="side-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="side-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="side-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
+        <button class="side-item" data-nav="decks" onclick="go('decks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="15" height="13" rx="2.5"/><path d="M6.5 7V5.8A2.3 2.3 0 0 1 8.8 3.5H20a1 1 0 0 1 1 1V17a2.3 2.3 0 0 1-2.3 2.3H18"/></svg><span>Character Cards</span></button>
+        <button class="side-item deck-item" onclick="openDeck('hira')"><span class="deck-glyph">あ</span><span>Hiragana Deck</span></button>
+        <button class="side-item deck-item" onclick="openDeck('kata')"><span class="deck-glyph">ア</span><span>Katakana Deck</span></button>
+        <button class="side-item deck-item" onclick="openDeck('kanji')"><span class="deck-glyph">漢</span><span>Kanji Deck</span></button>
         <button class="side-item" data-nav="saved" onclick="go('saved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3.8h10V20l-5-3.5L7 20z"/></svg><span>Saved</span></button>
         <button class="side-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="side-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
@@ -1930,6 +1934,16 @@ input,textarea,select{ font-family:inherit; }
         <div id="scripts-sections"></div>
       </section>
 
+      <!-- ================= CHARACTER CARDS (DECKS) ================= -->
+      <section class="view" id="view-decks">
+        <div class="game-head">
+          <button class="back-link" onclick="go('scripts')">← Writing Systems</button>
+          <h2>Character Cards<span class="jp">カード</span></h2>
+        </div>
+        <p class="howto">Three decks, one per writing system, in the order the characters are learned. Open a deck and work through it card by card, like holding the real thing: flip each card for its reading and memory hook, draw it by hand, and mark it when you know it. Your decks and the Writing Systems pages are the same cards, so progress in one is progress in both.</p>
+        <div id="decks-host"></div>
+      </section>
+
       <!-- ================= SCRIPT PAGES ================= -->
       <section class="view" id="view-hira">
         <div class="game-head">
@@ -2093,6 +2107,10 @@ input,textarea,select{ font-family:inherit; }
         <button class="menu-item" data-nav="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 12 3.8 20.5 11"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M9.8 20v-5.4h4.4V20"/></svg><span>Today</span></button>
         <button class="menu-item" data-nav="solo" onclick="go('solo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/><path d="M8 7.5h8"/></svg><span>Learn</span></button>
         <button class="menu-item" data-nav="scripts" onclick="go('scripts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M8 15.5c1.8-.6 3-2.4 3.4-5.2M9 10.8c.8 1.8 2.2 3.3 4 4.2M15.5 8v7.5M13.8 12h3.6"/></svg><span>Scripts</span></button>
+        <button class="menu-item" data-nav="decks" onclick="go('decks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="15" height="13" rx="2.5"/><path d="M6.5 7V5.8A2.3 2.3 0 0 1 8.8 3.5H20a1 1 0 0 1 1 1V17a2.3 2.3 0 0 1-2.3 2.3H18"/></svg><span>Character Cards</span></button>
+        <button class="menu-item deck-item" onclick="openDeck('hira')"><span class="deck-glyph">あ</span><span>Hiragana Deck</span></button>
+        <button class="menu-item deck-item" onclick="openDeck('kata')"><span class="deck-glyph">ア</span><span>Katakana Deck</span></button>
+        <button class="menu-item deck-item" onclick="openDeck('kanji')"><span class="deck-glyph">漢</span><span>Kanji Deck</span></button>
         <button class="menu-item" data-nav="saved" onclick="go('saved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3.8h10V20l-5-3.5L7 20z"/></svg><span>Saved</span></button>
         <button class="menu-item" data-nav="play" onclick="go('play')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.2v7.6L16.4 12z" fill="currentColor" stroke="none"/></svg><span>Play</span></button>
         <button class="menu-item" data-nav="watch" onclick="go('watch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2L15 12z" fill="currentColor" stroke="none"/></svg><span>Watch</span></button>
@@ -2129,7 +2147,7 @@ input,textarea,select{ font-family:inherit; }
     </nav>
     <div class="card-stage" id="card-stage" hidden>
       <div class="stage-top">
-        <button class="back-link" onclick="closeCardStage()">← Back to cards</button>
+        <button class="back-link" id="stage-back" onclick="closeCardStage()">← Back to cards</button>
         <span class="stage-pos" id="stage-pos"></span>
       </div>
       <div class="stage-kicker" id="stage-kicker"></div>
@@ -2733,6 +2751,7 @@ input,textarea,select{ font-family:inherit; }
       if(view === "calendar"){ loadCalendarExtras(); }
       if(view === "solo"){ enterSolo(); }
       if(view === "scripts"){ renderScripts(); }
+      if(view === "decks"){ renderDecks(); }
       if(view === "hira" || view === "kata" || view === "kanji"){ renderScriptPage(view); document.querySelectorAll(".side-item").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-nav") === "scripts"); }); }
       if(typeof refreshScriptProgress === "function"){ refreshScriptProgress(); }
       window.scrollTo({top:0, behavior:"smooth"});
@@ -7095,6 +7114,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
     function openCardStage(key, idx) {
       if (!scriptUnlocked(key)) { toast("Master " + scriptLabel(scriptPrereq(key)) + " first. " + scriptLabel(key) + " unlocks when it is fully memorized."); return; }
       stageState = { key: key, idx: idx, flipped: false };
+      stageFromDeck = false;
       stageMode = "flip";
       var st = $("card-stage");
       if (!st) return;
@@ -7106,6 +7126,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       var st = $("card-stage");
       if (st) st.hidden = true;
       document.body.style.overflow = "";
+      if (stageFromDeck) { stageFromDeck = false; go("decks"); }
     }
     function stageRender() {
       var def = scriptDef(stageState.key);
@@ -7115,7 +7136,11 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       if (stageState.idx >= list.length) stageState.idx = 0;
       var it = list[stageState.idx];
       var known = !!(scriptsTarget()[stageState.key] && scriptsTarget()[stageState.key][it.ch]);
-      $("stage-kicker").textContent = def.label + " · " + it.group;
+      $("stage-kicker").textContent = stageFromDeck ? def.label + " deck · " + it.group : def.label + " · " + it.group;
+      var sbk = $("stage-back"); if (sbk) sbk.textContent = stageFromDeck ? "← Character Cards" : "← Back to cards";
+      var stg = $("card-stage"); if (stg) stg.classList.toggle("deck", !!stageFromDeck);
+      var scard = $("stage-card");
+      if (scard) { var nxt = list[(stageState.idx + 1) % list.length]; scard.style.setProperty("--nextch", nxt ? '"' + nxt.ch + '"' : '""'); }
       $("stage-pos").textContent = (stageState.idx + 1) + " of " + list.length;
       $("stage-char").textContent = it.ch;
       $("stage-read").textContent = it.read;
@@ -7134,7 +7159,7 @@ var RANKS = [[0, "Amateur"], [15, "Intermediate"], [35, "Professional"], [55, "P
       var sv2 = $("draw-save"); if (sv2) sv2.textContent = svOn ? "Saved ✓" : "Save";
       var sp = $("stage-speak");
       if (sp) { sp.innerHTML = SPEAK_SVG; sp.onclick = function (ev) { if (ev) ev.stopPropagation(); speak(it.ch, "ja-JP"); }; }
-      var gd = $("draw-guide"); if (gd) gd.textContent = it.ch;
+      drawGuideSet(it.ch);
       drawCounted = false;
       if (stageMode === "draw") { sizeDrawCanvas(); clearDraw(); buildDrawCheck(it.ch); playStrokeAnim(it.ch); }
     }
@@ -7530,6 +7555,26 @@ input[type="text"],input[type="email"],input[type="password"],input[type="number
 .sv-x{ flex:none; border:0; background:var(--pill); color:var(--muted); width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:14px; }
 .sv-study{ border:1px solid var(--line); border-radius:12px; padding:22px; text-align:center; margin:10px 0 14px; background:var(--surface); }
 .sv-study .sv-big{ font-size:27px; }
+
+/* Character decks */
+.deck-item{ padding-left:22px; font-size:14.5px; }
+.deck-glyph{ font-family:"Hiragino Mincho ProN","Hiragino Sans","Noto Sans JP",serif; font-weight:800; font-size:19px; width:24px; text-align:center; color:var(--blue); flex:none; }
+.deck-tile{ display:flex; align-items:center; gap:16px; width:100%; text-align:left; font:inherit; cursor:pointer; color:var(--ink); background:linear-gradient(170deg, var(--surface) 40%, var(--ai-soft)); border:1px solid var(--line); border-radius:20px; padding:20px; margin:0 0 16px; box-shadow:0 14px 30px rgba(20,12,50,.10), 7px 7px 0 -3px var(--surface-2), 13px 13px 0 -5px var(--ai-soft); transition:transform .15s ease; }
+.deck-tile:active{ transform:scale(.99); }
+.deck-tile.locked{ opacity:.62; }
+.deck-glyph-big{ font-family:"Hiragino Mincho ProN","Hiragino Sans","Noto Sans JP",serif; font-size:52px; font-weight:800; color:var(--blue); line-height:1; flex:none; width:64px; text-align:center; }
+.deck-meta{ display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
+.deck-meta b{ font-size:19px; }
+.deck-meta i{ font-style:normal; color:var(--muted); font-size:14px; font-weight:600; }
+.deck-go{ font-weight:800; color:var(--blue); flex:none; }
+#card-stage.deck .stage-card{ isolation:isolate; }
+#card-stage.deck .stage-card::before{ content:""; position:absolute; inset:0; z-index:-1; border-radius:26px; background:var(--surface-2); border:1px solid var(--line); transform:rotate(-2.1deg) translate(-8px, 6px); }
+#card-stage.deck .stage-card::after{ content:var(--nextch, ""); position:absolute; inset:0; z-index:-2; border-radius:26px; background:var(--surface); border:1px solid var(--line); transform:rotate(1.7deg) translate(9px, 7px); display:grid; place-items:end center; padding-bottom:6%; font-family:"Hiragino Mincho ProN","Hiragino Sans","Noto Sans JP",serif; font-size:110px; font-weight:800; color:var(--ink); opacity:.10; }
+.draw-guide svg{ width:100%; height:100%; display:block; }
+.draw-guide.svg-guide{ opacity:.16; }
+.draw-guide.svg-guide.peek{ opacity:.85; }
+.draw-guide svg path{ fill:none; stroke:var(--blue); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }
+
 </style>
 <div id="save-sheet" role="dialog" aria-modal="true">
   <div class="save-card">
@@ -8399,6 +8444,49 @@ function safeGoSolo() {
     if (sm && sm.style.display === "none") sm.style.display = "block";
     if (sp && sp.style.display !== "none") sp.style.display = "none";
     if (!solo.player) solo.player = authState.account.playerKey;
+  }
+}
+</script>
+<script>
+/* ================= CHARACTER CARD DECKS ================= */
+var stageFromDeck = false;
+function deckFirstOpenIdx(key) {
+  var list = SCRIPT_FLAT[key] || [];
+  var known = scriptsTarget()[key] || {};
+  for (var i = 0; i < list.length; i++) { if (!known[list[i].ch]) return i; }
+  return 0;
+}
+function openDeck(key) {
+  if (!scriptUnlocked(key)) { toast("Master " + scriptLabel(scriptPrereq(key)) + " first. " + scriptLabel(key) + " unlocks when it is fully memorized."); return; }
+  stageFromDeck = true;
+  openCardStage(key, deckFirstOpenIdx(key));
+  stageFromDeck = true;
+  stageRender();
+}
+function renderDecks() {
+  var host = $("decks-host"); if (!host) return;
+  var glyphs = { hira: "\u3042", kata: "\u30A2", kanji: "\u6F22" };
+  host.innerHTML = SCRIPT_DEFS.map(function (def) {
+    var total = scriptTotals(def), known = scriptKnownCount(def.key), pct = scriptPct(def.key);
+    var unlocked = scriptUnlocked(def.key);
+    var note = unlocked
+      ? total + " cards \u00B7 " + known + " memorized \u00B7 " + pct + "%"
+      : "Master " + scriptLabel(scriptPrereq(def.key)) + " first to unlock this deck";
+    return '<button class="deck-tile' + (unlocked ? "" : " locked") + '" onclick="openDeck(\'' + def.key + '\')">' +
+      '<span class="deck-glyph-big">' + glyphs[def.key] + '</span>' +
+      '<span class="deck-meta"><b>' + def.label + ' Deck</b><i>' + note + '</i></span>' +
+      '<span class="deck-go">' + (unlocked ? "Open deck \u2192" : "Locked") + '</span></button>';
+  }).join("");
+}
+function drawGuideSet(ch) {
+  var gd = $("draw-guide"); if (!gd) return;
+  var ds = (typeof STROKES !== "undefined") ? STROKES[ch] : null;
+  if (ds && ds.length) {
+    gd.classList.add("svg-guide");
+    gd.innerHTML = '<svg viewBox="0 0 109 109" aria-hidden="true">' + ds.map(function (d) { return '<path d="' + d + '"/>'; }).join("") + "</svg>";
+  } else {
+    gd.classList.remove("svg-guide");
+    gd.textContent = ch;
   }
 }
 </script>
