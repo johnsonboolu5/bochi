@@ -3744,7 +3744,6 @@ input,textarea,select{ font-family:inherit; }
         for(var i = 0; i < lessons.length; i++){
           if(!state.lessons[p][lessonId(ch, i)]) return { type:"lesson", ch:ch, idx:i, les:lessons[i], cnt:cnt };
         }
-        if(!state.checkpoints[p][ch]) return { type:"checkpoint", ch:ch, cnt:cnt };
       }
       return { type:"done" };
     }
@@ -4041,6 +4040,8 @@ input,textarea,select{ font-family:inherit; }
     function chapterUnlocked(p, ch){
       if (ch === 1) return true;
       if (state.checkpoints[p][ch - 1]) return true;
+      var prev = chapterDoneCount(p, ch - 1);
+      if (prev.total > 0 && prev.done >= prev.total) return true;
       for (var c = ch; c <= CONTENT_CHAPTERS; c++) { if (chapterDoneCount(p, c).done > 0) return true; }
       return false;
     }
@@ -4192,6 +4193,7 @@ input,textarea,select{ font-family:inherit; }
       if(st){ st.style.display = "none"; st.innerHTML = ""; }
     }
     function openLesson(ch, idx){
+      if (CURRENT !== "solo" || ($("solo-main") && $("solo-main").style.display === "none")) safeGoSolo();
       var p = solo.player;
       var les = chapterLessons(p, ch)[idx];
       solo.lesson = { ch:ch, idx:idx, les:les, phase:"teach", ti:0, qs:[], qi:0, correct:0, lock:false, said:{}, showRead:(ch <= 3), tiles:[], placed:[] };
@@ -4387,18 +4389,13 @@ input,textarea,select{ font-family:inherit; }
       var sl = solo.lesson, p = solo.player;
       var total = sl.qs.length, got = sl.correct;
       var pass = got >= Math.ceil(total * 0.8);
-      if(pass){
-        state.lessons[p][lessonId(sl.ch, sl.idx)] = true;
-        bumpPractice("l", 1);
-        if(solo.practiced.indexOf(sl.les.name) === -1) solo.practiced.push(sl.les.name);
-      }
       studyLogAdd(p, sl.ch, sl.idx, sl.les.name);
       scheduleSave();
       if (unitCtx) { unitReturn("Today's lesson", got + " of " + total + " correct"); return; }
       var rc = reviewChapterCount(p, sl.ch);
       var html = lessonHead() +
         '<div class="big-word" style="text-align:center">' + got + " of " + total + " correct</div>" +
-        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete. The node on your path is checked, and the Learning Points are on your journey." : "Good practice, and the Learning Points still count. Score 80% or more to check this node. The goal is mastery, not just getting through.") +
+        '<p class="howto" style="text-align:center; margin:8px auto 0">' + (pass ? "Lesson complete, mastery mark earned. The node on your path is checked, and the Learning Points are on your journey." : "Lesson complete and checked on your path. The mastery mark is 80% or more; what you missed comes back in tomorrow's review, which is exactly how it sticks.") +
         (rc ? " " + rc + " thing" + (rc === 1 ? "" : "s") + " from this chapter " + (rc === 1 ? "is" : "are") + " waiting in Review on this page." : "") + "</p>" +
         '<div class="btn-row" style="justify-content:center"><button class="btn blue" onclick="quitLesson()">Back to Path</button>' +
         (pass ? "" : '<button class="btn ghost" onclick="retryLesson()">Try Again</button>') + "</div>";
@@ -4917,6 +4914,7 @@ input,textarea,select{ font-family:inherit; }
           if (rec.stats && typeof rec.stats === "object") { state.stats[p] = { ans: rec.stats.ans | 0, cor: rec.stats.cor | 0, ch: (rec.stats.ch && typeof rec.stats.ch === "object") ? rec.stats.ch : {}, src: (rec.stats.src && typeof rec.stats.src === "object") ? rec.stats.src : {} }; }
         }
       });
+      if (typeof reconcileStudyLog === "function") reconcileStudyLog();
       renderJourney();
       if (typeof renderTierBars === "function") renderTierBars();
     }
@@ -5861,6 +5859,29 @@ input,textarea,select{ font-family:inherit; }
       log.push({ d: today, id: id, ch: ch, idx: idx, name: name });
       if (log.length > 30) log = log.slice(log.length - 30);
       try { localStorage.setItem("bochi-studylog-" + p, JSON.stringify(log)); } catch (e) {}
+      completeLesson(p, ch, idx, name, true);
+    }
+    function completeLesson(p, ch, idx, name, countIt) {
+      var id = lessonId(ch, idx);
+      if (!state.lessons[p] || state.lessons[p][id]) return;
+      state.lessons[p][id] = true;
+      if (countIt) {
+        bumpPractice("l", 1);
+        if (typeof solo !== "undefined" && solo.practiced && solo.practiced.indexOf(name) === -1) solo.practiced.push(name);
+      }
+      scheduleSave();
+    }
+    function reconcileStudyLog() {
+      var changed = false;
+      ["bolu", "chihiro"].forEach(function (p) {
+        try {
+          studyLogLoad(p).forEach(function (e) {
+            if (e && e.id && state.lessons[p] && !state.lessons[p][e.id]) { state.lessons[p][e.id] = true; changed = true; }
+          });
+        } catch (err) {}
+      });
+      if (changed && typeof scheduleSave === "function") scheduleSave();
+      return changed;
     }
     function studiedToday(p) { var t = practiceDateKey(), log = studyLogLoad(p); for (var i = log.length - 1; i >= 0; i--) if (log[i].d === t) return log[i]; return null; }
     function yesterdayBundle(p) {
@@ -5879,7 +5900,6 @@ input,textarea,select{ font-family:inherit; }
           var id = lessonId(ch, i);
           if (!state.lessons[p][id] && !seen[id]) return { type: "lesson", ch: ch, idx: i, les: lessons[i] };
         }
-        if (!state.checkpoints[p][ch]) return { type: "checkpoint", ch: ch };
       }
       return { type: "done" };
     }
@@ -6243,7 +6263,7 @@ input,textarea,select{ font-family:inherit; }
     }
     function dailyForecastHTML(p) {
       var st = studiedToday(p), dl = dailyLessonFor(p);
-      var what = st ? "Chapter " + st.ch + " \u00B7 " + st.name : (dl.type === "lesson" ? "Chapter " + dl.ch + " \u00B7 " + dl.les.name : "your most recent lesson");
+      var what = st ? "Chapter " + st.ch + " \u00B7 " + st.name : (dl.type === "lesson" ? "Chapter " + dl.ch + " \u00B7 " + dl.les.name : "today's lesson, once you study it");
       return '<div class="d-forecast"><b style="color:var(--ink)">Tomorrow\u2019s review: ' + esc(what) + '.</b> Reviews only ever cover what you studied the day before.</div>' +
         '<div class="d-extra"><span style="font-size:11px; font-weight:800; letter-spacing:1.2px; color:var(--muted)">EXTRA PRACTICE</span>' +
         '<button class="btn ghost small" onclick="go(\'play\')">Play a game</button>' +
@@ -6274,7 +6294,7 @@ input,textarea,select{ font-family:inherit; }
       host.innerHTML = html;
     }
     function dailyGoLesson() { openDailyUnit(); }
-    function dailyGoReview() { var p = practicePlayer(); if (!yesterdayBundle(p)) { toast("Nothing to review yet. Today's lesson becomes tomorrow's review."); return; } go("solo"); if (solo.player !== p) pickProfile(p); startYReview(); }
+    function dailyGoReview() { var p = practicePlayer(); if (!yesterdayBundle(p)) { toast("Nothing to review yet. Today's lesson becomes tomorrow's review."); return; } safeGoSolo(); if (solo.player !== p) solo.player = p; startYReview(); }
     function dailyGoDrill() { var p = practicePlayer(); if (p === "bolu") { go(weakestScript().def.key); } else { go("solo"); } }
     function dailyPhraseListen() { var p = practicePlayer(), ph = p === "bolu" ? potdJp : potdEn; speak(ph.main, p === "bolu" ? "ja-JP" : "en-US"); }
     function dailyPhraseDone() { var p = practicePlayer(), plan = dailyPlanLoad(p); plan.phraseDone = true; dailySavePlan(p, plan); renderDaily(); toast("Phrase practiced. Nicely done."); }
@@ -6329,6 +6349,7 @@ input,textarea,select{ font-family:inherit; }
       return best;
     }
     function startSpeakDaily() {
+      if (CURRENT !== "solo" || ($("solo-main") && $("solo-main").style.display === "none")) safeGoSolo();
       var p = solo.player || practicePlayer();
       var items = speakDailyItems(p);
       if (!items.length) { toast("No speaking items yet. Start a lesson first."); return; }
@@ -7978,7 +7999,7 @@ function startYReview() {
   if (!yb) { toast("Nothing to review yet. Today's lesson becomes tomorrow's review."); return; }
   var items = [], guides = [];
   yb.list.forEach(function (e) {
-    var les = chapterLessons(p, e.ch)[e.idx];
+    var les = chapterLessons(p, e.ch)[e.idx] || chapterLessons(p, e.ch).filter(function (lx) { return lx.name === e.name; })[0];
     if (!les) return;
     var g = (PATTERN_GUIDE[p] || {})[les.name];
     if (g) guides.push(g);
@@ -7986,6 +8007,7 @@ function startYReview() {
   });
   items = items.slice(0, 8);
   if (!items.length) { toast("That lesson has nothing to review."); return; }
+  if (CURRENT !== "solo" || ($("solo-main") && $("solo-main").style.display === "none")) safeGoSolo();
   yrevSess = { p: p, yb: yb, items: items, guides: guides, i: -1, got: 0, revealed: false };
   renderYReview();
 }
@@ -8358,6 +8380,27 @@ function endRush() {
 }
 gateWrap("startRush", "game");
 setPlaySolo(playSolo);
+</script>
+<script>
+/* ================= SAFE SOLO NAVIGATION =================
+   Sub-flows (lesson checks, speaking, reviews) render into the solo stage.
+   Entering them from another view must land the user on the solo view,
+   visibly, even if the heavy path render trips on something. */
+function safeGoSolo() {
+  try { go("solo"); } catch (e) {}
+  var view = $("view-solo");
+  if (CURRENT !== "solo" || !view || !view.classList.contains("on")) {
+    document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("on"); });
+    if (view) view.classList.add("on");
+    CURRENT = "solo";
+  }
+  if (authState.account) {
+    var sm = $("solo-main"), sp = $("solo-pick");
+    if (sm && sm.style.display === "none") sm.style.display = "block";
+    if (sp && sp.style.display !== "none") sp.style.display = "none";
+    if (!solo.player) solo.player = authState.account.playerKey;
+  }
+}
 </script>
 </body>
 </html>
